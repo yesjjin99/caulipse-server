@@ -1,11 +1,19 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import { createConnection } from 'typeorm';
 dotenv.config();
 
-import { db } from './config';
+import { db } from './config/db';
 
 const app = express();
 app.get('/', (req, res) => {
   res.send('ok');
 });
-app.listen(3000, () => console.log('listening'));
+
+createConnection(db)
+  .then(() => {
+    app.listen(3000, () => console.log('listening'));
+  })
+  .catch((err) => {
+    console.log(err);
+  });
