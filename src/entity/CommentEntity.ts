@@ -5,6 +5,8 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  ManyToMany,
+  JoinTable,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import User from './UserEntity';
@@ -37,4 +39,8 @@ export default class Comment {
   @ManyToOne(() => Study, (study) => study.id)
   @JoinColumn({ name: 'STUDY_ID' })
   study!: Study;
+
+  @ManyToMany(() => User)
+  @JoinTable({ name: 'USER_METOO_COMMENT' })
+  metooComment!: User[];
 }

@@ -4,12 +4,13 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  OneToMany,
   ManyToOne,
+  ManyToMany,
   JoinColumn,
+  JoinTable,
 } from 'typeorm';
 import User from './UserEntity';
-import StudyCategory from './StudyCategoryEntity';
+import Category from './CategoryEntity';
 
 @Entity({ name: 'STUDY' })
 export default class Study extends BaseEntity {
@@ -53,10 +54,14 @@ export default class Study extends BaseEntity {
   @Column({ name: 'IS_OPEN' })
   isOpen!: boolean;
 
-  @OneToMany((type) => StudyCategory, (studycategory) => studycategory.studyId)
-  @JoinColumn({ name: 'CATEGORY' })
-  category!: StudyCategory[];
+  @ManyToMany(() => Category)
+  @JoinTable({ name: 'STUDY_CATEGORY' })
+  category!: Category[];
 
   @Column('int', { name: 'VIEWS' })
   views!: number;
+
+  @ManyToMany(() => User)
+  @JoinTable({ name: 'BOOKMARK' })
+  bookmarks!: User[];
 }

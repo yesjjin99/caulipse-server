@@ -9,6 +9,7 @@ import {
 import Comment from './CommentEntity';
 import Notification from './NotificationEntity';
 import Study from './StudyEntity';
+import Category from './CategoryEntity';
 
 enum UserRoleEnum {
   GUEST = 'GUEST',
@@ -44,4 +45,8 @@ export default class User {
   @ManyToMany(() => Study)
   @JoinTable({ name: 'STUDY_USER' })
   studies!: Study[];
+
+  @ManyToMany(() => Category)
+  @JoinTable({ name: 'USER_INTEREST_CATEGORY' })
+  categories!: Category[];
 }
