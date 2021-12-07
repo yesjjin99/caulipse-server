@@ -38,7 +38,7 @@ export default class Study extends BaseEntity {
   @Column({ name: 'LOCATION' })
   location!: string;
 
-  @ManyToOne((type) => User, (user) => user.id)
+  @ManyToOne(() => User, (user) => user.id)
   @JoinColumn({ name: 'HOST_ID' })
   hostId!: User;
 
