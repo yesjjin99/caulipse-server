@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import userRouter from './user';
+import helloWorld from '../../../hello-world';
 
 const router = Router();
-router.use('/api/user', userRouter);
+router.get('/', helloWorld);
 
 export default router;

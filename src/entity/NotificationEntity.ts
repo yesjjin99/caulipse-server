@@ -18,7 +18,7 @@ export default class Notification {
   type!: number;
 
   @Column({ name: 'READ' })
-  read!: number;
+  read!: boolean;
 
   @CreateDateColumn({ name: 'CREATED_AT' })
   createdAt!: Date;
