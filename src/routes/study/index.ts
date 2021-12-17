@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import commentRouter from './comment';
-import idRouter from './id';
+import idRouter from './studyid';
 
 const router = Router();
 router.use('/comment', commentRouter);
-router.use('/:id', idRouter);
+router.use('/:studyid', idRouter);
 
 export default router;
