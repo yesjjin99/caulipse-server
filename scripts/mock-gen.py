@@ -21,17 +21,17 @@ def make_user_profile_insert_statement(id, user_name, dept, grade, bio, user_abo
 VALUES('{id}', '{user_name}', '{dept}', '{grade}', '{bio}', '{user_about}', {show_dept}, {show_grade}, {show_about}, on_break, '{email1}', '{email2}', '{email3}', '{link1}', '{link2}');\n'''
 
 def make_study_insert_statement(id, created_at, title, study_about, time, weekday, frequency, location, capacity, members_count, vacancy, is_open, views, host_id):
-    return f'''INSERT INTO STUDY(STUDY_ID, CREATED_AT, TITLE, STUDY_ABOUT, WEEKDAY, FREQUENCY, LOCATION, CAPACITY, MEMBERS_COUNT, VACANCY, IS_OPEN, CATEGORY_CODE, VIEWS, HOST_ID)
+    return f'''INSERT INTO STUDY(ID, CREATED_AT, TITLE, STUDY_ABOUT, WEEKDAY, FREQUENCY, LOCATION, CAPACITY, MEMBERS_COUNT, VACANCY, IS_OPEN, CATEGORY_CODE, VIEWS, HOST_ID)
 VALUES('{id}', '{created_at}', '{title}', '{study_about}', '{time}', '{weekday}', '{frequency}', '{location}', '{capacity}', '{members_count}', '{vacancy}', '{is_open}', {views}, '{host_id}');\n'''
 
-def make_studyuser_insert_statement(user_id, study_id):
-    return f'''INSERT INTO STUDY_USER(uSERID, sTUDYSTUDYID) VALUES('{user_id}', '{study_id}');\n'''
+def make_studyuser_insert_statement(user_id, study_id, is_accepted, temp_bio):
+    return f'''INSERT INTO STUDY_USER(USER_ID, STUDY_ID, IS_ACCEPTED, TEMP_BIO) VALUES('{user_id}', '{study_id}', {is_accepted}, '{temp_bio}');\n'''
 
 def make_bookmark_insert_statement(user_id, study_id):
-    return f'''INSERT INTO BOOKMARK(uSERID, sTUDYSTUDYID) VALUES('{user_id}', '{study_id}');\n'''
+    return f'''INSERT INTO BOOKMARK(USER_ID, STUDY_ID) VALUES('{user_id}', '{study_id}');\n'''
 
 def make_comment_insert_statement(id, user_id, study_id, content):
-    return f'''INSERT INTO COMMENT(ID, parentCommentId, USER_ID, STUDY_ID, IS_NESTED, CONTENT)
+    return f'''INSERT INTO COMMENT(ID, NESTED_COMMENT_ID, USER_ID, STUDY_ID, IS_NESTED, CONTENT)
 VALUES('{id}', NULL, '{user_id}', '{study_id}', 0, '{content}');\n'''
 
 # reset script
@@ -82,7 +82,8 @@ with open('studyuserdata.sql', 'w') as f:
     for i in range(study_user_number):
         user = random.randint(0, user_number - 1)
         study = random.randint(0, study_number - 1)
-        stmt = make_studyuser_insert_statement(user_ids[user], study_ids[study])
+        stmt = make_studyuser_insert_statement(user_ids[user], study_ids[study],
+                1 if random.randint(0, 10) > 7 else 1, f'temp bio for user {user_ids[user]}')
         f.write(stmt)
 
 # bookmark table
@@ -102,7 +103,7 @@ with open('commentdata.sql', 'w') as f:
 
 # user_interest_category table
 with open('userinterestcategorydata.sql', 'w') as f:
-    stmt = f'''INSERT INTO USER_INTEREST_CATEGORY(uSERID, cATEGORYCODE)
+    stmt = f'''INSERT INTO USER_INTEREST_CATEGORY(USER_ID, CATEGORY_CODE)
 VALUES ('{user_ids[0]}', 100), ('{user_ids[0]}', 101), ('{user_ids[1]}', 100), ('{user_ids[2]}', 200);'''
     f.write(stmt)
 
@@ -116,6 +117,6 @@ VALUES ('{noti_ids[i]}', '{user_ids[i // 5]}', '{study_ids[i // 5]}', 0, 0);'''
 # user_metoo_comment table
 with open('usermetoocommentdata.sql', 'w') as f:
     for i in range(noti_number): # comment_number > noti_number
-        stmt = f'''INSERT INTO USER_METOO_COMMENT(USERID, COMMENTID)
+        stmt = f'''INSERT INTO USER_METOO_COMMENT(USER_ID, COMMENT_ID)
 VALUES('{user_ids[i // (user_number // comment_number)]}', '{comment_ids[i]}');'''
         f.write(stmt)
