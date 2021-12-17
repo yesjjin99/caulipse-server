@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import commentIdRouter from './id';
+import commentIdRouter from './commentid';
 
 const router = Router();
 router.use('/:id', commentIdRouter);
