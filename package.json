@@ -5,6 +5,9 @@
   "repository": "git@github.com:caulipse/caulipse-server.git",
   "author": "rudy3091 <grayblack313@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "start:dev": "NODE_ENV=dev nodemon --watch 'src/**/*.ts' --ignore 'test/**' --exec 'ts-node src/index.ts'"
+  },
   "dependencies": {
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
@@ -42,6 +45,7 @@
     "nodemon": "^2.0.12",
     "prettier": "^2.4.1",
     "supertest": "^6.1.6",
+    "ts-node": "^10.4.0",
     "typescript": "^4.4.3"
   }
 }
