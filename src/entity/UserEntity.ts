@@ -8,7 +8,6 @@ import {
 } from 'typeorm';
 import Comment from './CommentEntity';
 import Notification from './NotificationEntity';
-import Study from './StudyEntity';
 import Category from './CategoryEntity';
 
 enum UserRoleEnum {
@@ -42,11 +41,17 @@ export default class User {
   @OneToMany(() => Comment, (comment) => comment.user)
   comments!: Comment[];
 
-  @ManyToMany(() => Study)
-  @JoinTable({ name: 'STUDY_USER' })
-  studies!: Study[];
-
   @ManyToMany(() => Category)
-  @JoinTable({ name: 'USER_INTEREST_CATEGORY' })
+  @JoinTable({
+    name: 'USER_INTEREST_CATEGORY',
+    joinColumn: {
+      name: 'USER_ID',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'CATEGORY_CODE',
+      referencedColumnName: 'code',
+    },
+  })
   categories!: Category[];
 }

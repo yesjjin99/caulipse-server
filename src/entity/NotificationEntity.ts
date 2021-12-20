@@ -5,14 +5,29 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  PrimaryColumn,
 } from 'typeorm';
 import User from './UserEntity';
 import Study from './StudyEntity';
 
-@Entity({ name: 'Notification' })
+@Entity({ name: 'NOTIFICATION' })
 export default class Notification {
   @PrimaryGeneratedColumn('uuid', { name: 'ID' })
   id!: string;
+
+  @PrimaryColumn('uuid')
+  USER_ID!: string;
+
+  @ManyToOne(() => User, (user) => user.notifications)
+  @JoinColumn({ name: 'USER_ID' })
+  user!: User;
+
+  @PrimaryColumn('uuid')
+  STUDY_ID!: string;
+
+  @ManyToOne(() => Study, (study) => study.id)
+  @JoinColumn({ name: 'STUDY_ID' })
+  study!: Study;
 
   @Column({ name: 'TYPE' })
   type!: number;
@@ -22,12 +37,4 @@ export default class Notification {
 
   @CreateDateColumn({ name: 'CREATED_AT' })
   createdAt!: Date;
-
-  @ManyToOne(() => User, (user) => user.notifications)
-  @JoinColumn({ name: 'USER_ID' })
-  user!: User;
-
-  @ManyToOne(() => Study, (study) => study.id)
-  @JoinColumn({ name: 'STUDY_ID' })
-  study!: Study;
 }
