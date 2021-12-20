@@ -8,13 +8,12 @@ import swaggerOption from './config/swagger';
 import swaggerJSDoc from 'swagger-jsdoc';
 
 import { db } from './config/db';
+import rootRouter from './routes';
 
 const swaggerSpec = swaggerJSDoc(swaggerOption);
 
 const app = express();
-app.get('/', (req, res) => {
-  res.send('ok');
-});
+app.use('/', rootRouter);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
 createConnection(db)
