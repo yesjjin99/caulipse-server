@@ -16,10 +16,14 @@ const app = express();
 app.use('/', rootRouter);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
-createConnection(db)
-  .then(() => {
-    app.listen(3000, () => console.log('listening'));
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+if (process.env.NODE_ENV !== 'test') {
+  createConnection(db)
+    .then(() => {
+      app.listen(3000, () => console.log('listening'));
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+export default app;
