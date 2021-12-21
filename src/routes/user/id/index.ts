@@ -8,5 +8,6 @@ router.patch('/', helloWorld);
 router.delete('/', helloWorld);
 router.use('/notification', notificationRouter);
 router.use('/category', categoryRouter);
+router.use('/bookmark', categoryRouter);
 
 export default router;
