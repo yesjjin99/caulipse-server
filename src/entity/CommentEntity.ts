@@ -12,7 +12,7 @@ import {
 import User from './UserEntity';
 import Study from './StudyEntity';
 
-@Entity({ name: 'Comment' })
+@Entity({ name: 'COMMENT' })
 export default class Comment {
   @PrimaryGeneratedColumn('uuid', { name: 'ID' })
   id!: string;
@@ -34,6 +34,7 @@ export default class Comment {
   nestedComments!: Comment[];
 
   @ManyToOne(() => Comment, (comment) => comment.nestedComments)
+  @JoinColumn({ name: 'NESTED_COMMENT_ID' })
   parentComment!: Comment;
 
   @ManyToOne(() => Study, (study) => study.id)
@@ -41,6 +42,16 @@ export default class Comment {
   study!: Study;
 
   @ManyToMany(() => User)
-  @JoinTable({ name: 'USER_METOO_COMMENT' })
+  @JoinTable({
+    name: 'USER_METOO_COMMENT',
+    joinColumn: {
+      name: 'COMMENT_ID',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'USER_ID',
+      referencedColumnName: 'id',
+    },
+  })
   metooComment!: User[];
 }

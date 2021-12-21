@@ -40,7 +40,7 @@ enum LocationEnum {
 
 @Entity({ name: 'STUDY' })
 export default class Study extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { name: 'STUDY_ID' })
+  @PrimaryGeneratedColumn('uuid', { name: 'ID' })
   id!: string;
 
   @CreateDateColumn({ name: 'CREATED_AT' })
@@ -78,13 +78,23 @@ export default class Study extends BaseEntity {
   isOpen!: boolean;
 
   @OneToOne(() => Category, (category) => category.code)
-  @JoinTable()
+  @JoinColumn({ name: 'CATEGORY_CODE' })
   categoryCode!: Category;
 
   @Column('int', { name: 'VIEWS' })
   views!: number;
 
   @ManyToMany(() => User)
-  @JoinTable({ name: 'BOOKMARK' })
+  @JoinTable({
+    name: 'BOOKMARK',
+    joinColumn: {
+      name: 'STUDY_ID',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'USER_ID',
+      referencedColumnName: 'id',
+    },
+  })
   bookmarks!: User[];
 }

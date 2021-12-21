@@ -1,16 +1,14 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import User from './UserEntity';
 
-@Entity({ name: 'UserProfile' })
+@Entity({ name: 'USER_PROFILE' })
 export default class UserProfile {
-  @PrimaryGeneratedColumn('uuid', { name: 'ID' })
-  id!: string;
+  @PrimaryColumn('uuid')
+  USER_ID!: string;
+
+  @OneToOne(() => User, (user) => user.id)
+  @JoinColumn({ name: 'USER_ID' })
+  id!: User;
 
   @Column({ name: 'USER_NAME' })
   userName!: string;
@@ -35,9 +33,6 @@ export default class UserProfile {
   @Column({ name: 'SHOW_GRADE' })
   showGrade!: boolean;
 
-  @Column({ name: 'SHOW_ABOUT' })
-  showAbout!: boolean;
-
   @Column({ name: 'ON_BREAK' })
   onBreak!: boolean;
 
@@ -55,8 +50,4 @@ export default class UserProfile {
 
   @Column({ name: 'LINK2' })
   link2!: string;
-
-  @OneToOne(() => User)
-  @JoinColumn({ name: 'USER_ID' })
-  user!: User;
 }
