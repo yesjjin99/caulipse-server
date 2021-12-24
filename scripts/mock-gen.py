@@ -13,6 +13,10 @@ study_ids = [str(uuid.uuid4()) for i in range(study_number)]
 comment_ids = [str(uuid.uuid4()) for i in range(comment_number)]
 noti_ids = [str(uuid.uuid4()) for i in range(noti_number)]
 
+weekday_enum = ['월', '화', '수', '목', '금', '토', '일']
+frequency_enum = ['1회','주 2-4회','주 5회 이상']
+location_enum = ['비대면','학교 스터디룸','중앙도서관','스터디카페','일반카페','흑석, 상도','서울대입구, 낙성대','기타']
+
 def make_user_insert_statement(id, email, password, is_logout, token):
     return f'''INSERT INTO USER(ID, EMAIL, PASSWORD, IS_LOGOUT, TOKEN, ROLE) VALUES ('{id}', '{email}', '{password}', {is_logout}, '{token}', 'GUEST');\n'''
 
@@ -20,9 +24,9 @@ def make_user_profile_insert_statement(user_id, user_name, dept, grade, bio, use
     return f'''INSERT INTO USER_PROFILE(USER_ID, USER_NAME, DEPT, GRADE, BIO, USER_ABOUT, SHOW_DEPT, SHOW_GRADE, ON_BREAK, EMAIL1, EMAIL2, EMAIL3, LINK1, LINK2)
 VALUES('{user_id}', '{user_name}', '{dept}', '{grade}', '{bio}', '{user_about}', {show_dept}, {show_grade}, {on_break}, '{email1}', '{email2}', '{email3}', '{link1}', '{link2}');\n'''
 
-def make_study_insert_statement(id, created_at, title, study_about, time, weekday, frequency, location, capacity, members_count, vacancy, is_open, views, host_id):
-    return f'''INSERT INTO STUDY(ID, CREATED_AT, TITLE, STUDY_ABOUT, WEEKDAY, FREQUENCY, LOCATION, CAPACITY, MEMBERS_COUNT, VACANCY, IS_OPEN, CATEGORY_CODE, VIEWS, HOST_ID)
-VALUES('{id}', '{created_at}', '{title}', '{study_about}', '{time}', '{weekday}', '{frequency}', '{location}', '{capacity}', '{members_count}', '{vacancy}', '{is_open}', {views}, '{host_id}');\n'''
+def make_study_insert_statement(id, title, study_about, weekday, frequency, location, capacity, members_count, vacancy, is_open, category_code, views, host_id):
+    return f'''INSERT INTO STUDY(ID, TITLE, STUDY_ABOUT, WEEKDAY, FREQUENCY, LOCATION, CAPACITY, MEMBERS_COUNT, VACANCY, IS_OPEN, CATEGORY_CODE, VIEWS, HOST_ID)
+VALUES('{id}', '{title}', '{study_about}', '{weekday}', '{frequency}', '{location}', '{capacity}', '{members_count}', '{vacancy}', '{is_open}', {category_code}, {views}, '{host_id}');\n'''
 
 def make_studyuser_insert_statement(user_id, study_id, is_accepted, temp_bio):
     return f'''INSERT INTO STUDY_USER(USER_ID, STUDY_ID, IS_ACCEPTED, TEMP_BIO) VALUES('{user_id}', '{study_id}', {is_accepted}, '{temp_bio}');\n'''
@@ -41,11 +45,12 @@ with open('reset.sql', 'w') as f:
     f.write('DELETE FROM BOOKMARK;')
     f.write('DELETE FROM STUDY_USER;')
     f.write('DELETE FROM STUDY;')
-    f.write('DELETE FROM UserProfile;')
+    f.write('DELETE FROM USER_PROFILE;')
     f.write('DELETE FROM USER_INTEREST_CATEGORY;')
     f.write('DELETE FROM USER_METOO_COMMENT;')
     f.write('DELETE FROM USER;')
     f.write('DELETE FROM CATEGORY;')
+    f.write('INSERT INTO CATEGORY(CODE, MAIN, SUB) VALUES(100, \'프로그래밍\', \'c/c++\'), (101, \'프로그래밍\', \'자바스크립트\'), (200, \'어학\', \'토익\'), (201, \'어학\', \'토플\');')
     f.write('source userdata.sql;')
     f.write('source studydata.sql;')
     f.write('source userprofiledata.sql;')
@@ -53,7 +58,6 @@ with open('reset.sql', 'w') as f:
     f.write('source bookmarkdata.sql;')
     f.write('source commentdata.sql;')
     f.write('source notificationdata.sql;')
-    f.write('INSERT INTO CATEGORY(CODE, MAIN, SUB) VALUES(100, \'프로그래밍\', \'c/c++\'), (101, \'프로그래밍\', \'자바스크립트\'), (200, \'어학\', \'토익\'), (201, \'어학\', \'토플\');')
     f.write('source userinterestcategorydata.sql;')
     f.write('source usermetoocommentdata.sql;')
 
@@ -67,14 +71,19 @@ with open('userdata.sql', 'w') as f:
 with open('userprofiledata.sql', 'w') as f:
     for i in range(user_number):
         stmt = make_user_profile_insert_statement(user_ids[i], f'user{i}', 'dept', 'grade', 'bio',
-                f'user{i}\\\'s about', 0, 0, 0, 'email1', 'email2', 'email3', 'link1', 'link2')
+                f'user{i} about', 0, 0, 0, 'email1', 'email2', 'email3', 'link1', 'link2')
         f.write(stmt)
 
 # study table
 with open('studydata.sql', 'w') as f:
     for i in range(study_number):
-        stmt = make_study_insert_statement(study_ids[i], '2021-12-{}'.format(20 - random.randint(1, 19)),
-                f'study{i}', f'study{i}\\\'s content', 0, 0, 0, 0, 0, 0, 0, 0, 0, user_ids[i // study_number])
+        capacity = random.randint(4, 10)
+        members_count = random.randint(1, capacity)
+        vacancy = capacity - members_count
+        stmt = make_study_insert_statement(study_ids[i], f'study{i}', f'study{i}s content',
+                weekday_enum[random.randint(0, len(weekday_enum) - 1)], frequency_enum[random.randint(0, len(frequency_enum) - 1)],
+                location_enum[random.randint(0, len(location_enum) - 1)], random.randint(5, 10),
+                capacity, members_count, vacancy, 101, 0, user_ids[i // study_number])
         f.write(stmt)
 
 # study_user table
