@@ -4,6 +4,7 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  OneToOne,
   ManyToOne,
   ManyToMany,
   JoinColumn,
@@ -11,6 +12,31 @@ import {
 } from 'typeorm';
 import User from './UserEntity';
 import Category from './CategoryEntity';
+
+enum WeekDayEnum {
+  MON = '월',
+  TUE = '화',
+  WED = '수',
+  THU = '목',
+  FRI = '금',
+  SAT = '토',
+  SUN = '일',
+}
+enum FrequencyEnum {
+  ONCE = '1회',
+  TWICE = '주 2-4회',
+  MORE = '주 5회 이상',
+}
+enum LocationEnum {
+  NO_CONTACT = '비대면',
+  ROOM = '학교 스터디룸',
+  LIBRARY = '중앙도서관',
+  S_CAFE = '스터디카페',
+  CAFE = '일반카페',
+  LOC1 = '흑석, 상도',
+  LOC2 = '서울대입구, 낙성대',
+  ELSE = '기타',
+}
 
 @Entity({ name: 'STUDY' })
 export default class Study extends BaseEntity {
@@ -26,19 +52,16 @@ export default class Study extends BaseEntity {
   @Column({ name: 'STUDY_ABOUT' })
   studyAbout!: string;
 
-  @Column('int', { name: 'TIME' })
-  time!: number;
+  @Column('enum', { enum: WeekDayEnum, name: 'WEEKDAY' })
+  weekday!: WeekDayEnum;
 
-  @Column('int', { name: 'WEEKDAY' })
-  weekday!: number;
+  @Column('enum', { enum: FrequencyEnum, name: 'FREQUENCY' })
+  frequency!: FrequencyEnum;
 
-  @Column('int', { name: 'FREQUENCY' })
-  frequency!: number;
+  @Column('enum', { enum: LocationEnum, name: 'LOCATION' })
+  location!: LocationEnum;
 
-  @Column({ name: 'LOCATION' })
-  location!: string;
-
-  @ManyToOne((type) => User, (user) => user.id)
+  @ManyToOne(() => User, (user) => user.id)
   @JoinColumn({ name: 'HOST_ID' })
   hostId!: User;
 
@@ -54,9 +77,9 @@ export default class Study extends BaseEntity {
   @Column({ name: 'IS_OPEN' })
   isOpen!: boolean;
 
-  @ManyToMany(() => Category)
-  @JoinTable({ name: 'STUDY_CATEGORY' })
-  category!: Category[];
+  @OneToOne(() => Category, (category) => category.code)
+  @JoinTable()
+  categoryCode!: Category;
 
   @Column('int', { name: 'VIEWS' })
   views!: number;

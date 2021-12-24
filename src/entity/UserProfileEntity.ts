@@ -32,6 +32,9 @@ export default class UserProfile {
   @Column({ name: 'SHOW_DEPT' })
   showDept!: boolean;
 
+  @Column({ name: 'SHOW_GRADE' })
+  showGrade!: boolean;
+
   @Column({ name: 'SHOW_ABOUT' })
   showAbout!: boolean;
 
