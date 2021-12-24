@@ -4,7 +4,6 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  OneToOne,
   ManyToOne,
   ManyToMany,
   JoinColumn,
@@ -77,7 +76,7 @@ export default class Study extends BaseEntity {
   @Column({ name: 'IS_OPEN' })
   isOpen!: boolean;
 
-  @OneToOne(() => Category, (category) => category.code)
+  @ManyToOne(() => Category, (category) => category.code)
   @JoinColumn({ name: 'CATEGORY_CODE' })
   categoryCode!: Category;
 
