@@ -82,8 +82,7 @@ export const saveUser = async (req: Request, res: Response) => {
  */
 export const changeUserRole = async (req: Request, res: Response) => {
   const BAD_REQUEST = 'request is not valid';
-  const UNAUTHORIZED_ID = 'id not valid';
-  const UNAUTHORIZED_TOKEN = 'token is expired';
+  const UNAUTHORIZED = 'id not valid';
   const NOT_FOUND = 'no user with given id found';
   const OK = '사용자 권한 수정 성공';
 
@@ -95,8 +94,7 @@ export const changeUserRole = async (req: Request, res: Response) => {
       id: string;
       exp: number;
     };
-    if (decoded.id !== id) throw new Error(UNAUTHORIZED_ID);
-    if (decoded.exp * 1000 < Date.now()) throw new Error(UNAUTHORIZED_TOKEN);
+    if (decoded.id !== id) throw new Error(UNAUTHORIZED);
 
     const result = await getRepository(User)
       .createQueryBuilder()
@@ -117,10 +115,10 @@ export const changeUserRole = async (req: Request, res: Response) => {
       res
         .status(404)
         .json({ message: '회원가입 실패: ' + (e as Error).message });
-    } else if ((e as Error).message === UNAUTHORIZED_ID) {
+    } else if ((e as Error).message === UNAUTHORIZED) {
       res.status(403).json({ message: '회원가입 실패: ' + 'id 변조됨' });
-    } else if ((e as Error).message === UNAUTHORIZED_TOKEN) {
-      res.status(403).json({ message: '회원가입 실패: ' + UNAUTHORIZED_TOKEN });
+    } else if ((e as Error).message.includes('expire')) {
+      res.status(403).json({ message: '회원가입 실패: ' + '토큰 만료됨' });
     } else {
       res.status(400).json({ message: '회원가입 실패: ' + BAD_REQUEST });
     }
