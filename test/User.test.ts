@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { Connection, ConnectionOptions, createConnection } from 'typeorm';
 import app from '../src';
@@ -101,6 +102,32 @@ describe('회원가입 api', () => {
     // then
     expect(res.statusCode).toBe(403);
     expect(message).toContain(invalidUserIdLabel);
+    expect(id).toBeFalsy();
+  });
+
+  test('이메일 링크를 클릭할 시 토큰이 만료되었을 경우 403 응답을 반환한다', async () => {
+    // given
+    const expiredTokenLabel = '회원가입 실패';
+    const repo = conn.getRepository(User);
+    const user = await repo.findOne();
+    const invalidToken = jwt.sign(
+      { id: user?.id },
+      process.env.SIGNUP_TOKEN_SECRET!,
+      {
+        algorithm: 'HS256',
+        expiresIn: 0,
+      }
+    );
+
+    // when
+    const res = await request(app)
+      .patch(`/api/user/role/${user?.id}`)
+      .send({ token: invalidToken });
+    const { message, id } = res.body;
+
+    // then
+    expect(res.statusCode).toBe(403);
+    expect(message).toContain(expiredTokenLabel);
     expect(id).toBeFalsy();
   });
 
