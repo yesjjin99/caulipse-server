@@ -1,4 +1,11 @@
-import { Entity, BaseEntity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+  Entity,
+  BaseEntity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+} from 'typeorm';
+import Study from './StudyEntity';
 
 @Entity({ name: 'CATEGORY' })
 export default class Category extends BaseEntity {
@@ -12,4 +19,7 @@ export default class Category extends BaseEntity {
   // enum 타입으로 수정 필요
   @Column({ name: 'SUB' })
   sub!: string;
+
+  @OneToMany(() => Study, (study) => study.categoryCode)
+  studyIds!: Study[];
 }

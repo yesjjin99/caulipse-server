@@ -6,7 +6,7 @@
   "author": "rudy3091 <grayblack313@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start:dev": "NODE_ENV=dev nodemon --watch 'src/**/*.ts' --ignore 'test/**' --exec 'ts-node src/index.ts'",
+    "start:dev": "NODE_ENV=dev nodemon --watch 'src/**/*.ts' --ext 'ts, js, json' --ignore 'test/**' --exec 'ts-node src/index.ts'",
     "test": "NODE_ENV=test jest --detectOpenHandles --forceExit"
   },
   "dependencies": {
