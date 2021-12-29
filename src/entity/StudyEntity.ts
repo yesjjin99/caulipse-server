@@ -97,3 +97,77 @@ export default class Study extends BaseEntity {
   })
   bookmarks!: User[];
 }
+
+/**
+ * @swagger
+ * definitions:
+ *  Study:
+ *    type: object
+ *    properties:
+ *      id:
+ *        type: string
+ *        format: uuid
+ *        description: "개별 스터디 구분하는 고유 id"
+ *      createdAt:
+ *        type: string
+ *        format: date-time
+ *        description: "스터디 등록 날짜와 시간"
+ *      title:
+ *        type: string
+ *        description: "스터디 이름"
+ *      studyAbout:
+ *        type: string
+ *        description: "스터디 내용"
+ *      weekday:
+ *        type: string
+ *        enum:
+ *        - "월"
+ *        - "화"
+ *        - "수"
+ *        - "목"
+ *        - "금"
+ *        - "토"
+ *        - "일"
+ *        description: "스터디 요일"
+ *      frequency:
+ *        type: string
+ *        enum:
+ *        - "1회"
+ *        - "주 2-4회"
+ *        - "주 5회 이상"
+ *        description: "스터디 빈도"
+ *      location:
+ *        type: string
+ *        enum:
+ *        - "비대면"
+ *        - "학교 스터디룸"
+ *        - "중앙도서관"
+ *        - "스터디카페"
+ *        - "일반카페"
+ *        - "흑석, 상도"
+ *        - "서울대입구, 낙성대"
+ *        - "기타"
+ *        description: "스터디 장소"
+ *      hostId:
+ *        type: string
+ *        format: uuid
+ *        description: "스터디 host의 id"
+ *      capacity:
+ *        type: integer
+ *        description: "스터디 정원"
+ *      membersCount:
+ *        type: integer
+ *        description: "현재 스터디 참가인원수"
+ *      vacancy:
+ *        type: integer
+ *        description: "현재 빈자리 수"
+ *      isOpen:
+ *        type: boolean
+ *        description: "모집중 여부"
+ *      categoryCode:
+ *        $ref: "#/definitions/Category"
+ *        description: "스터디의 카테고리 코드"
+ *      views:
+ *        type: integer
+ *        description: "현재 스터디 조회수"
+ */

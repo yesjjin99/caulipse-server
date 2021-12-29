@@ -23,3 +23,24 @@ export default class Category extends BaseEntity {
   @OneToMany(() => Study, (study) => study.categoryCode)
   studyIds!: Study[];
 }
+
+/**
+ * @swagger
+ * definitions:
+ *  Category:
+ *    type: object
+ *    properties:
+ *      code:
+ *        type: integer
+ *        description: "카테고리 고유번호"
+ *      main:
+ *        type: string
+ *        enum:
+ *        - "상위"
+ *        description: "상위 카테고리"
+ *      sub:
+ *        type: string
+ *        enum:
+ *        - "하위"
+ *        description: "하위 카테고리"
+ */
