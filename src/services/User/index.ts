@@ -87,8 +87,10 @@ export const changeUserRole = async (req: Request, res: Response) => {
   const OK = '사용자 권한 수정 성공';
 
   try {
-    // TODO: id -> userid 로 수정
-    const id = req.params.id;
+    if (!req.user || !(req.user as { id: string }).id)
+      throw new Error(UNAUTHORIZED);
+
+    const { id } = req.user as { id: string };
     const { token } = req.body;
     const decoded = jwt.verify(token, process.env.SIGNUP_TOKEN_SECRET!) as {
       id: string;
