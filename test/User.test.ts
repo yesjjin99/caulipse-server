@@ -67,7 +67,7 @@ describe('회원가입 api', () => {
 
     // when
     const res = await request(app)
-      .patch(`/api/user/role/${user?.id}`)
+      .patch(`/api/user/${user?.id}/role`)
       .send({ token: user?.token });
     const { message, id } = res.body;
     const updatedUser = await repo.findOne({ id: user?.id });
@@ -95,7 +95,7 @@ describe('회원가입 api', () => {
 
     // when
     const res = await request(app)
-      .patch(`/api/user/role/${invalidUserId}`)
+      .patch(`/api/user/${invalidUserId}/role`)
       .send({ token: user?.token });
     const { message, id } = res.body;
 
@@ -121,7 +121,7 @@ describe('회원가입 api', () => {
 
     // when
     const res = await request(app)
-      .patch(`/api/user/role/${user?.id}`)
+      .patch(`/api/user/${user?.id}/role`)
       .send({ token: invalidToken });
     const { message, id } = res.body;
 
@@ -140,7 +140,7 @@ describe('회원가입 api', () => {
 
     // when
     const res = await request(app)
-      .patch(`/api/user/role/${user?.id}`)
+      .patch(`/api/user/${user?.id}/role`)
       .send({ token: invalidToken });
     const { message, id } = res.body;
 
@@ -171,7 +171,7 @@ describe('회원가입 api', () => {
 
     // when
     const res = await request(app)
-      .patch(`/api/user/role/${user?.id}`)
+      .patch(`/api/user/${user?.id}/role`)
       .send({ token: user?.token });
     const { message, id } = res.body;
 
