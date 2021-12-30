@@ -13,6 +13,7 @@ import rootRouter from './routes';
 const swaggerSpec = swaggerJSDoc(swaggerOption);
 
 const app = express();
+app.use(express.json());
 app.use('/', rootRouter);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
