@@ -10,8 +10,9 @@ import Comment from './CommentEntity';
 import Notification from './NotificationEntity';
 import Category from './CategoryEntity';
 
-enum UserRoleEnum {
+export enum UserRoleEnum {
   GUEST = 'GUEST',
+  USER = 'USER',
   ADMIN = 'ADMIN',
 }
 

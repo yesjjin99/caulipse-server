@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import helloWorld from '../../hello-world';
+import { changeUserRole } from '../../../services/User';
 
 const router = Router();
-router.patch('/:id', helloWorld);
+router.patch('/:id', changeUserRole);
 
 export default router;
