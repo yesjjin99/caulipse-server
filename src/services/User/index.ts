@@ -126,3 +126,14 @@ export const changeUserRole = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    res.cookie('accessToken', email, { httpOnly: true });
+    res.cookie('refreshToken', password, { httpOnly: true });
+    res.json({ message: 'ok' });
+  } catch (e) {
+    res.status(400).json({ message: (e as Error).message });
+  }
+};
