@@ -93,4 +93,30 @@ describe('로그인 api', () => {
     expect(decoded.id).toBe(userId);
     expect(decoded.email).toBe(email);
   });
+
+  test('리프레시 토큰에도 유저의 id와 email값이 저장된다', async () => {
+    // given
+    const email = 'test@example.com';
+    const password = 'test';
+    const res = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = res.headers['set-cookie'].map((cookie: string) =>
+      parseCookie(cookie)
+    );
+    const token = cookies.find(
+      (cookie: { name: string; value: string }) =>
+        cookie.name === 'refreshToken'
+    ).value;
+
+    // when
+    const decoded = jwt.verify(token, process.env.SIGNUP_TOKEN_SECRET!) as {
+      id: string;
+      email: string;
+    };
+
+    // then
+    expect(decoded.id).toBe(userId);
+    expect(decoded.email).toBe(email);
+  });
 });
