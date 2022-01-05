@@ -6,13 +6,15 @@ import {
   createConnection,
   getRepository,
 } from 'typeorm';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import User, { UserRoleEnum } from '../src/entity/UserEntity';
 import app from '../src';
 import { db } from '../src/config/db';
-import bcrypt from 'bcrypt';
 import { parseCookie } from '../src/utils/cookie';
 
 let conn: Connection;
+let userId: string;
 
 beforeAll(async () => {
   conn = await createConnection({
@@ -21,14 +23,15 @@ beforeAll(async () => {
   } as ConnectionOptions);
 
   const password = bcrypt.hashSync('test', 10);
+  userId = randomUUID();
 
   await getRepository(User)
     .createQueryBuilder()
     .insert()
     .values({
-      id: randomUUID(),
+      id: userId,
       email: 'test@example.com',
-      password: password,
+      password,
       isLogout: false,
       token: '',
       role: UserRoleEnum.USER,
@@ -64,5 +67,30 @@ describe('로그인 api', () => {
     // then
     expect(accessToken).not.toBe(-1);
     expect(refreshToken).not.toBe(-1);
+  });
+
+  test('액세스 토큰에는 유저의 id와 email값이 저장된다', async () => {
+    // given
+    const email = 'test@example.com';
+    const password = 'test';
+    const res = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = res.headers['set-cookie'].map((cookie: string) =>
+      parseCookie(cookie)
+    );
+    const token = cookies.find(
+      (cookie: { name: string; value: string }) => cookie.name === 'accessToken'
+    ).value;
+
+    // when
+    const decoded = jwt.verify(token, process.env.SIGNUP_TOKEN_SECRET!) as {
+      id: string;
+      email: string;
+    };
+
+    // then
+    expect(decoded.id).toBe(userId);
+    expect(decoded.email).toBe(email);
   });
 });
