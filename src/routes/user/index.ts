@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import userIdRouter from './userid';
 import profileRouter from './profile';
+import loginRouter from './login';
 import { saveUser } from '../../services/User';
 
 const router = Router();
@@ -16,5 +17,6 @@ router.use(
   userIdRouter
 );
 router.use('/profile', profileRouter);
+router.use('/login', loginRouter);
 
 export default router;
