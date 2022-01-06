@@ -12,7 +12,7 @@ import {
 import User from './UserEntity';
 import Category from './CategoryEntity';
 
-enum WeekDayEnum {
+export enum WeekDayEnum {
   MON = '월',
   TUE = '화',
   WED = '수',
@@ -21,12 +21,12 @@ enum WeekDayEnum {
   SAT = '토',
   SUN = '일',
 }
-enum FrequencyEnum {
+export enum FrequencyEnum {
   ONCE = '1회',
   TWICE = '주 2-4회',
   MORE = '주 5회 이상',
 }
-enum LocationEnum {
+export enum LocationEnum {
   NO_CONTACT = '비대면',
   ROOM = '학교 스터디룸',
   LIBRARY = '중앙도서관',

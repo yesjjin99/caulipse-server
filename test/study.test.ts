@@ -2,19 +2,54 @@ import request from 'supertest';
 import app from '../src';
 import { db } from '../src/config/db';
 import { Connection, ConnectionOptions, createConnection } from 'typeorm';
-import User from '../src/entity/UserEntity';
-import Category from '../src/entity/CategoryEntity';
 
 let conn: Connection;
 
 beforeAll(async () => {
   conn = await createConnection({
     ...db,
+    database: process.env.DB_DATABASE_TEST,
   } as ConnectionOptions);
 });
 
 afterAll(async () => {
   conn.close();
+});
+
+describe('GET /api/study', () => {
+  it('스터디 조회 성공', async () => {
+    await request(app).get('/api/study').expect(200).end();
+  });
+
+  it('row_num 갯수만큼 조회', async () => {
+    const RequestBody = {
+      row_num: 12,
+      page_num: 1,
+    };
+    const res = await request(app)
+      .get('/api/study')
+      .expect(200)
+      .query({ RequestBody });
+
+    expect(res.body).toHaveLength(RequestBody.row_num);
+  });
+
+  it('필터링 성공', async () => {
+    const RequestBody = {
+      frequency: 'ONCE',
+      weekday: 'TUE',
+      location: 'CAFE',
+      order_by: 'latest',
+    };
+    const res = await request(app)
+      .get('/api/study')
+      .expect(200)
+      .query({ RequestBody });
+
+    expect(res.body.frequency).toBe(RequestBody.frequency);
+    expect(res.body.weekday).toBe(RequestBody.weekday);
+    expect(res.body.location).toBe(RequestBody.location);
+  });
 });
 
 describe('POST /api/study', () => {
@@ -26,32 +61,26 @@ describe('POST /api/study', () => {
     frequency: '주 2~4회',
     location: '학교 스터디룸',
     capacity: 10,
-    hostId: '065336d4-e309-4304-b739-268e7f3f6fec',
     categoryCode: 101,
   };
 
   it('스터디 생성 성공', async () => {
-    const req = await request(app).post('/api/study').send(studyData);
-    const userRepo = conn.getRepository(User);
-    const user = await userRepo.findOne(studyData.hostId);
+    Object.defineProperty(window.document, 'cookie', {
+      writable: true,
+      value: 'userId=0a6e3059-f576-4593-a66d-6e7c447b99c7',
+    });
 
-    const categoryRepo = conn.getRepository(Category);
-    const category = await categoryRepo.findOne(studyData.categoryCode);
-
-    expect(req.statusCode).toBe(201);
-
-    expect(user).toBeTruthy();
-    expect(category).toBeTruthy();
+    await request(app).post('/api/study').expect(201).send(studyData);
   });
 
   // 회원가입 되어있지 않은 사용자인 경우 추가
   it('로그인이 되어있지 않으면 401 발생', async () => {
-    const req = await request(app).post('/api/study').send();
-    const userRepo = conn.getRepository(User);
-    const user = await userRepo.findOne(studyData.hostId);
+    Object.defineProperty(window.document, 'cookie', {
+      writable: true,
+      value: 'userId=wrong',
+    });
 
-    expect(req.statusCode).toBe(401);
-    expect(user?.isLogout).toBeTruthy();
+    await request(app).post('/api/study').expect(401).send();
   });
 
   it('title, weekday, frequency, location, capacity, categoryCode 입력하지 않으면 401 발생', async () => {
@@ -62,18 +91,13 @@ describe('POST /api/study', () => {
       frequency: null,
       location: null,
       capacity: null,
-      hostId: '065336d4-e309-4304-b739-268e7f3f6fec',
       categoryCode: null,
     };
-    const req = await request(app).post('/api/study').send(Data);
+    Object.defineProperty(window.document, 'cookie', {
+      writable: true,
+      value: 'userId=0a6e3059-f576-4593-a66d-6e7c447b99c7',
+    });
 
-    expect(req.statusCode).toBe(401);
-
-    expect(Data.title).toBeFalsy();
-    expect(Data.weekday).toBeFalsy();
-    expect(Data.frequency).toBeFalsy();
-    expect(Data.location).toBeFalsy();
-    expect(Data.capacity).toBeFalsy();
-    expect(Data.categoryCode).toBeFalsy();
+    await request(app).post('/api/study').expect(401).send(Data);
   });
 });
