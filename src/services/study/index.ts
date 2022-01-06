@@ -168,7 +168,7 @@ export const createStudy = async (req: Request, res: Response) => {
 
     res.status(201).json({ message: 'Created. 새로운 스터디 생성됨.' });
     // 스터디 상세 화면으로 이동하도록 추가
-    res.redirect('/api/study/detail/:studyId');
+    res.redirect('/api/study/detail/:id');
   } catch (e) {
     res.json({ error: (e as Error).message || (e as Error).toString() });
   }
