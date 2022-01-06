@@ -30,6 +30,23 @@ import jwt from 'jsonwebtoken';
  *            type: string
  *            example: abcd1212
  *            description: 사용자가 사용할 비밀번호(프론트단에선 암호화할 필요x)
+ *      responses:
+ *        "201":
+ *          description: "올바른 요청"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "회원가입 성공"
+ *        "400":
+ *          description: "요청 body에 이메일 또는 비밀번호 값이 없는 경우입니다"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "회원가입 실패: no email or password in request body"
  */
 export const saveUser = async (req: Request, res: Response) => {
   try {
@@ -58,7 +75,7 @@ export const saveUser = async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /user/role/:userid:
+ * /user/:userid/role:
  *  patch:
  *    tags:
  *    - user
@@ -67,7 +84,7 @@ export const saveUser = async (req: Request, res: Response) => {
  *    parameters:
  *    - in: path
  *      name: userid
- *      description: 회원가입하는 사용자의 id (요청 경로의 '-'를 허용해야하나?)
+ *      description: 회원가입하는 사용자의 id
  *      required: true
  *      example: 15f6d6ee-32e2-4036-b050-fa79e38dcd36
  *    - in: body
@@ -79,6 +96,41 @@ export const saveUser = async (req: Request, res: Response) => {
  *            type: string
  *            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUxYjg0M2I5LWE5ZTEtNDk3Mi05NWNiLWVmYTcxYzY2ODI5NSIsImlhdCI6MTY0MDYzMDg2MiwiZXhwIjoxNjQwNzE3MjYyfQ.zLJtNN-VCuYlghtE2v0yDJbz7YuxedGHKLt6CW7tUnA
  *            description: 사용자를 인증할 jwt토큰, email의 링크에 쿼리스트링으로 보내줄 예정
+ *      responses:
+ *        "200":
+ *          description: "올바른 요청"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "사용자 권한 수정 성공"
+ *        "400":
+ *          description: "아래 두 에러가 아닌 다른 이유의 에러입니다. 코드 실행중 에러가 발생한 상황입니다"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "회원가입 실패: request is not valid"
+ *        "403":
+ *          description: "전달한 토큰값에 저장된 사용자 id와 url 경로상의 id가 일치하지 않거나, 토큰이 만료된 경우입니다"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example:
+ *                - "회원가입 실패: id 변조됨"
+ *                - "회원가입 실패 :토큰 만료됨"
+ *        "404":
+ *          description: "전달된 userid값이 데이터베이스에 없는 경우입니다"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "회원가입 실패: no user with given id found"
  */
 export const changeUserRole = async (req: Request, res: Response) => {
   const BAD_REQUEST = 'request is not valid';
