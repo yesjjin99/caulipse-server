@@ -19,14 +19,14 @@ export const renewAccessToken = (
   try {
     const decoded = jwt.verify(
       cookie.refreshToken,
-      process.env.SIGNUP_TOKEN_SECRET!
+      process.env.SIGNUP_TOKEN_SECRET as string
     ) as {
       id: string;
     };
 
     const newAccessToken = jwt.sign(
       { id: decoded.id },
-      process.env.SIGNUP_TOKEN_SECRET!,
+      process.env.SIGNUP_TOKEN_SECRET as string,
       {
         algorithm: 'HS256',
         expiresIn: '3h',
