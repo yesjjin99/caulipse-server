@@ -250,7 +250,7 @@ export const login = async (req: Request, res: Response) => {
     if (!isUser) throw new Error(UNAUTHORIZED);
 
     const accessToken = jwt.sign(
-      { id: user.id, email: user.email },
+      { id: user.id },
       process.env.SIGNUP_TOKEN_SECRET as string,
       {
         algorithm: 'HS256',

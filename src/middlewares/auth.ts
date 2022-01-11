@@ -13,8 +13,8 @@ export const checkAccessToken = (
     const decoded = jwt.verify(
       accessToken,
       process.env.SIGNUP_TOKEN_SECRET!
-    ) as { id: string; email: string };
-    req.user = { id: decoded.id, email: decoded.email };
+    ) as { id: string };
+    req.user = { id: decoded.id };
 
     next();
   } catch (e) {
