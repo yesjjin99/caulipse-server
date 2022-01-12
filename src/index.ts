@@ -10,7 +10,6 @@ import swaggerJSDoc from 'swagger-jsdoc';
 
 import { db } from './config/db';
 import rootRouter from './routes';
-import { checkToken } from './middlewares/auth';
 
 const swaggerSpec = swaggerJSDoc(swaggerOption);
 
@@ -18,7 +17,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-app.use('/', checkToken, rootRouter);
+app.use('/', rootRouter);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
 if (process.env.NODE_ENV !== 'test') {
