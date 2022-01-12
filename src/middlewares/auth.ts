@@ -1,23 +1,57 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import { getRepository } from 'typeorm';
+import User from '../entity/UserEntity';
 
-export const checkAccessToken = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
+export const generateToken = (payload: Record<string, string>): string => {
+  const token = jwt.sign(payload, process.env.SIGNUP_TOKEN_SECRET as string, {
+    algorithm: 'HS256',
+    expiresIn: '3h',
+  });
+  return token;
+};
+
+export const refresh = async (req: Request, res: Response) => {
   try {
-    const accessToken = req.cookies.accessToken;
-    if (!accessToken) throw new Error('먼저 로그인해야합니다');
+    const { refreshToken } = req.cookies;
+    if (!refreshToken) throw new Error('리프레시 토큰 없음');
 
     const decoded = jwt.verify(
+      refreshToken,
+      process.env.SIGNUP_TOKEN_SECRET as string
+    ) as { id: string; email: string };
+
+    const user = await getRepository(User).findOne({ id: decoded.id });
+    if (user?.id !== decoded.id) throw new Error('id 값 오류');
+
+    const newAccessToken = generateToken({ id: decoded.id });
+
+    res.cookie('accessToken', newAccessToken, {
+      httpOnly: true,
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 3),
+    });
+  } catch (e) {
+    res.status(403).json({ message: (e as Error).message });
+  }
+};
+
+export const checkToken = (req: Request, res: Response, next: NextFunction) => {
+  const { accessToken, refreshToken } = req.cookies;
+
+  if (!accessToken && !refreshToken) {
+    res.status(401).json({ message: '로그인이 필요한 서비스입니다' });
+    return;
+  }
+
+  try {
+    const decoded = jwt.verify(
       accessToken,
-      process.env.SIGNUP_TOKEN_SECRET!
+      process.env.SIGNUP_TOKEN_SECRET as string
     ) as { id: string };
     req.user = { id: decoded.id };
 
     next();
   } catch (e) {
-    res.status(403).json({ message: (e as Error).message });
+    res.status(401).json({ message: (e as Error).message });
   }
 };
