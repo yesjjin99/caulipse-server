@@ -37,11 +37,30 @@ export const refresh = async (req: Request, res: Response) => {
 };
 
 // 요청의 쿠키에 토큰이 없다면 401 응답
-export const checkToken = (req: Request, res: Response, next: NextFunction) => {
+export const checkToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { accessToken, refreshToken } = req.cookies;
 
   if (!accessToken && !refreshToken) {
     res.status(401).json({ message: '로그인이 필요한 서비스입니다' });
+    return;
+  }
+
+  if (!accessToken && refreshToken) {
+    await refresh(req, res);
+    try {
+      const decoded = jwt.verify(
+        refreshToken,
+        process.env.SIGNUP_TOKEN_SECRET as string
+      ) as { id: string };
+      req.user = { id: decoded.id };
+      next();
+    } catch (e) {
+      res.status(401).json({ message: (e as Error).message });
+    }
     return;
   }
 
