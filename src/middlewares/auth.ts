@@ -11,6 +11,7 @@ export const generateToken = (payload: Record<string, string>): string => {
   return token;
 };
 
+// 실행시 새로운 액세스 토큰을 만들어 반환
 export const refresh = async (req: Request, res: Response) => {
   try {
     const { refreshToken } = req.cookies;
@@ -35,6 +36,7 @@ export const refresh = async (req: Request, res: Response) => {
   }
 };
 
+// 요청의 쿠키에 토큰이 없다면 401 응답
 export const checkToken = (req: Request, res: Response, next: NextFunction) => {
   const { accessToken, refreshToken } = req.cookies;
 
