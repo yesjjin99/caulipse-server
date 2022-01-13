@@ -144,7 +144,10 @@ export const changeUserRole = async (req: Request, res: Response) => {
 
     const { id } = req.user as { id: string };
     const { token } = req.body;
-    const decoded = jwt.verify(token, process.env.SIGNUP_TOKEN_SECRET!) as {
+    const decoded = jwt.verify(
+      token,
+      process.env.SIGNUP_TOKEN_SECRET as string
+    ) as {
       id: string;
       exp: number;
     };
@@ -247,8 +250,8 @@ export const login = async (req: Request, res: Response) => {
     if (!isUser) throw new Error(UNAUTHORIZED);
 
     const accessToken = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.SIGNUP_TOKEN_SECRET!,
+      { id: user.id },
+      process.env.SIGNUP_TOKEN_SECRET as string,
       {
         algorithm: 'HS256',
         expiresIn: '3h',
@@ -256,7 +259,7 @@ export const login = async (req: Request, res: Response) => {
     );
     const refreshToken = jwt.sign(
       { id: user.id, email: user.email },
-      process.env.SIGNUP_TOKEN_SECRET!,
+      process.env.SIGNUP_TOKEN_SECRET as string,
       {
         algorithm: 'HS256',
         expiresIn: '14d',
