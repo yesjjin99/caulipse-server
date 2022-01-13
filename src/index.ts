@@ -1,4 +1,5 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import 'reflect-metadata';
 import dotenv from 'dotenv';
 import { createConnection } from 'typeorm';
@@ -14,6 +15,7 @@ const swaggerSpec = swaggerJSDoc(swaggerOption);
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 app.use('/', rootRouter);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
