@@ -7,7 +7,6 @@ dotenv.config();
 import swaggerUI from 'swagger-ui-express';
 import swaggerOption from './config/swagger';
 import swaggerJSDoc from 'swagger-jsdoc';
-
 import { db } from './config/db';
 import rootRouter from './routes';
 
@@ -15,6 +14,7 @@ const swaggerSpec = swaggerJSDoc(swaggerOption);
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use('/', rootRouter);

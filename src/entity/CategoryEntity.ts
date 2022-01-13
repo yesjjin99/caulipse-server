@@ -1,14 +1,8 @@
-import {
-  Entity,
-  BaseEntity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import Study from './StudyEntity';
 
 @Entity({ name: 'CATEGORY' })
-export default class Category extends BaseEntity {
+export default class Category {
   @PrimaryGeneratedColumn({ name: 'CODE' })
   code!: number;
 

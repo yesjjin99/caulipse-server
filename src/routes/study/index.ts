@@ -1,15 +1,25 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import studyIdRouter from './studyid';
 import commentRouter from './comment';
 import detailRouter from './detail';
 import userRouter from './user';
 import { getAllStudy, createStudy } from '../../services/study';
+import { checkAccessToken } from '../../middlewares/auth';
 
 const router = Router();
 router.get('/', getAllStudy);
-router.post('/', createStudy);
+router.post('/', checkAccessToken, createStudy);
 
-router.use('/:studyid', studyIdRouter);
+router.use(
+  '/:id',
+  (req: Request, res: Response, next: NextFunction) => {
+    req.params = {
+      id: req.params.id,
+    };
+    next();
+  },
+  studyIdRouter
+);
 router.use('/comment', commentRouter);
 router.use('/detail', detailRouter);
 router.use('/user', userRouter);

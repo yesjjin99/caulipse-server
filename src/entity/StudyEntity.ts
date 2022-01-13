@@ -1,6 +1,5 @@
 import {
   Entity,
-  BaseEntity,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
@@ -38,7 +37,7 @@ export enum LocationEnum {
 }
 
 @Entity({ name: 'STUDY' })
-export default class Study extends BaseEntity {
+export default class Study {
   @PrimaryGeneratedColumn('uuid', { name: 'ID' })
   id!: string;
 
