@@ -3,7 +3,7 @@ import { getRepository } from 'typeorm';
 import { randomUUID } from 'crypto';
 import Study from '../../entity/StudyEntity';
 import User from '../../entity/UserEntity';
-import { createStudyDTO } from '../../type/study.dto';
+import { createStudyDTO } from '../../types/study.dto';
 import Category from '../../entity/CategoryEntity';
 
 /**
