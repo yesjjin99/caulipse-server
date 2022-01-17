@@ -288,3 +288,17 @@ export const login = async (req: Request, res: Response) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+const findById = async (id: string) => {
+  const user = await getRepository(User)
+    .createQueryBuilder('user')
+    .where('user.id = :id', { id })
+    .getOne();
+
+  if (!user) throw new Error('데이터베이스에 일치하는 사용자 id가 없습니다');
+  // status 404
+
+  return user;
+};
+
+export default { findById };

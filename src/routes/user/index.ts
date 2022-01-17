@@ -2,7 +2,7 @@ import { Request, Response, NextFunction, Router } from 'express';
 import userIdRouter from './userid';
 import profileRouter from './profile';
 import loginRouter from './login';
-import { saveUser } from '../../services/User';
+import { saveUser } from '../../services/user';
 
 const router = Router();
 router.post('/', saveUser);
