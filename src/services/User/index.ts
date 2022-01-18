@@ -283,7 +283,7 @@ export const login = async (req: Request, res: Response) => {
     if (err.message === UNAUTHORIZED) {
       res.status(403).json({ message: '로그인 싪패: ' + UNAUTHORIZED });
     } else if (err.message === NOT_FOUND) {
-      res.status(404).json({ message: '로그인 싪패: ' + NOT_FOUND });
+      return res.status(404).json({ message: '로그인 싪패: ' + NOT_FOUND });
     }
     res.status(400).json({ message: err.message });
   }
@@ -295,7 +295,7 @@ const findById = async (id: string) => {
     .where('user.id = :id', { id })
     .getOne();
 
-  if (!user) throw new Error('데이터베이스에 일치하는 사용자 id가 없습니다');
+  if (!user) throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
   // status 404
 
   return user;

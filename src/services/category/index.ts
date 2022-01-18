@@ -7,8 +7,7 @@ const findByCode = async (code: number) => {
     .where('category.code = :code', { code })
     .getOne();
 
-  if (!category)
-    throw new Error('데이터베이스에 일치하는 카테고리 code가 없습니다');
+  if (!category) throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
   // status 404
 
   return category;

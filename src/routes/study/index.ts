@@ -4,15 +4,20 @@ import studyUserRouter from './studyUser';
 import bookmarkRouter from './bookmark';
 import commentRouter from './comment';
 import { checkToken } from '../../middlewares/auth';
-import { getAllStudy, createStudy, getStudybyId } from './study.ctrl';
+import {
+  getAllStudy,
+  createStudy,
+  getStudybyId,
+  updateStudy,
+} from './study.ctrl';
 
 const router = Router({ mergeParams: true });
 
 router.get('/', getAllStudy);
-router.post('/', checkToken, createStudy);
+router.post('/', createStudy);
 
 router.get('/:studyid', getStudybyId);
-router.patch('/:studyid', helloWorld);
+router.patch('/:studyid', updateStudy);
 router.delete('/:studyid', helloWorld);
 
 // 스터디 참가 신청 라우터

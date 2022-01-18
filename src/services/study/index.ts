@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import Study from '../../entity/StudyEntity';
 import { orderByEnum, paginationDTO, studyDTO } from '../../types/study.dto';
 import User from '../../entity/UserEntity';
+import userService from '../user';
 import categoryService from '../category';
 
 const getAllStudy = async ({
@@ -57,21 +58,32 @@ const getAllStudy = async ({
   return { perPage_studies, next_cursor };
 };
 
-const createStudy = async (
-  {
-    title,
-    studyAbout,
-    weekday,
-    frequency,
-    location,
-    capacity,
-    categoryCode,
-  }: studyDTO,
-  hostId: User
-) => {
+const findById = async (id: string) => {
+  const study = await getRepository(Study)
+    .createQueryBuilder('study')
+    .where('study.id = :id', { id })
+    .getOne();
+
+  if (!study) throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
+  // ststus 404
+
+  return study;
+};
+
+const createStudy = async ({
+  title,
+  studyAbout,
+  weekday,
+  frequency,
+  location,
+  capacity,
+  hostId,
+  categoryCode,
+}: studyDTO) => {
   const id = randomUUID();
   const date = new Date();
 
+  const user = await userService.findById(hostId);
   const category = await categoryService.findByCode(categoryCode);
 
   const repo = getRepository(Study);
@@ -87,7 +99,7 @@ const createStudy = async (
   study.membersCount = 0;
   study.vacancy = capacity;
   study.isOpen = true;
-  study.hostId = hostId;
+  study.hostId = user;
   study.views = 0;
   study.categoryCode = category;
 
@@ -95,16 +107,32 @@ const createStudy = async (
   return id;
 };
 
-const findById = async (id: string) => {
-  const study = await getRepository(Study)
-    .createQueryBuilder('study')
-    .where('study.id = :id', { id })
-    .getOne();
+const updateStudy = async (
+  studyid: string,
+  {
+    title,
+    studyAbout,
+    weekday,
+    frequency,
+    location,
+    capacity,
+    categoryCode,
+  }: studyDTO
+) => {
+  const repo = getRepository(Study);
+  const study = await findById(studyid);
 
-  if (!study) throw new Error('데이터베이스에 일치하는 스터디 id가 없습니다');
-  // ststus 404
+  if (title) study.title = title;
+  if (studyAbout) study.studyAbout = studyAbout;
+  if (weekday) study.weekday = weekday;
+  if (frequency) study.frequency = frequency;
+  if (location) study.location = location;
+  if (capacity) study.capacity = capacity;
+  if (categoryCode) {
+    study.categoryCode = await categoryService.findByCode(categoryCode);
+  }
 
-  return study;
+  await repo.save(study);
 };
 
-export default { getAllStudy, createStudy, findById };
+export default { getAllStudy, findById, createStudy, updateStudy };
