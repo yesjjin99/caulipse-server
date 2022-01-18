@@ -1,103 +1,131 @@
 import request from 'supertest';
+import {
+  Connection,
+  ConnectionOptions,
+  createConnection,
+  getRepository,
+} from 'typeorm';
+import { randomUUID } from 'crypto';
+import bcrypt from 'bcrypt';
 import app from '../src';
 import { db } from '../src/config/db';
-import { Connection, ConnectionOptions, createConnection } from 'typeorm';
+import Study, {
+  FrequencyEnum,
+  LocationEnum,
+  WeekDayEnum,
+} from '../src/entity/StudyEntity';
+import User, { UserRoleEnum } from '../src/entity/UserEntity';
+import Category from '../src/entity/CategoryEntity';
 
 let conn: Connection;
+let userId: string;
+let studyId: string;
 
 beforeAll(async () => {
   conn = await createConnection({
     ...db,
     database: process.env.DB_DATABASE_TEST,
   } as ConnectionOptions);
+
+  userId = randomUUID();
+  const password = bcrypt.hashSync('test', 10);
+
+  const userRepo = getRepository(User);
+  const user = new User();
+  user.id = userId;
+  user.email = 'test@gmail.com';
+  user.password = password;
+  user.isLogout = false;
+  user.token = '';
+  user.role = UserRoleEnum.USER;
+
+  await userRepo.save(user);
+
+  const categoryRepo = getRepository(Category);
+  const category = new Category();
+  category.code = 101;
+  category.main = '프로그래밍';
+  category.sub = '자바스크립트';
+
+  await categoryRepo.save(category);
 });
 
 afterAll(async () => {
+  await getRepository(Study).createQueryBuilder().delete().execute();
+  await getRepository(User).createQueryBuilder().delete().execute();
+  await getRepository(Category).createQueryBuilder().delete().execute();
+
   conn.close();
 });
 
-describe('GET /api/study', () => {
-  it('스터디 조회 성공', async () => {
-    await request(app).get('/api/study').expect(200).end();
+describe('POST /api/study', () => {
+  //login
+
+  it('body를 포함한 요청을 받으면 새로운 스터디를 생성하고 생성된 아이디를 반환', async () => {
+    const res = await request(app).post('/api/study').send({
+      title: '스터디 제목',
+      studyAbout: '스터디 내용',
+      weekday: WeekDayEnum.MON,
+      frequency: FrequencyEnum.TWICE,
+      location: LocationEnum.CAFE,
+      capacity: 8,
+      hostId: userId,
+      categoryCode: 101,
+    });
+    studyId = res.body.studyId;
+
+    expect(res.status).toBe(201);
+    expect(res.body.studyId).not.toBeNull();
   });
 
-  it('row_num 갯수만큼 조회', async () => {
-    const RequestBody = {
-      row_num: 12,
-      page_num: 1,
-    };
-    const res = await request(app)
-      .get('/api/study')
-      .expect(200)
-      .query({ RequestBody });
+  it('유효하지 않은 body를 포함하거나 body를 포함하지 않은 요청을 받으면 400 응답', async () => {
+    const res = await request(app).post('/api/study').send({ hostId: userId });
 
-    expect(res.body).toHaveLength(RequestBody.row_num);
+    expect(res.status).toBe(400);
   });
 
-  it('필터링 성공', async () => {
-    const RequestBody = {
-      frequency: 'ONCE',
-      weekday: 'TUE',
-      location: 'CAFE',
-      order_by: 'latest',
-    };
-    const res = await request(app)
-      .get('/api/study')
-      .expect(200)
-      .query({ RequestBody });
+  it('로그인이 되어있지 않은 경우 401 응답', async () => {
+    const res = await request(app).post('/api/study').send({
+      title: '스터디 제목',
+      studyAbout: '스터디 내용',
+      weekday: WeekDayEnum.MON,
+      frequency: FrequencyEnum.TWICE,
+      location: LocationEnum.CAFE,
+      capacity: 8,
+      categorycode: 101,
+    });
 
-    expect(res.body.frequency).toBe(RequestBody.frequency);
-    expect(res.body.weekday).toBe(RequestBody.weekday);
-    expect(res.body.location).toBe(RequestBody.location);
+    expect(res.status).toBe(401);
   });
 });
 
-describe('POST /api/study', () => {
-  // 입력하는 스터디 정보
-  const studyData = {
-    title: '스터디 제목',
-    studyAbout: '스터디 상세설명',
-    weekday: '월',
-    frequency: '주 2~4회',
-    location: '학교 스터디룸',
-    capacity: 10,
-    categoryCode: 101,
-  };
-
-  it('스터디 생성 성공', async () => {
-    Object.defineProperty(window.document, 'cookie', {
-      writable: true,
-      value: 'userId=0a6e3059-f576-4593-a66d-6e7c447b99c7',
-    });
-
-    await request(app).post('/api/study').expect(201).send(studyData);
-  });
-
-  // 회원가입 되어있지 않은 사용자인 경우 추가
-  it('로그인이 되어있지 않으면 401 발생', async () => {
-    Object.defineProperty(window.document, 'cookie', {
-      writable: true,
-      value: 'userId=wrong',
-    });
-
-    await request(app).post('/api/study').expect(401).send();
-  });
-
-  it('title, weekday, frequency, location, capacity, categoryCode 입력하지 않으면 401 발생', async () => {
-    const Data = {
-      title: null,
-      studyAbout: '스터디 상세설명',
-      weekday: null,
-      frequency: null,
-      location: null,
-      capacity: null,
-      categoryCode: null,
+describe('GET /api/study', () => {
+  it('query를 포함한 요청을 받으면 필터링, 정렬, 페이지네이션을 거친 후 스터디 목록과 페이지 커서 반환', async () => {
+    const bodyData = {
+      row_num: 1,
+      frequencyFilter: FrequencyEnum.TWICE,
+      weekdayFilter: WeekDayEnum.MON,
+      locationFilter: LocationEnum.CAFE,
     };
-    Object.defineProperty(window.document, 'cookie', {
-      writable: true,
-      value: 'userId=0a6e3059-f576-4593-a66d-6e7c447b99c7',
-    });
 
-    await request(app).post('/api/study').expect(401).send(Data);
+    const res = await request(app).get('/api/study').query(bodyData);
+
+    expect(res.status).toBe(200);
+    expect(res.body).not.toBeNull();
+  });
+});
+
+describe('GET /study/:studyid', () => {
+  it('각 studyid에 따라 모든 스터디 상세 정보 반환', async () => {
+    const res = await request(app).get(`/api/study/${studyId}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.study).toHaveProperty('id', studyId);
+  });
+
+  it('요청된 studyid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
+    const res = await request(app).get('/api/study/wrong');
+
+    expect(res.status).toBe(404);
   });
 });
