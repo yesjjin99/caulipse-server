@@ -375,17 +375,42 @@ export const getStudybyId = async (req: Request, res: Response) => {
  */
 
 export const updateStudy = async (req: Request, res: Response) => {
-  const BAD_REQUEST = 'request is not valid';
+  const BAD_REQUEST = 'Request is not valid';
+  const UNAUTHORIZED = '로그인 필요';
+
   try {
     const { studyid } = req.params;
+    const {
+      title,
+      studyAbout,
+      weekday,
+      frequency,
+      location,
+      capacity,
+      hostId, // FIX
+      categoryCode,
+    } = req.body;
 
-    if (!req.body) throw new Error(BAD_REQUEST);
+    if (!hostId) throw new Error(UNAUTHORIZED);
+
+    if (
+      !title ||
+      !studyAbout ||
+      !weekday ||
+      !frequency ||
+      !location ||
+      !capacity ||
+      !categoryCode
+    )
+      throw new Error(BAD_REQUEST);
 
     await studyService.updateStudy(studyid, req.body);
     return res.status(200).json({ message: '스터디 정보 업데이트 성공' });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
       return res.status(400).json({ message: (e as Error).message });
+    } else if ((e as Error).message === UNAUTHORIZED) {
+      return res.status(401).json({ message: (e as Error).message });
     } else {
       return res.status(404).json({ message: (e as Error).message });
     }

@@ -2,7 +2,6 @@ import { getRepository } from 'typeorm';
 import { randomUUID } from 'crypto';
 import Study from '../../entity/StudyEntity';
 import { orderByEnum, paginationDTO, studyDTO } from '../../types/study.dto';
-import User from '../../entity/UserEntity';
 import userService from '../user';
 import categoryService from '../category';
 
@@ -116,6 +115,7 @@ const updateStudy = async (
     frequency,
     location,
     capacity,
+    hostId,
     categoryCode,
   }: studyDTO
 ) => {

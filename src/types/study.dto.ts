@@ -3,8 +3,6 @@ import {
   FrequencyEnum,
   LocationEnum,
 } from '../entity/StudyEntity';
-import User from '../entity/UserEntity';
-import Category from '../entity/CategoryEntity';
 
 export enum orderByEnum {
   LATEST = '최근 등록순',
@@ -27,6 +25,6 @@ export interface studyDTO {
   frequency: FrequencyEnum;
   location: LocationEnum;
   capacity: number;
-  hostId: string;
+  hostId: string; // FIX
   categoryCode: number;
 }

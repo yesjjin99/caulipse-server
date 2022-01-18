@@ -3,7 +3,6 @@ import helloWorld from '../hello-world';
 import studyUserRouter from './studyUser';
 import bookmarkRouter from './bookmark';
 import commentRouter from './comment';
-import { checkToken } from '../../middlewares/auth';
 import {
   getAllStudy,
   createStudy,
@@ -14,9 +13,11 @@ import {
 const router = Router({ mergeParams: true });
 
 router.get('/', getAllStudy);
+// FIX: 액세스 토큰 검증 미들웨어 추가
 router.post('/', createStudy);
 
 router.get('/:studyid', getStudybyId);
+// FIX: 액세스 토큰 검증 미들웨어 추가
 router.patch('/:studyid', updateStudy);
 router.delete('/:studyid', helloWorld);
 
