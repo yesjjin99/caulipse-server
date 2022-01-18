@@ -4,11 +4,11 @@ import commentRouter from './comment';
 import detailRouter from './detail';
 import userRouter from './user';
 import { getAllStudy, createStudy } from '../../services/study';
-import { checkAccessToken } from '../../middlewares/auth';
+import { checkToken } from '../../middlewares/auth';
 
 const router = Router();
 router.get('/', getAllStudy);
-router.post('/', checkAccessToken, createStudy);
+router.post('/', checkToken, createStudy);
 
 router.use(
   '/:id',
