@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { changeUserRole } from '../../../services/User';
+import controller from './role.controller';
 
 const router = Router({ mergeParams: true });
-router.patch('/', changeUserRole);
+router.patch('/', controller.changeUserRole);
 
 export default router;
