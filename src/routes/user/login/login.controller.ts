@@ -1,8 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
-import { getRepository } from 'typeorm';
-import User from '../../../entity/UserEntity';
 import jwt from 'jsonwebtoken';
+import { findUserByEmail } from '../../../services/user';
 
 export default {
   async login(req: Request, res: Response) {
@@ -14,11 +13,7 @@ export default {
       const { email, password } = req.body;
       if (!email || !password) throw new Error(BAD_REQUEST);
 
-      const user = await getRepository(User)
-        .createQueryBuilder()
-        .select()
-        .where('email = :email', { email })
-        .getOne();
+      const user = await findUserByEmail(email);
       if (!user) throw new Error(NOT_FOUND);
 
       const isUser = bcrypt.compareSync(password, user?.password);

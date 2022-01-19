@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { getRepository } from 'typeorm';
-import User, { UserRoleEnum } from '../../../entity/UserEntity';
 import jwt from 'jsonwebtoken';
+import { changeUserRoleById } from '../../../services/user';
 
 export default {
   async changeUserRole(req: Request, res: Response) {
@@ -24,15 +23,7 @@ export default {
       };
       if (decoded.id !== id) throw new Error(UNAUTHORIZED);
 
-      const result = await getRepository(User)
-        .createQueryBuilder()
-        .update()
-        .set({
-          role: UserRoleEnum.USER,
-        })
-        .where('id = :id', { id })
-        .andWhere(`role = 'GUEST'`)
-        .execute();
+      const result = await changeUserRoleById(id);
       if (!result.affected) throw new Error(NOT_FOUND);
       res.json({
         message: OK,

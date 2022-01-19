@@ -1,9 +1,6 @@
-import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { Request, Response } from 'express';
-import { getRepository } from 'typeorm';
-import User, { UserRoleEnum } from '../../entity/UserEntity';
-import { makeSignUpToken } from '../../utils/auth';
+import { saveUser } from '../../services/user';
 
 export default {
   async saveUser(req: Request, res: Response) {
@@ -12,18 +9,8 @@ export default {
       const { email, password } = req.body;
       if (!email || !password)
         throw new Error('no email or password in request body');
-      await getRepository(User)
-        .createQueryBuilder()
-        .insert()
-        .values({
-          id,
-          email,
-          password: bcrypt.hashSync(password, 10),
-          isLogout: false,
-          role: UserRoleEnum.GUEST,
-          token: makeSignUpToken(id),
-        })
-        .execute();
+
+      await saveUser({ id, email, password });
       // TODO: 이메일 전송 로직 추가
       res.status(201).json({ message: '회원가입 성공', id });
     } catch (e) {
