@@ -6,6 +6,7 @@ import notificationRouter from './notification';
 import categoryRouter from './category';
 import controller from './user.controller';
 import helloWorld from '../hello-world';
+import { checkToken } from '../../middlewares/auth';
 
 const router = Router();
 router.post('/', controller.saveUser);
@@ -13,7 +14,7 @@ router.patch('/', helloWorld);
 router.delete('/', helloWorld);
 
 router.use('/:id/role', roleRouter);
-router.use('/notification', notificationRouter);
+router.use('/notification', checkToken, notificationRouter);
 router.use('/category', categoryRouter);
 router.use('/profile', profileRouter);
 router.use('/login', loginRouter);
