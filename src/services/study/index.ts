@@ -137,4 +137,16 @@ const updateStudy = async (
   await repo.save(study);
 };
 
-export default { getAllStudy, findById, createStudy, updateStudy };
+const deleteStudy = async (id: string) => {
+  try {
+    await getRepository(Study)
+      .createQueryBuilder('study')
+      .delete()
+      .where('study.id = :id', { id })
+      .execute();
+  } catch (e) {
+    throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
+  }
+};
+
+export default { getAllStudy, findById, createStudy, updateStudy, deleteStudy };

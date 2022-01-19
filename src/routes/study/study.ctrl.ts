@@ -420,3 +420,58 @@ export const updateStudy = async (req: Request, res: Response) => {
     }
   }
 };
+
+/**
+ * @swagger
+ * paths:
+ *  /study/:studyid:
+ *    delete:
+ *      summary: "스터디 삭제"
+ *      description: "스터디를 삭제하기 위한 엔드포인트입니다"
+ *      tags:
+ *      - "study"
+ *      parameters:
+ *      - name: "studyid"
+ *        in: "path"
+ *        description: "삭제할 스터디 id"
+ *        required: true
+ *        type: string
+ *        format: uuid
+ *      responses:
+ *        200:
+ *          description: "올바른 요청"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "스터디 삭제 성공"
+ *        401:
+ *          description: "로그인이 되어있지 않은 경우"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "로그인 필요"
+ *        404:
+ *          description: "전달한 studyid가 데이터베이스에 없는 경우입니다"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "일치하는 studyid가 없음"
+ */
+
+export const deleteStudy = async (req: Request, res: Response) => {
+  try {
+    // FIX: req.user -> 로그인 확인 코드 추가
+    const { studyid } = req.params;
+
+    await studyService.deleteStudy(studyid);
+    return res.status(200).json({ message: '스터디 삭제 성공' });
+  } catch (e) {
+    return res.status(404).json({ message: (e as Error).message });
+  }
+};

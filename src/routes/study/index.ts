@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import helloWorld from '../hello-world';
 import studyUserRouter from './studyUser';
 import bookmarkRouter from './bookmark';
 import commentRouter from './comment';
@@ -8,6 +7,7 @@ import {
   createStudy,
   getStudybyId,
   updateStudy,
+  deleteStudy,
 } from './study.ctrl';
 
 const router = Router({ mergeParams: true });
@@ -19,7 +19,8 @@ router.post('/', createStudy);
 router.get('/:studyid', getStudybyId);
 // FIX: 액세스 토큰 검증 미들웨어 추가
 router.patch('/:studyid', updateStudy);
-router.delete('/:studyid', helloWorld);
+// FIX: 액세스 토큰 검증 미들웨어 추가
+router.delete('/:studyid', deleteStudy);
 
 // 스터디 참가 신청 라우터
 router.use('/user/:studyid', studyUserRouter);
