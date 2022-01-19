@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction, Router } from 'express';
+import { Router } from 'express';
 import profileRouter from './profile';
 import loginRouter from './login';
 import roleRouter from './role';
@@ -11,16 +11,7 @@ const router = Router();
 router.post('/', saveUser);
 router.patch('/', helloWorld);
 router.delete('/', helloWorld);
-router.use(
-  '/:id/role',
-  (req: Request, res: Response, next: NextFunction) => {
-    req.user = {
-      id: req.params.id,
-    };
-    next();
-  },
-  roleRouter
-);
+router.use('/:id/role', roleRouter);
 router.use('/:id/notification', notificationRouter);
 router.use('/:id/category', categoryRouter);
 
