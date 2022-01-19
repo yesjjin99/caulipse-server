@@ -60,13 +60,17 @@ import studyService from '../../services/study';
  */
 
 export const getAllStudy = async (req: Request, res: Response) => {
-  const row_num = Number(req.query.row_num) || 12; // 한 페이지에서 포함할 스터디의 개수
+  const row_num = req.query.row_num ? Number(req.query.row_num) : 12; // 한 페이지에서 포함할 스터디의 개수
   const frequencyFilter = String(req.query.frequency); // enum
   const weekdayFilter = String(req.query.weekday); // enum
   const locationFilter = String(req.query.location); // enum
-  const order_by = String(req.query.order_by) || orderByEnum.LATEST; // enum
+  const order_by = req.query.order_by
+    ? String(req.query.order_by)
+    : orderByEnum.LATEST; // enum
   const cursor =
-    Number(req.query.cursor) | Date.parse(String(req.query.cursor)); // pagination
+    typeof req.query.cursor === 'number'
+      ? Number(req.query.cursor)
+      : Date.parse(String(req.query.cursor)); // pagination
 
   try {
     const { perPage_studies, next_cursor } = await studyService.getAllStudy({

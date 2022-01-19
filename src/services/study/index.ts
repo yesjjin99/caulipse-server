@@ -18,6 +18,23 @@ const getAllStudy = async ({
 
   const sq = getRepository(Study).createQueryBuilder('study');
 
+  if (order_by === orderByEnum.LATEST) {
+    sq.orderBy('study.createdAt', 'DESC');
+    if (cursor) {
+      sq.where('study.createdAt < :cursor', { cursor });
+    }
+  } else if (order_by === orderByEnum.SMALL_VACANCY) {
+    sq.orderBy('study.vacancy', 'ASC');
+    if (cursor) {
+      sq.where('study.vacancy > :cursor', { cursor });
+    }
+  } else if (order_by === orderByEnum.LARGE_VACANCY) {
+    sq.orderBy('study.vacancy', 'DESC');
+    if (cursor) {
+      sq.where('study.vacancy < :cursor', { cursor });
+    }
+  }
+
   if (frequencyFilter) {
     sq.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
   }
@@ -29,27 +46,12 @@ const getAllStudy = async ({
   }
 
   if (order_by === orderByEnum.LATEST) {
-    sq.orderBy('study.createdAt', 'DESC');
-    if (cursor) {
-      sq.andWhere('study.createdAt < :cursor', { cursor });
-    }
-
     perPage_studies = await sq.limit(row_num).getMany();
     next_cursor = perPage_studies[row_num - 1].createdAt;
   } else if (order_by === orderByEnum.SMALL_VACANCY) {
-    sq.orderBy('study.vacancy', 'ASC');
-    if (cursor) {
-      sq.andWhere('study.vacancy > :cursor', { cursor });
-    }
-
     perPage_studies = await sq.limit(row_num).getMany();
     next_cursor = perPage_studies[row_num - 1].vacancy;
   } else if (order_by === orderByEnum.LARGE_VACANCY) {
-    sq.orderBy('study.vacancy', 'DESC');
-    if (cursor) {
-      sq.andWhere('study.vacancy < :cursor', { cursor });
-    }
-
     perPage_studies = await sq.limit(row_num).getMany();
     next_cursor = perPage_studies[row_num - 1].vacancy;
   }

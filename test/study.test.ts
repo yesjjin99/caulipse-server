@@ -111,7 +111,8 @@ describe('GET /api/study', () => {
     const res = await request(app).get('/api/study').query(bodyData);
 
     expect(res.status).toBe(200);
-    expect(res.body).not.toBeNull();
+    expect(res.body.perPage_studies).not.toBeNull();
+    expect(res.body.next_cursor).not.toBeNull();
   });
 });
 
