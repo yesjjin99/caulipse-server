@@ -2,7 +2,7 @@ import { getRepository } from 'typeorm';
 import { randomUUID } from 'crypto';
 import Study from '../../entity/StudyEntity';
 import { orderByEnum, paginationDTO, studyDTO } from '../../types/study.dto';
-import userService from '../user';
+import { findUserById } from '../user';
 import categoryService from '../category';
 
 const getAllStudy = async ({
@@ -84,7 +84,7 @@ const createStudy = async ({
   const id = randomUUID();
   const date = new Date();
 
-  const user = await userService.findById(hostId);
+  const user = await findUserById(hostId);
   const category = await categoryService.findByCode(categoryCode);
 
   const repo = getRepository(Study);
