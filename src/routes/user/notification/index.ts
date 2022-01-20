@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import helloWorld from '../../../hello-world';
+import helloWorld from '../../hello-world';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 router.get('/', helloWorld);
 // 사용자의 알림 확인 상태 갱신
 router.patch('/:notiId', helloWorld);
