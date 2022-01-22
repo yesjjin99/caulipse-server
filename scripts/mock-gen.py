@@ -5,6 +5,7 @@ user_number = 100
 study_number = 10
 comment_number = 100
 noti_number = 20
+notice_number = 10
 study_user_number = 300
 bookmark_number = 50
 
@@ -12,6 +13,7 @@ user_ids = [str(uuid.uuid4()) for i in range(user_number)]
 study_ids = [str(uuid.uuid4()) for i in range(study_number)]
 comment_ids = [str(uuid.uuid4()) for i in range(comment_number)]
 noti_ids = [str(uuid.uuid4()) for i in range(noti_number)]
+notice_ids = [str(uuid.uuid4()) for i in range(notice_number)]
 
 weekday_enum = ['월', '화', '수', '목', '금', '토', '일']
 frequency_enum = ['1회','주 2-4회','주 5회 이상']
@@ -41,6 +43,7 @@ VALUES('{id}', NULL, '{user_id}', '{study_id}', 0, '{content}');\n'''
 # reset script
 with open('reset.sql', 'w') as f:
     f.write('DELETE FROM COMMENT;')
+    f.write('DELETE FROM NOTICE;')
     f.write('DELETE FROM NOTIFICATION;')
     f.write('DELETE FROM BOOKMARK;')
     f.write('DELETE FROM STUDY_USER;')
@@ -58,6 +61,7 @@ with open('reset.sql', 'w') as f:
     f.write('source bookmarkdata.sql;')
     f.write('source commentdata.sql;')
     f.write('source notificationdata.sql;')
+    f.write('source noticedata.sql;')
     f.write('source userinterestcategorydata.sql;')
     f.write('source usermetoocommentdata.sql;')
 
@@ -122,6 +126,14 @@ with open('notificationdata.sql', 'w') as f:
         stmt = f'''INSERT INTO NOTIFICATION(ID, USER_ID, STUDY_ID, TYPE, `READ`)
 VALUES ('{noti_ids[i]}', '{user_ids[i // 5]}', '{study_ids[i // 5]}', 0, 0);'''
         f.write(stmt)
+
+# notice table
+with open('noticedata.sql', 'w') as f:
+    f.write('INSERT INTO NOTICE(ID, TITLE, ABOUT, VIEWS, HOST_ID) VALUES\n')
+    for i in range(notice_number - 1):
+        stmt = f'''('{notice_ids[i]}', 'NOTICE_TITLE {i}', 'NOTICE_ABOUT {i}', 0, '{user_ids[i // 10]}'),\n'''
+        f.write(stmt)
+    f.write(f'''('{notice_ids[notice_number - 1]}', 'NOTICE_TITLE {notice_number - 1}', 'NOTICE_ABOUT {notice_number - 1}', 0, '{user_ids[notice_number - 1 // 10]}');''')
 
 # user_metoo_comment table
 with open('usermetoocommentdata.sql', 'w') as f:
