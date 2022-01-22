@@ -55,3 +55,21 @@ export const findUserById = async (id: string) => {
 
   return user;
 };
+
+interface UpdateUserDTO {
+  email: string;
+  password: string;
+  isLogout: boolean;
+  token: string;
+  role: UserRoleEnum;
+}
+
+export const updateUserById = async (id: string, data: UpdateUserDTO) => {
+  const { email, password, isLogout, token, role } = data;
+  return await getRepository(User)
+    .createQueryBuilder()
+    .update()
+    .set({ email, password, isLogout, token, role })
+    .where('id = :id', { id })
+    .execute();
+};
