@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { Request, Response } from 'express';
-import { saveUser } from '../../services/user';
+import { saveUser, updateUserById } from '../../services/user';
 
 export default {
   async saveUser(req: Request, res: Response) {
@@ -17,6 +17,21 @@ export default {
       res
         .status(400)
         .json({ message: '회원가입 실패: ' + (e as Error).message });
+    }
+  },
+  async updateUserInfo(req: Request, res: Response) {
+    const NOT_FOUND = 'id 에 해당하는 사용자 없음';
+
+    try {
+      const result = await updateUserById(req.params.id, req.body);
+      if (result.affected === 0) throw new Error(NOT_FOUND);
+      else return res.json({ message: '회원정보 수정 성공' });
+    } catch (e) {
+      if ((e as Error).message === NOT_FOUND) {
+        res.status(404).json({ message: '일치하는 id값 없음' });
+      } else {
+        res.status(400).json({ message: 'request is not valid' });
+      }
     }
   },
 };
@@ -62,4 +77,53 @@ export default {
  *              message:
  *                type: string
  *                example: "회원가입 실패: no email or password in request body"
+ */
+
+/**
+ * @swagger
+ * /user/:userid:
+ *   patch:
+ *     tags:
+ *     - user
+ *     summary: "회원정보 수정"
+ *     description: "사용자의 인증정보를 업데이트하기 위한 엔드포인트입니다. 유저 리프레시토큰, 비밀번호 등의 항목이 해당됩니다."
+ *     parameters:
+ *     - in: "path"
+ *       name: "userid"
+ *       type: string
+ *       format: uuid
+ *       description: "회원정보를 수정할 사용자의 id"
+ *       required: true
+ *     - in: "body"
+ *       name: "body"
+ *       description: "회원정보를 수정할 사용자의 정보 객체"
+ *       required: true
+ *       schema:
+ *         $ref: "#/definitions/User"
+ *
+ *     responses:
+ *       200:
+ *         description: "올바른 요청"
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               example: "회원정보 수정 성공"
+ *       400:
+ *         description: "요청값이 유효하지 않은 경우입니다"
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               example: "회원정보 수정 실패"
+ *       404:
+ *         description: "전달된 userid값이 데이터베이스에 없는 경우입니다"
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               example: "일치하는 userid값이 없음"
  */
