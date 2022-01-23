@@ -9,14 +9,14 @@ import helloWorld from '../hello-world';
 import { checkToken } from '../../middlewares/auth';
 
 const router = Router();
-router.post('/', controller.saveUser);
-router.patch('/', helloWorld);
-router.delete('/', helloWorld);
-
-router.use('/:id/role', roleRouter);
 router.use('/notification', checkToken, notificationRouter);
 router.use('/category', categoryRouter);
 router.use('/profile', profileRouter);
 router.use('/login', loginRouter);
+
+router.post('/', controller.saveUser);
+router.delete('/', helloWorld);
+router.use('/:id/role', roleRouter);
+router.patch('/:id', controller.updateUserInfo);
 
 export default router;
