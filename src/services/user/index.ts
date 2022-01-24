@@ -73,3 +73,11 @@ export const updateUserById = async (id: string, data: UpdateUserDTO) => {
     .where('id = :id', { id })
     .execute();
 };
+
+export const deleteUserById = async (id: string) => {
+  return await getRepository(User)
+    .createQueryBuilder()
+    .delete()
+    .where('id = :id', { id })
+    .execute();
+};

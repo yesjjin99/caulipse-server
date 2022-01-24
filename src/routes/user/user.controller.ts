@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { Request, Response } from 'express';
-import { saveUser, updateUserById } from '../../services/user';
+import { deleteUserById, saveUser, updateUserById } from '../../services/user';
 
 export default {
   async saveUser(req: Request, res: Response) {
@@ -31,6 +31,22 @@ export default {
         res.status(404).json({ message: '일치하는 id값 없음' });
       } else {
         res.status(400).json({ message: 'request is not valid' });
+      }
+    }
+  },
+  async deleteUser(req: Request, res: Response) {
+    const NOT_FOUND = 'id와 일치하는 사용자 없음';
+
+    try {
+      const { id } = req.user as { id: string };
+      const result = await deleteUserById(id);
+      if (result.affected === 0) throw new Error(NOT_FOUND);
+      res.json({ message: '회원 탈퇴 성공' });
+    } catch (e) {
+      if ((e as Error).message === NOT_FOUND) {
+        res.status(404).json({ message: NOT_FOUND });
+      } else {
+        res.status(400).json({ message: '회원 탈퇴 실패' });
       }
     }
   },
@@ -77,6 +93,38 @@ export default {
  *              message:
  *                type: string
  *                example: "회원가입 실패: no email or password in request body"
+ *
+ *  delete:
+ *    tags:
+ *    - user
+ *    summary: "회원 탈퇴"
+ *    description: "회원 탈퇴를 위한 엔드포인트입니다."
+ *
+ *    responses:
+ *      200:
+ *        description: "올바른 요청"
+ *        schema:
+ *          type: object
+ *          properties:
+ *            message:
+ *              type: string
+ *              example: "회원탈퇴 성공"
+ *      401:
+ *        description: "로그인이 되어있지 않은 경우"
+ *        schema:
+ *          type: object
+ *          properties:
+ *            message:
+ *              type: string
+ *              example: "로그인 필요"
+ *      404:
+ *        description: "전달된 userid값이 데이터베이스에 없는 경우입니다"
+ *        schema:
+ *          type: object
+ *          properties:
+ *            message:
+ *              type: string
+ *              example: "일치하는 userid값이 없음"
  */
 
 /**
