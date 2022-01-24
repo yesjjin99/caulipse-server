@@ -265,3 +265,69 @@ describe('사용자 정보 수정 api', () => {
     expect(res.statusCode).toBe(404);
   });
 });
+
+describe('회원 탈퇴 api', () => {
+  test('로그인하지 않은 상태로 회원탈퇴 요청을 보낼 경우 401 코드로 응답한다', async () => {
+    // when
+    const res = await request(app).delete('/api/user');
+
+    // then
+    expect(res.statusCode).toBe(401);
+  });
+
+  test('로그인 한 상태로 회원탈퇴 요청을 보낼 경우 200 코드로 응답한다', async () => {
+    // given
+    const email = 'example1@test.com';
+    const password = 'testpw';
+    const id = randomUUID();
+    const userDataBefore = {
+      id,
+      email,
+      password: bcrypt.hashSync('testpw', 10),
+      isLogout: false,
+      token: '',
+      role: UserRoleEnum.USER,
+    };
+    await conn.getRepository(User).save(userDataBefore);
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+
+    // when
+    const res = await request(app)
+      .delete('/api/user')
+      .set('Cookie', cookies)
+      .send();
+
+    // then
+    expect(res.statusCode).toBe(200);
+  });
+
+  test('회원탈퇴 요청을 보낸 사용자를 사용자 데이터베이스에서 삭제한다', async () => {
+    // given
+    const email = 'example1@test.com';
+    const password = 'testpw';
+    const id = randomUUID();
+    const userDataBefore = {
+      id,
+      email,
+      password: bcrypt.hashSync('testpw', 10),
+      isLogout: false,
+      token: '',
+      role: UserRoleEnum.USER,
+    };
+    await conn.getRepository(User).save(userDataBefore);
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+
+    // when
+    await request(app).delete('/api/user').set('Cookie', cookies).send();
+    const removedUser = await conn.getRepository(User).findOne({ id });
+
+    // then
+    expect(removedUser).toBeFalsy();
+  });
+});
