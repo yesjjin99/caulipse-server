@@ -5,7 +5,6 @@ import roleRouter from './role';
 import notificationRouter from './notification';
 import categoryRouter from './category';
 import controller from './user.controller';
-import helloWorld from '../hello-world';
 import { checkToken } from '../../middlewares/auth';
 
 const router = Router();
@@ -15,7 +14,7 @@ router.use('/profile', profileRouter);
 router.use('/login', loginRouter);
 
 router.post('/', controller.saveUser);
-router.delete('/', helloWorld);
+router.delete('/', checkToken, controller.deleteUser);
 router.use('/:id/role', roleRouter);
 router.patch('/:id', controller.updateUserInfo);
 
