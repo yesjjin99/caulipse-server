@@ -113,7 +113,7 @@ describe('회원가입 api', () => {
     const user = await repo.findOne();
     const invalidToken = jwt.sign(
       { id: user?.id },
-      process.env.SIGNUP_TOKEN_SECRET!,
+      process.env.SIGNUP_TOKEN_SECRET as string,
       {
         algorithm: 'HS256',
         expiresIn: 0,
