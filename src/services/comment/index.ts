@@ -10,7 +10,7 @@ interface commentType {
   replyTo: string | null;
 }
 
-const findById = async (id: string) => {
+const findCommentById = async (id: string) => {
   const comment = await getRepository(Comment)
     .createQueryBuilder('comment')
     .where('comment.id = :id', { id })
@@ -23,7 +23,7 @@ const findById = async (id: string) => {
 };
 
 const getAllByStudy = async (id: string) => {
-  const study = await studyService.findById(id);
+  const study = await studyService.findStudyById(id);
 
   return await getRepository(Comment)
     .createQueryBuilder('comment')
@@ -38,7 +38,7 @@ const createComment = async (
 ) => {
   const id = randomUUID();
 
-  const study = await studyService.findById(studyid);
+  const study = await studyService.findStudyById(studyid);
   const user = await findUserById(userId);
 
   const repo = getRepository(Comment);
@@ -50,7 +50,7 @@ const createComment = async (
   comment.study = study;
 
   if (replyTo) {
-    const reply = await findById(replyTo);
+    const reply = await findCommentById(replyTo);
     comment.isNested = true;
     comment.parentComment = reply;
   } else {
@@ -61,4 +61,13 @@ const createComment = async (
   return id;
 };
 
-export default { findById, getAllByStudy, createComment };
+const updateComment = async (commentid: string, content: string) => {
+  const comment = await findCommentById(commentid);
+
+  const repo = getRepository(Comment);
+  comment.content = content;
+
+  await repo.save(comment);
+};
+
+export default { findCommentById, getAllByStudy, createComment, updateComment };

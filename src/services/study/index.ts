@@ -59,7 +59,7 @@ const getAllStudy = async ({
   return { perPage_studies, next_cursor };
 };
 
-const findById = async (id: string) => {
+const findStudyById = async (id: string) => {
   const study = await getRepository(Study)
     .createQueryBuilder('study')
     .where('study.id = :id', { id })
@@ -121,7 +121,7 @@ const updateStudy = async (
   }: studyDTO
 ) => {
   const repo = getRepository(Study);
-  const study = await findById(studyid);
+  const study = await findStudyById(studyid);
 
   if (title) study.title = title;
   if (studyAbout) study.studyAbout = studyAbout;
@@ -148,4 +148,10 @@ const deleteStudy = async (id: string) => {
   }
 };
 
-export default { getAllStudy, findById, createStudy, updateStudy, deleteStudy };
+export default {
+  getAllStudy,
+  findStudyById,
+  createStudy,
+  updateStudy,
+  deleteStudy,
+};

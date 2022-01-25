@@ -90,7 +90,7 @@ const createStudy = async (req: Request, res: Response) => {
 const getStudybyId = async (req: Request, res: Response) => {
   try {
     const { studyid } = req.params;
-    const study = await studyService.findById(studyid);
+    const study = await studyService.findStudyById(studyid);
 
     return res.status(200).json({
       message: '각 스터디별 상세 정보 조회 성공',

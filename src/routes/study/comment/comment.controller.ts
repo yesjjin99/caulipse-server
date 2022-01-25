@@ -26,7 +26,7 @@ const createComment = async (req: Request, res: Response) => {
     if (!userId) throw new Error(UNAUTHORIZED);
     if (!content) throw new Error(BAD_REQUEST);
 
-    const commentId = await commentService.createComment(studyid, req.body);
+    const commentId = await commentService.createComment(studyid, req.body); // FIX
 
     return res.status(201).json({
       message: '문의글 생성 성공',
@@ -43,7 +43,32 @@ const createComment = async (req: Request, res: Response) => {
   }
 };
 
-export default { getComment, createComment };
+const updateComment = async (req: Request, res: Response) => {
+  const BAD_REQUEST = '요청값이 유효하지 않음';
+  const UNAUTHORIZED = '로그인 필요';
+
+  try {
+    const { commentid } = req.params;
+    const { content, userId } = req.body; // FIX
+
+    if (!userId) throw new Error(UNAUTHORIZED);
+    if (!content) throw new Error(BAD_REQUEST);
+
+    await commentService.updateComment(commentid, content);
+
+    return res.status(200).json({ message: '문의글 수정 성공' });
+  } catch (e) {
+    if ((e as Error).message === BAD_REQUEST) {
+      return res.status(400).json({ message: (e as Error).message });
+    } else if ((e as Error).message === UNAUTHORIZED) {
+      return res.status(401).json({ message: (e as Error).message });
+    } else {
+      return res.status(404).json({ message: (e as Error).message });
+    }
+  }
+};
+
+export default { getComment, createComment, updateComment };
 
 /**
  * @swagger
@@ -144,4 +169,67 @@ export default { getComment, createComment };
  *              message:
  *                type: string
  *                example: "일치하는 studyid가 없음"
+ *
+ *  /study/:studyid/comment/:commentid:
+ *    patch:
+ *      summary: "스터디 문의글 수정"
+ *      description: "해당 스터디의 해당 문의글을 수정하기 위한 엔드포인트입니다"
+ *      tags:
+ *      - study/comment
+ *      parameters:
+ *      - name: "studyid"
+ *        in: "path"
+ *        description: "문의글을 수정할 스터디 id"
+ *        required: true
+ *        type: string
+ *        format: uuid
+ *      - name: "commentid"
+ *        in: "path"
+ *        description: "수정할 문의글 id"
+ *        required: true
+ *        type: string
+ *        format: uuid
+ *      - name: "comment_body"
+ *        in: "body"
+ *        description: "수정할 문의글 정보를 포함한 객체"
+ *        required: true
+ *        schema:
+ *          type: object
+ *          properties:
+ *            content:
+ *              type: string
+ *              description: "수정할 문의글의 내용"
+ *      responses:
+ *        200:
+ *          description: "올바른 요청"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "문의글 생성 성공"
+ *        400:
+ *          description: "요청값이 유효하지 않은 경우입니다"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "request is not valid"
+ *        401:
+ *          description: "로그인이 되어있지 않은 경우"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "로그인 필요"
+ *        404:
+ *          description: "전달한 studyid 또는 commentid가 데이터베이스에 없는 경우입니다"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "일치하는 studyid 또는 commentid가 없음"
  */
