@@ -64,11 +64,11 @@ const createStudy = async (req: Request, res: Response) => {
     )
       throw new Error(BAD_REQUEST);
 
-    const studyId = await studyService.createStudy(req.body);
+    const id = await studyService.createStudy(req.body);
 
     return res.status(201).json({
       message: '새로운 스터디 생성 성공',
-      studyId,
+      id,
     });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {

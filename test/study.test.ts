@@ -71,10 +71,11 @@ describe('POST /api/study', () => {
       hostId: userId,
       categoryCode: 101,
     });
-    studyId = res.body.studyId;
+    const { message, id } = res.body;
+    studyId = id;
 
     expect(res.status).toBe(201);
-    expect(res.body.studyId).not.toBeNull();
+    expect(id).not.toBeNull();
   });
 
   it('유효하지 않은 body를 포함하거나 body를 포함하지 않은 요청을 받으면 400 응답', async () => {
@@ -108,10 +109,11 @@ describe('GET /api/study', () => {
     };
 
     const res = await request(app).get('/api/study').query(bodyData);
+    const { message, perPage_studies, next_cursor } = res.body;
 
     expect(res.status).toBe(200);
-    expect(res.body.perPage_studies).not.toBeNull();
-    expect(res.body.next_cursor).not.toBeNull();
+    expect(perPage_studies).not.toBeNull();
+    expect(next_cursor).not.toBeNull();
   });
 });
 

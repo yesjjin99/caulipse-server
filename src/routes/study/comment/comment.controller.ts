@@ -26,11 +26,11 @@ const createComment = async (req: Request, res: Response) => {
     if (!userId) throw new Error(UNAUTHORIZED);
     if (!content) throw new Error(BAD_REQUEST);
 
-    const commentId = await commentService.createComment(studyid, req.body); // FIX
+    const id = await commentService.createComment(studyid, req.body); // FIX
 
     return res.status(201).json({
       message: '문의글 생성 성공',
-      commentId,
+      id,
     });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
