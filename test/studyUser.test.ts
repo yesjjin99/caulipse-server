@@ -94,7 +94,7 @@ describe('참가신청 api', () => {
     const res = await request(app)
       .post(`/api/study/user/${studyId}`)
       .set('Cookie', cookies)
-      .send({ userId, studyId, tempBio });
+      .send({ tempBio });
     const record = await conn
       .getRepository(StudyUser)
       .findOne({ STUDY_ID: studyId, USER_ID: userId });
@@ -103,5 +103,96 @@ describe('참가신청 api', () => {
     expect(res.statusCode).toBe(201);
     expect(record).toBeTruthy();
     expect(record?.tempBio).toBe(tempBio);
+  });
+
+  test('요청 body에 tempBio 프로퍼티가 없을 경우 400 코드로 응답한다', async () => {
+    // given
+    const userId = randomUUID();
+    const email = 'asjdkf@test.com';
+    const password = 'testpassword';
+    await conn.getRepository(User).save({
+      id: userId,
+      email,
+      password: bcrypt.hashSync(password, 10),
+      isLogout: false,
+      token: '',
+    });
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+
+    // when
+    const res = await request(app)
+      .post(`/api/study/user/${studyId}`)
+      .set('Cookie', cookies)
+      .send();
+    const record = await conn
+      .getRepository(StudyUser)
+      .findOne({ STUDY_ID: studyId, USER_ID: userId });
+
+    // then
+    expect(res.statusCode).toBe(400);
+    expect(record).toBeFalsy();
+  });
+
+  test('로그인하지 않은 채로 참가신청 요청을 보내면 401 코드로 응답한다', async () => {
+    // given
+    const userId = randomUUID();
+    const email = 'asjsdkjfdkf@test.com';
+    const password = 'testpassword';
+    await conn.getRepository(User).save({
+      id: userId,
+      email,
+      password,
+      isLogout: false,
+      token: '',
+    });
+    const tempBio = 'adjsfojasdofsadf';
+
+    // when
+    const res = await request(app)
+      .post(`/api/study/user/${studyId}`)
+      .send({ tempBio });
+    const record = await conn
+      .getRepository(StudyUser)
+      .findOne({ STUDY_ID: studyId, USER_ID: userId });
+
+    // then
+    expect(res.statusCode).toBe(401);
+    expect(record).toBeFalsy();
+  });
+
+  test('올바르지 않은 스터디 id 로 참가신청 요청을 보낼 경우 404 코드로 응답한다', async () => {
+    // given
+    const userId = randomUUID();
+    const email = 'asdjfoj@test.com';
+    const password = 'testpassword';
+    await conn.getRepository(User).save({
+      id: userId,
+      email,
+      password: bcrypt.hashSync(password, 10),
+      isLogout: false,
+      token: '',
+    });
+    const tempBio = 'adjsfojasdof';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+    const wrongStudyId = '123423434234244324123';
+
+    // when
+    const res = await request(app)
+      .post(`/api/study/user/${wrongStudyId}`)
+      .set('Cookie', cookies)
+      .send({ tempBio });
+    const record = await conn
+      .getRepository(StudyUser)
+      .findOne({ STUDY_ID: studyId, USER_ID: userId });
+
+    // then
+    expect(res.statusCode).toBe(404);
+    expect(record).toBeFalsy();
   });
 });

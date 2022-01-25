@@ -18,10 +18,10 @@ export default {
       });
       res.status(201).json({ message: OK });
     } catch (e) {
-      if ((e as Error).message === NOT_FOUND) {
-        res.status(404).json({ message: NOT_FOUND });
-      } else {
+      if ((e as Error).message === BAD_REQUEST) {
         res.status(400).json({ message: BAD_REQUEST });
+      } else {
+        res.status(404).json({ message: NOT_FOUND });
       }
     }
   },
