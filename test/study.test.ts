@@ -9,7 +9,7 @@ import { randomUUID } from 'crypto';
 import bcrypt from 'bcrypt';
 import app from '../src';
 import { db } from '../src/config/db';
-import Study, {
+import {
   FrequencyEnum,
   LocationEnum,
   WeekDayEnum,
@@ -100,7 +100,7 @@ describe('POST /api/study', () => {
 });
 
 describe('GET /api/study', () => {
-  it('query를 포함한 요청을 받으면 필터링, 정렬, 페이지네이션을 거친 후 스터디 목록과 페이지 커서 반환', async () => {
+  it('query를 포함한 요청을 받으면 필터링, 정렬, 페이지네이션을 거친 후 스터디 목록과 페이지 커서 반환(첫번째 페이지)', async () => {
     const res = await request(app).get('/api/study').query({
       frequencyFilter: FrequencyEnum.TWICE,
       weekdayFilter: WeekDayEnum.MON,
@@ -111,6 +111,10 @@ describe('GET /api/study', () => {
     expect(res.status).toBe(200);
     expect(perPage_studies).not.toBeNull();
     expect(next_cursor).not.toBeNull();
+
+    expect(perPage_studies[0]).toHaveProperty('frequency', FrequencyEnum.TWICE);
+    expect(perPage_studies[0]).toHaveProperty('weekday', WeekDayEnum.MON);
+    expect(perPage_studies[0]).toHaveProperty('location', LocationEnum.CAFE);
   });
 });
 

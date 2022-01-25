@@ -78,6 +78,22 @@ const getAllStudy = async ({
         .getMany();
       next_cursor = perPage_studies[perPage_studies.length - 1].vacancy;
     }
+  } else if (orderBy === orderByEnum.LAST) {
+    if (cursor === 0) {
+      // 1 page
+      perPage_studies = await sq
+        .orderBy('study.createdAt', 'ASC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].createdAt;
+    } else {
+      perPage_studies = await sq
+        .andWhere('study.createdAt > :cursor', { cursor })
+        .orderBy('study.createdAt', 'ASC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].createdAt;
+    }
   }
 
   return { perPage_studies, next_cursor };
