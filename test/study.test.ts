@@ -51,7 +51,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await getRepository(Study).createQueryBuilder().delete().execute();
   await getRepository(User).createQueryBuilder().delete().execute();
   await getRepository(Category).createQueryBuilder().delete().execute();
 
@@ -184,5 +183,21 @@ describe('PATCH /api/study/:studyid', () => {
     });
 
     expect(res.status).toBe(404);
+  });
+});
+
+describe('DELETE /api/study/:studyid', () => {
+  // FIX: Add login case
+
+  it('요청된 studyid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
+    const res = await request(app).delete('/api/study/wrong');
+
+    expect(res.status).toBe(404);
+  });
+
+  it('요청된 studyid에 해당하는 스터디 삭제', async () => {
+    const res = await request(app).delete(`/api/study/${studyId}`);
+
+    expect(res.status).toBe(200);
   });
 });

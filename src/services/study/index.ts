@@ -138,11 +138,9 @@ const updateStudy = async (
 
 const deleteStudy = async (id: string) => {
   try {
-    await getRepository(Study)
-      .createQueryBuilder('study')
-      .delete()
-      .where('study.id = :id', { id })
-      .execute();
+    const study = await findStudyById(id);
+
+    await getRepository(Study).remove(study);
   } catch (e) {
     throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
   }
