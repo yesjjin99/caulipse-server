@@ -140,3 +140,77 @@ describe('POST /api/study/:studyid/comment', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('GET /api/:studyid/comment', () => {
+  it('요청된 studyid에 해당하는 스터디의 모든 문의글 목록 조회', async () => {
+    const res = await request(app).get(`/api/study/${studyId}/comment`);
+
+    const { message, comments } = res.body;
+
+    expect(res.status).toBe(200);
+    expect(comments).not.toBeNull();
+  });
+
+  it('요청된 studyid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
+    const res = await request(app).get('/api/study/wrong/comment');
+
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('PATCH /api/study/:studyid/comment/:commentid', () => {
+  // login
+
+  it('body를 포함한 요청을 받으면 studyid, commentid에 해당하는 문의글 업데이트', async () => {
+    const res = await request(app)
+      .patch(`/api/study/${studyId}/comment/${commentId}`)
+      .send({
+        content: '수정한 내용',
+        userId: userId,
+      });
+
+    expect(res.status).toBe(200);
+  });
+
+  it('유효하지 않은 body를 포함하거나 body를 포함하지 않은 요청을 받으면 400 응답', async () => {
+    const res = await request(app)
+      .patch(`/api/study/${studyId}/comment/${commentId}`)
+      .send({
+        userId: userId,
+      });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('로그인이 되어있지 않은 경우 401 응답', async () => {
+    const res = await request(app)
+      .patch(`/api/study/${studyId}/comment/${commentId}`)
+      .send({
+        content: '수정한 내용',
+      });
+
+    expect(res.status).toBe(401);
+  });
+
+  it('요청된 commentid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
+    const res = await request(app)
+      .patch(`/api/study/${studyId}/comment/wrong`)
+      .send({
+        content: '수정한 내용',
+        userId: userId,
+      });
+
+    expect(res.status).toBe(404);
+  });
+
+  it('요청된 studyid 또는 commentid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
+    const res = await request(app)
+      .patch('/api/study/wrong/comment/wrong')
+      .send({
+        content: '수정한 내용',
+        userId: userId,
+      });
+
+    expect(res.status).toBe(404);
+  });
+});

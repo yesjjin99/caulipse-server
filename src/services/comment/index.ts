@@ -23,11 +23,11 @@ const findCommentById = async (id: string) => {
 };
 
 const getAllByStudy = async (id: string) => {
-  const study = await studyService.findStudyById(id);
+  await studyService.findStudyById(id);
 
   return await getRepository(Comment)
     .createQueryBuilder('comment')
-    .where('comment.study = :study', { study })
+    .where('comment.STUDY_ID = :id', { id })
     .orderBy('comment.createdAt', 'ASC')
     .getMany();
 };
