@@ -9,6 +9,7 @@ import {
   updateStudy,
   deleteStudy,
 } from './study.ctrl';
+import { checkToken } from '../../middlewares/auth';
 
 const router = Router({ mergeParams: true });
 
@@ -23,7 +24,7 @@ router.patch('/:studyid', updateStudy);
 router.delete('/:studyid', deleteStudy);
 
 // 스터디 참가 신청 라우터
-router.use('/user/:studyid', studyUserRouter);
+router.use('/user/:studyid', checkToken, studyUserRouter);
 // 스터디 북마크 라우터
 // TODO: 사용자의 북마크 목록 조회 엔드포인트 추가 (user 라우터)
 router.use('/:studyid/bookmark', bookmarkRouter);
