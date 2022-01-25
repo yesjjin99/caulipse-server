@@ -55,7 +55,6 @@ export default {
       } else if (err.message === NOT_FOUND) {
         res.status(404).json({ message: '로그인 싪패: ' + NOT_FOUND });
       }
-      res.status(400).json({ message: err.message });
     }
   },
 };
