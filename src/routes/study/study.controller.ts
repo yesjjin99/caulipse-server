@@ -1,27 +1,27 @@
 import { Request, Response } from 'express';
-import { orderByEnum } from '../../types/study.dto';
 import studyService from '../../services/study';
+import { orderByEnum } from '../../types/study.dto';
 
 const getAllStudy = async (req: Request, res: Response) => {
-  const row_num = req.query.row_num ? Number(req.query.row_num) : 12; // 한 페이지에서 포함할 스터디의 개수
-  const frequencyFilter = String(req.query.frequency); // enum
-  const weekdayFilter = String(req.query.weekday); // enum
-  const locationFilter = String(req.query.location); // enum
-  const order_by = req.query.order_by
-    ? String(req.query.order_by)
-    : orderByEnum.LATEST; // enum
-  const cursor =
-    typeof req.query.cursor === 'number'
-      ? Number(req.query.cursor)
-      : Date.parse(String(req.query.cursor)); // pagination
+  const frequencyFilter: string = req.query.frequency as string;
+  const weekdayFilter: string = req.query.weekday as string;
+  const locationFilter: string = req.query.location as string;
+  const orderBy: string = req.query.order_by
+    ? (req.query.order_by as string)
+    : orderByEnum.LATEST;
+  const cursor: Date | number = !req.query.cursor
+    ? 0
+    : typeof req.query.cursor === 'number'
+    ? (req.query.cursor as number)
+    : Date.parse(req.query.cursor as string);
+  // cursor default value(1 page): 0
 
   try {
     const { perPage_studies, next_cursor } = await studyService.getAllStudy({
-      row_num,
       frequencyFilter,
       weekdayFilter,
       locationFilter,
-      order_by,
+      orderBy,
       cursor,
     });
 

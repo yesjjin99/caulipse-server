@@ -27,6 +27,7 @@ const getAllByStudy = async (id: string) => {
 
   return await getRepository(Comment)
     .createQueryBuilder('comment')
+    .leftJoinAndSelect('comment.study', 'study')
     .where('comment.STUDY_ID = :id', { id })
     .orderBy('comment.createdAt', 'ASC')
     .getMany();

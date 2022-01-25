@@ -101,14 +101,11 @@ describe('POST /api/study', () => {
 
 describe('GET /api/study', () => {
   it('query를 포함한 요청을 받으면 필터링, 정렬, 페이지네이션을 거친 후 스터디 목록과 페이지 커서 반환', async () => {
-    const bodyData = {
-      row_num: 1,
+    const res = await request(app).get('/api/study').query({
       frequencyFilter: FrequencyEnum.TWICE,
       weekdayFilter: WeekDayEnum.MON,
       locationFilter: LocationEnum.CAFE,
-    };
-
-    const res = await request(app).get('/api/study').query(bodyData);
+    });
     const { message, perPage_studies, next_cursor } = res.body;
 
     expect(res.status).toBe(200);
@@ -120,9 +117,10 @@ describe('GET /api/study', () => {
 describe('GET /api/study/:studyid', () => {
   it('각 studyid에 따라 모든 스터디 상세 정보 반환', async () => {
     const res = await request(app).get(`/api/study/${studyId}`);
+    const { message, study } = res.body;
 
     expect(res.status).toBe(200);
-    expect(res.body.study).toHaveProperty('id', studyId);
+    expect(study).toHaveProperty('id', studyId);
   });
 
   it('요청된 studyid가 데이터베이스에 존재하지 않으면 404 응답', async () => {

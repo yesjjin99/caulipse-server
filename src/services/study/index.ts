@@ -6,34 +6,19 @@ import { findUserById } from '../user';
 import categoryService from '../category';
 
 const getAllStudy = async ({
-  row_num,
   frequencyFilter,
   weekdayFilter,
   locationFilter,
-  order_by,
+  orderBy,
   cursor,
 }: paginationDTO) => {
   let perPage_studies = null;
   let next_cursor = null;
 
-  const sq = getRepository(Study).createQueryBuilder('study');
-
-  if (order_by === orderByEnum.LATEST) {
-    sq.orderBy('study.createdAt', 'DESC');
-    if (cursor) {
-      sq.where('study.createdAt < :cursor', { cursor });
-    }
-  } else if (order_by === orderByEnum.SMALL_VACANCY) {
-    sq.orderBy('study.vacancy', 'ASC');
-    if (cursor) {
-      sq.where('study.vacancy > :cursor', { cursor });
-    }
-  } else if (order_by === orderByEnum.LARGE_VACANCY) {
-    sq.orderBy('study.vacancy', 'DESC');
-    if (cursor) {
-      sq.where('study.vacancy < :cursor', { cursor });
-    }
-  }
+  const sq = getRepository(Study)
+    .createQueryBuilder('study')
+    .leftJoinAndSelect('study.hostId', 'user')
+    .leftJoinAndSelect('study.categoryCode', 'category');
 
   if (frequencyFilter) {
     sq.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
@@ -45,15 +30,54 @@ const getAllStudy = async ({
     sq.andWhere('study.location = :locationFilter', { locationFilter });
   }
 
-  if (order_by === orderByEnum.LATEST) {
-    perPage_studies = await sq.limit(row_num).getMany();
-    next_cursor = perPage_studies[row_num - 1].createdAt;
-  } else if (order_by === orderByEnum.SMALL_VACANCY) {
-    perPage_studies = await sq.limit(row_num).getMany();
-    next_cursor = perPage_studies[row_num - 1].vacancy;
-  } else if (order_by === orderByEnum.LARGE_VACANCY) {
-    perPage_studies = await sq.limit(row_num).getMany();
-    next_cursor = perPage_studies[row_num - 1].vacancy;
+  if (orderBy === orderByEnum.LATEST) {
+    if (cursor === 0) {
+      // 1 page
+      perPage_studies = await sq
+        .orderBy('study.createdAt', 'DESC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].createdAt;
+    } else {
+      perPage_studies = await sq
+        .andWhere('study.createdAt < :cursor', { cursor })
+        .orderBy('study.createdAt', 'DESC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].createdAt;
+    }
+  } else if (orderBy === orderByEnum.SMALL_VACANCY) {
+    if (cursor === 0) {
+      // 1 page
+      perPage_studies = await sq
+        .orderBy('study.vacancy', 'ASC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].vacancy;
+    } else {
+      perPage_studies = await sq
+        .andWhere('study.vacancy > :cursor', { cursor })
+        .orderBy('study.vacancy', 'ASC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].vacancy;
+    }
+  } else if (orderBy === orderByEnum.LARGE_VACANCY) {
+    if (cursor === 0) {
+      // 1 page
+      perPage_studies = await sq
+        .orderBy('study.vacancy', 'DESC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].vacancy;
+    } else {
+      perPage_studies = await sq
+        .andWhere('study.vacancy < :cursor', { cursor })
+        .orderBy('study.vacancy', 'DESC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].vacancy;
+    }
   }
 
   return { perPage_studies, next_cursor };

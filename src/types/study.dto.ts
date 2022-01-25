@@ -11,11 +11,10 @@ export enum orderByEnum {
 }
 
 export interface paginationDTO {
-  row_num: number;
   frequencyFilter: string;
   weekdayFilter: string;
   locationFilter: string;
-  order_by: string;
+  orderBy: string;
   cursor: Date | number;
 }
 export interface studyDTO {
