@@ -82,7 +82,6 @@ const createStudy = async ({
   categoryCode,
 }: studyDTO) => {
   const id = randomUUID();
-  const date = new Date();
 
   const user = await findUserById(hostId);
   const category = await categoryService.findByCode(categoryCode);
@@ -90,7 +89,7 @@ const createStudy = async ({
   const repo = getRepository(Study);
   const study = new Study();
   study.id = id;
-  study.createdAt = date;
+  study.createdAt = new Date();
   study.title = title;
   study.studyAbout = studyAbout;
   study.weekday = weekday;
