@@ -63,6 +63,9 @@ export default class Study {
   @JoinColumn({ name: 'HOST_ID' })
   hostId!: User;
 
+  @Column('uuid')
+  HOST_ID!: string;
+
   @Column('int', { name: 'CAPACITY' })
   capacity!: number;
 
