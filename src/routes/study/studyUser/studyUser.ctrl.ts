@@ -30,7 +30,7 @@ export default {
     try {
       const result = await findAllByStudyId(req.params.studyid);
       res.json(
-        result.map((record: any) => ({
+        result.map((record: Record<string, string | boolean>) => ({
           studyId: record.StudyUser_STUDY_ID,
           userId: record.StudyUser_USER_ID,
           isAccepted: record.StudyUser_IS_ACCEPTED,
@@ -65,3 +65,117 @@ export default {
     }
   },
 };
+
+/**
+ * @swagger
+ * /study/user/{studyid}:
+ *     get:
+ *       tags:
+ *       - study/user
+ *       summary: "현재 참가 신청중인 사용자 목록을 읽어옵니다."
+ *       description: "해당 스터디에 참가 신청중인 사용자 목록을 읽어오기 위한 엔드포인트입니다."
+ *       produces:
+ *       - "application/json"
+ *       parameters:
+ *       - in: "path"
+ *         name: "studyid"
+ *         description: "사용자 목록을 조회할 스터디 id"
+ *         required: true
+ *         type: string
+ *         format: uuid
+ *
+ *       responses:
+ *         200:
+ *           description: "올바른 요청"
+ *           schema:
+ *             allOf:
+ *             - type: array
+ *               items:
+ *                 type: object
+ *                 $ref: "#/definitions/StudyUser"
+ *         401:
+ *           description: "로그인이 되어있지 않은 경우"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "로그인 필요"
+ *         403:
+ *           description: "자신이 개설한 스터디가 아닌 경우"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "사용자 권한 부족"
+ *         404:
+ *           description: "전달한 studyid가 데이터베이스에 없는 경우입니다"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "일치하는 studyid가 없음"
+ *     post:
+ *       tags:
+ *       - study/user
+ *       summary: "스터디 참가신청"
+ *       description: "사용자가 해당 스터디에 참가신청 요청을 보내기 위한 엔드포인트입니다"
+ *       parameters:
+ *       - in: "path"
+ *         name: "studyid"
+ *         description: "참가신청 요청을 보낼 스터디의 id"
+ *         required: true
+ *         type: string
+ *         format: uuid
+ *       - in: "body"
+ *         name: "body"
+ *         description: "참가신청을 보내는 유저의 정보를 포함한 객체"
+ *         required: false
+ *         schema:
+ *           type: object
+ *           properties:
+ *             # 유저정보는 쿠키에 저장되어 있음(?)
+ *             # userId:
+ *             #   type: string
+ *             #   format: uuid
+ *             #   description: "참가신청을 보내는 유저의 id"
+ *             tempBio:
+ *               type: string
+ *               description: "스터디 호스트에게 보내지는 사용자의 인사말 / 소개글"
+ *
+ *       responses:
+ *         201:
+ *           description: "올바른 요청"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "참가신청 성공"
+ *         400:
+ *           description: "신청 시 한마디를 의미하는 tempBio 프로퍼티가 body에 없는 경우입니다"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "잘못된 요청"
+ *         401:
+ *           description: "로그인이 되어있지 않은 경우"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "로그인 필요"
+ *         404:
+ *           description: "전달한 studyid가 데이터베이스에 없는 경우입니다"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "일치하는 studyid가 없음"
+ */
