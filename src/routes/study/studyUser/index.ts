@@ -5,7 +5,7 @@ import controller from './studyUser.ctrl';
 
 const router = Router({ mergeParams: true });
 
-router.get('/', helloWorld);
+router.get('/', controller.getStudyUserList);
 router.post('/', controller.joinStudy);
 router.patch('/', helloWorld);
 router.delete('/', helloWorld);

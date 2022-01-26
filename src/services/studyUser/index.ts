@@ -23,3 +23,11 @@ export const saveStudyUserRecord = async ({
     })
     .execute();
 };
+
+export const findAllByStudyId = async (studyId: string) => {
+  return await getRepository(StudyUser)
+    .createQueryBuilder()
+    .select()
+    .where('STUDY_ID = :id', { id: studyId })
+    .execute();
+};
