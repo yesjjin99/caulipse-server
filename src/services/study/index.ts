@@ -6,34 +6,19 @@ import { findUserById } from '../user';
 import categoryService from '../category';
 
 const getAllStudy = async ({
-  row_num,
   frequencyFilter,
   weekdayFilter,
   locationFilter,
-  order_by,
+  orderBy,
   cursor,
 }: paginationDTO) => {
   let perPage_studies = null;
   let next_cursor = null;
 
-  const sq = getRepository(Study).createQueryBuilder('study');
-
-  if (order_by === orderByEnum.LATEST) {
-    sq.orderBy('study.createdAt', 'DESC');
-    if (cursor) {
-      sq.where('study.createdAt < :cursor', { cursor });
-    }
-  } else if (order_by === orderByEnum.SMALL_VACANCY) {
-    sq.orderBy('study.vacancy', 'ASC');
-    if (cursor) {
-      sq.where('study.vacancy > :cursor', { cursor });
-    }
-  } else if (order_by === orderByEnum.LARGE_VACANCY) {
-    sq.orderBy('study.vacancy', 'DESC');
-    if (cursor) {
-      sq.where('study.vacancy < :cursor', { cursor });
-    }
-  }
+  const sq = getRepository(Study)
+    .createQueryBuilder('study')
+    .leftJoinAndSelect('study.hostId', 'user')
+    .leftJoinAndSelect('study.categoryCode', 'category');
 
   if (frequencyFilter) {
     sq.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
@@ -45,21 +30,76 @@ const getAllStudy = async ({
     sq.andWhere('study.location = :locationFilter', { locationFilter });
   }
 
-  if (order_by === orderByEnum.LATEST) {
-    perPage_studies = await sq.limit(row_num).getMany();
-    next_cursor = perPage_studies[row_num - 1].createdAt;
-  } else if (order_by === orderByEnum.SMALL_VACANCY) {
-    perPage_studies = await sq.limit(row_num).getMany();
-    next_cursor = perPage_studies[row_num - 1].vacancy;
-  } else if (order_by === orderByEnum.LARGE_VACANCY) {
-    perPage_studies = await sq.limit(row_num).getMany();
-    next_cursor = perPage_studies[row_num - 1].vacancy;
+  if (orderBy === orderByEnum.LATEST) {
+    if (cursor === 0) {
+      // 1 page
+      perPage_studies = await sq
+        .orderBy('study.createdAt', 'DESC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].createdAt;
+    } else {
+      perPage_studies = await sq
+        .andWhere('study.createdAt < :cursor', { cursor })
+        .orderBy('study.createdAt', 'DESC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].createdAt;
+    }
+  } else if (orderBy === orderByEnum.SMALL_VACANCY) {
+    if (cursor === 0) {
+      // 1 page
+      perPage_studies = await sq
+        .orderBy('study.vacancy', 'ASC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].vacancy;
+    } else {
+      perPage_studies = await sq
+        .andWhere('study.vacancy > :cursor', { cursor })
+        .orderBy('study.vacancy', 'ASC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].vacancy;
+    }
+  } else if (orderBy === orderByEnum.LARGE_VACANCY) {
+    if (cursor === 0) {
+      // 1 page
+      perPage_studies = await sq
+        .orderBy('study.vacancy', 'DESC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].vacancy;
+    } else {
+      perPage_studies = await sq
+        .andWhere('study.vacancy < :cursor', { cursor })
+        .orderBy('study.vacancy', 'DESC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].vacancy;
+    }
+  } else if (orderBy === orderByEnum.LAST) {
+    if (cursor === 0) {
+      // 1 page
+      perPage_studies = await sq
+        .orderBy('study.createdAt', 'ASC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].createdAt;
+    } else {
+      perPage_studies = await sq
+        .andWhere('study.createdAt > :cursor', { cursor })
+        .orderBy('study.createdAt', 'ASC')
+        .limit(12)
+        .getMany();
+      next_cursor = perPage_studies[perPage_studies.length - 1].createdAt;
+    }
   }
 
   return { perPage_studies, next_cursor };
 };
 
-const findById = async (id: string) => {
+const findStudyById = async (id: string) => {
   const study = await getRepository(Study)
     .createQueryBuilder('study')
     .where('study.id = :id', { id })
@@ -82,7 +122,6 @@ const createStudy = async ({
   categoryCode,
 }: studyDTO) => {
   const id = randomUUID();
-  const date = new Date();
 
   const user = await findUserById(hostId);
   const category = await categoryService.findByCode(categoryCode);
@@ -90,7 +129,7 @@ const createStudy = async ({
   const repo = getRepository(Study);
   const study = new Study();
   study.id = id;
-  study.createdAt = date;
+  study.createdAt = new Date();
   study.title = title;
   study.studyAbout = studyAbout;
   study.weekday = weekday;
@@ -122,7 +161,7 @@ const updateStudy = async (
   }: studyDTO
 ) => {
   const repo = getRepository(Study);
-  const study = await findById(studyid);
+  const study = await findStudyById(studyid);
 
   if (title) study.title = title;
   if (studyAbout) study.studyAbout = studyAbout;
@@ -139,14 +178,18 @@ const updateStudy = async (
 
 const deleteStudy = async (id: string) => {
   try {
-    await getRepository(Study)
-      .createQueryBuilder('study')
-      .delete()
-      .where('study.id = :id', { id })
-      .execute();
+    const study = await findStudyById(id);
+
+    await getRepository(Study).remove(study);
   } catch (e) {
     throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
   }
 };
 
-export default { getAllStudy, findById, createStudy, updateStudy, deleteStudy };
+export default {
+  getAllStudy,
+  findStudyById,
+  createStudy,
+  updateStudy,
+  deleteStudy,
+};

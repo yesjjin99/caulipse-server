@@ -1,6 +1,170 @@
 import { Request, Response } from 'express';
-import { orderByEnum } from '../../types/study.dto';
 import studyService from '../../services/study';
+import { orderByEnum } from '../../types/study.dto';
+
+const getAllStudy = async (req: Request, res: Response) => {
+  const frequencyFilter: string = req.query.frequency as string;
+  const weekdayFilter: string = req.query.weekday as string;
+  const locationFilter: string = req.query.location as string;
+  const orderBy: string = req.query.order_by
+    ? (req.query.order_by as string)
+    : orderByEnum.LATEST;
+  const cursor: Date | number = !req.query.cursor
+    ? 0
+    : typeof req.query.cursor === 'number'
+    ? (req.query.cursor as number)
+    : Date.parse(req.query.cursor as string);
+  // cursor default value(1 page): 0
+
+  try {
+    const { perPage_studies, next_cursor } = await studyService.getAllStudy({
+      frequencyFilter,
+      weekdayFilter,
+      locationFilter,
+      orderBy,
+      cursor,
+    });
+
+    return res.status(200).json({
+      message: '스터디 목록 조회 성공',
+      perPage_studies,
+      next_cursor,
+    }); // 각 페이지별 스터디 목록, 다음 조회에 사용될 cursor 위치(페이지네이션)
+  } catch (e) {
+    return res.json({ message: (e as Error).message });
+  }
+};
+
+const createStudy = async (req: Request, res: Response) => {
+  const BAD_REQUEST = '요청값이 유효하지 않음';
+  const UNAUTHORIZED = '로그인 필요';
+
+  try {
+    const {
+      title,
+      studyAbout,
+      weekday,
+      frequency,
+      location,
+      capacity,
+      hostId, // FIX
+      categoryCode,
+    } = req.body;
+
+    if (!hostId) throw new Error(UNAUTHORIZED);
+
+    if (
+      !title ||
+      !studyAbout ||
+      !weekday ||
+      !frequency ||
+      !location ||
+      !capacity ||
+      !categoryCode
+    )
+      throw new Error(BAD_REQUEST);
+
+    const id = await studyService.createStudy(req.body);
+
+    return res.status(201).json({
+      message: '새로운 스터디 생성 성공',
+      id,
+    });
+  } catch (e) {
+    if ((e as Error).message === BAD_REQUEST) {
+      return res.status(400).json({
+        message: (e as Error).message,
+      });
+    } else if ((e as Error).message === UNAUTHORIZED) {
+      return res.status(401).json({
+        message: (e as Error).message,
+      });
+    } else {
+      return res.status(404).json({
+        message: (e as Error).message,
+      });
+    }
+  }
+};
+
+const getStudybyId = async (req: Request, res: Response) => {
+  try {
+    const { studyid } = req.params;
+    const study = await studyService.findStudyById(studyid);
+
+    return res.status(200).json({
+      message: '각 스터디별 상세 정보 조회 성공',
+      study,
+    });
+  } catch (e) {
+    return res.status(404).json({
+      message: (e as Error).message,
+    });
+  }
+};
+
+const updateStudy = async (req: Request, res: Response) => {
+  const BAD_REQUEST = '요청값이 유효하지 않음';
+  const UNAUTHORIZED = '로그인 필요';
+
+  try {
+    const { studyid } = req.params;
+    const {
+      title,
+      studyAbout,
+      weekday,
+      frequency,
+      location,
+      capacity,
+      hostId, // FIX
+      categoryCode,
+    } = req.body;
+
+    if (!hostId) throw new Error(UNAUTHORIZED);
+
+    if (
+      !title ||
+      !studyAbout ||
+      !weekday ||
+      !frequency ||
+      !location ||
+      !capacity ||
+      !categoryCode
+    )
+      throw new Error(BAD_REQUEST);
+
+    await studyService.updateStudy(studyid, req.body);
+    return res.status(200).json({ message: '스터디 정보 업데이트 성공' });
+  } catch (e) {
+    if ((e as Error).message === BAD_REQUEST) {
+      return res.status(400).json({ message: (e as Error).message });
+    } else if ((e as Error).message === UNAUTHORIZED) {
+      return res.status(401).json({ message: (e as Error).message });
+    } else {
+      return res.status(404).json({ message: (e as Error).message });
+    }
+  }
+};
+
+const deleteStudy = async (req: Request, res: Response) => {
+  try {
+    // FIX: req.user -> 로그인 확인 코드 추가
+    const { studyid } = req.params;
+
+    await studyService.deleteStudy(studyid);
+    return res.status(200).json({ message: '스터디 삭제 성공' });
+  } catch (e) {
+    return res.status(404).json({ message: (e as Error).message });
+  }
+};
+
+export default {
+  getAllStudy,
+  createStudy,
+  getStudybyId,
+  updateStudy,
+  deleteStudy,
+};
 
 /**
  * @swagger
@@ -57,45 +221,7 @@ import studyService from '../../services/study';
  *                  next_cursor:
  *                    type: string
  *                    description: "다음 페이지네이션 조회에 사용될 커서 위치"
- */
-
-export const getAllStudy = async (req: Request, res: Response) => {
-  const row_num = req.query.row_num ? Number(req.query.row_num) : 12; // 한 페이지에서 포함할 스터디의 개수
-  const frequencyFilter = String(req.query.frequency); // enum
-  const weekdayFilter = String(req.query.weekday); // enum
-  const locationFilter = String(req.query.location); // enum
-  const order_by = req.query.order_by
-    ? String(req.query.order_by)
-    : orderByEnum.LATEST; // enum
-  const cursor =
-    typeof req.query.cursor === 'number'
-      ? Number(req.query.cursor)
-      : Date.parse(String(req.query.cursor)); // pagination
-
-  try {
-    const { perPage_studies, next_cursor } = await studyService.getAllStudy({
-      row_num,
-      frequencyFilter,
-      weekdayFilter,
-      locationFilter,
-      order_by,
-      cursor,
-    });
-
-    return res.status(200).json({
-      message: '스터디 목록 조회 성공',
-      perPage_studies,
-      next_cursor,
-    }); // 각 페이지별 스터디 목록, 다음 조회에 사용될 cursor 위치(페이지네이션)
-  } catch (e) {
-    return res.json({ message: (e as Error).message });
-  }
-};
-
-/**
- * @swagger
- * paths:
- *  /study:
+ *
  *    post:
  *      summary: "새로운 스터디 생성"
  *      description: "사용자가 스터디를 생성할 때 사용되는 엔드포인트입니다"
@@ -175,63 +301,7 @@ export const getAllStudy = async (req: Request, res: Response) => {
  *              message:
  *                type: string
  *                example: "로그인 필요"
- */
-
-export const createStudy = async (req: Request, res: Response) => {
-  const BAD_REQUEST = 'Request is not valid';
-  const UNAUTHORIZED = '로그인 필요';
-
-  try {
-    const {
-      title,
-      studyAbout,
-      weekday,
-      frequency,
-      location,
-      capacity,
-      hostId, // FIX
-      categoryCode,
-    } = req.body;
-
-    if (!hostId) throw new Error(UNAUTHORIZED);
-
-    if (
-      !title ||
-      !studyAbout ||
-      !weekday ||
-      !frequency ||
-      !location ||
-      !capacity ||
-      !categoryCode
-    )
-      throw new Error(BAD_REQUEST);
-
-    const studyId = await studyService.createStudy(req.body);
-
-    return res.status(201).json({
-      message: '새로운 스터디 생성 성공',
-      studyId,
-    });
-  } catch (e) {
-    if ((e as Error).message === BAD_REQUEST) {
-      return res.status(400).json({
-        message: (e as Error).message,
-      });
-    } else if ((e as Error).message === UNAUTHORIZED) {
-      return res.status(401).json({
-        message: (e as Error).message,
-      });
-    } else {
-      return res.status(404).json({
-        message: (e as Error).message,
-      });
-    }
-  }
-};
-
-/**
- * @swagger
- * paths:
+ *
  *  /study/:studyid:
  *    get:
  *      summary: "스터디 아이디에 해당하는 스터디 정보 조회"
@@ -265,28 +335,7 @@ export const createStudy = async (req: Request, res: Response) => {
  *              message:
  *                type: string
  *                example: "일치하는 studyid가 없음"
- */
-
-export const getStudybyId = async (req: Request, res: Response) => {
-  try {
-    const { studyid } = req.params;
-    const study = await studyService.findById(studyid);
-
-    return res.status(200).json({
-      message: '각 스터디별 상세 정보 조회 성공',
-      study,
-    });
-  } catch (e) {
-    return res.status(404).json({
-      message: (e as Error).message,
-    });
-  }
-};
-
-/**
- * @swagger
- * paths:
- *  /study/:studyid:
+ *
  *    patch:
  *      summary: "스터디 정보 업데이트"
  *      description: "각 스터디의 정보를 업데이트하기 위한 엔드포인트입니다"
@@ -376,55 +425,7 @@ export const getStudybyId = async (req: Request, res: Response) => {
  *              message:
  *                type: string
  *                example: "일치하는 studyid가 없음"
- */
-
-export const updateStudy = async (req: Request, res: Response) => {
-  const BAD_REQUEST = 'Request is not valid';
-  const UNAUTHORIZED = '로그인 필요';
-
-  try {
-    const { studyid } = req.params;
-    const {
-      title,
-      studyAbout,
-      weekday,
-      frequency,
-      location,
-      capacity,
-      hostId, // FIX
-      categoryCode,
-    } = req.body;
-
-    if (!hostId) throw new Error(UNAUTHORIZED);
-
-    if (
-      !title ||
-      !studyAbout ||
-      !weekday ||
-      !frequency ||
-      !location ||
-      !capacity ||
-      !categoryCode
-    )
-      throw new Error(BAD_REQUEST);
-
-    await studyService.updateStudy(studyid, req.body);
-    return res.status(200).json({ message: '스터디 정보 업데이트 성공' });
-  } catch (e) {
-    if ((e as Error).message === BAD_REQUEST) {
-      return res.status(400).json({ message: (e as Error).message });
-    } else if ((e as Error).message === UNAUTHORIZED) {
-      return res.status(401).json({ message: (e as Error).message });
-    } else {
-      return res.status(404).json({ message: (e as Error).message });
-    }
-  }
-};
-
-/**
- * @swagger
- * paths:
- *  /study/:studyid:
+ *
  *    delete:
  *      summary: "스터디 삭제"
  *      description: "스터디를 삭제하기 위한 엔드포인트입니다"
@@ -463,15 +464,3 @@ export const updateStudy = async (req: Request, res: Response) => {
  *                type: string
  *                example: "일치하는 studyid가 없음"
  */
-
-export const deleteStudy = async (req: Request, res: Response) => {
-  try {
-    // FIX: req.user -> 로그인 확인 코드 추가
-    const { studyid } = req.params;
-
-    await studyService.deleteStudy(studyid);
-    return res.status(200).json({ message: '스터디 삭제 성공' });
-  } catch (e) {
-    return res.status(404).json({ message: (e as Error).message });
-  }
-};
