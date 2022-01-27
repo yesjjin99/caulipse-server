@@ -9,7 +9,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "start:dev": "NODE_ENV=dev nodemon --watch 'src/**/*.ts' --ext 'ts, js, json' --ignore 'test/**' --exec 'ts-node src/index.ts'",
+    "start:dev": "SET \"NODE_ENV=dev\" && nodemon --watch 'src/**/*.ts' --ext 'ts, js, json' --ignore 'test/**' --exec \"ts-node src/index.ts\"",
     "test": "NODE_ENV=test jest --detectOpenHandles --forceExit"
   },
   "dependencies": {

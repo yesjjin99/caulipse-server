@@ -9,7 +9,7 @@ import { randomUUID } from 'crypto';
 import bcrypt from 'bcrypt';
 import app from '../src';
 import { db } from '../src/config/db';
-import Study, {
+import {
   FrequencyEnum,
   LocationEnum,
   WeekDayEnum,
@@ -51,7 +51,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await getRepository(Study).createQueryBuilder().delete().execute();
   await getRepository(User).createQueryBuilder().delete().execute();
   await getRepository(Category).createQueryBuilder().delete().execute();
 
@@ -72,10 +71,11 @@ describe('POST /api/study', () => {
       hostId: userId,
       categoryCode: 101,
     });
-    studyId = res.body.studyId;
+    const { message, id } = res.body;
+    studyId = id;
 
     expect(res.status).toBe(201);
-    expect(res.body.studyId).not.toBeNull();
+    expect(id).not.toBeNull();
   });
 
   it('유효하지 않은 body를 포함하거나 body를 포함하지 않은 요청을 받으면 400 응답', async () => {
@@ -100,28 +100,31 @@ describe('POST /api/study', () => {
 });
 
 describe('GET /api/study', () => {
-  it('query를 포함한 요청을 받으면 필터링, 정렬, 페이지네이션을 거친 후 스터디 목록과 페이지 커서 반환', async () => {
-    const bodyData = {
-      row_num: 1,
+  it('query를 포함한 요청을 받으면 필터링, 정렬, 페이지네이션을 거친 후 스터디 목록과 페이지 커서 반환(첫번째 페이지)', async () => {
+    const res = await request(app).get('/api/study').query({
       frequencyFilter: FrequencyEnum.TWICE,
       weekdayFilter: WeekDayEnum.MON,
       locationFilter: LocationEnum.CAFE,
-    };
-
-    const res = await request(app).get('/api/study').query(bodyData);
+    });
+    const { message, perPage_studies, next_cursor } = res.body;
 
     expect(res.status).toBe(200);
-    expect(res.body.perPage_studies).not.toBeNull();
-    expect(res.body.next_cursor).not.toBeNull();
+    expect(perPage_studies).not.toBeNull();
+    expect(next_cursor).not.toBeNull();
+
+    expect(perPage_studies[0]).toHaveProperty('frequency', FrequencyEnum.TWICE);
+    expect(perPage_studies[0]).toHaveProperty('weekday', WeekDayEnum.MON);
+    expect(perPage_studies[0]).toHaveProperty('location', LocationEnum.CAFE);
   });
 });
 
 describe('GET /api/study/:studyid', () => {
   it('각 studyid에 따라 모든 스터디 상세 정보 반환', async () => {
     const res = await request(app).get(`/api/study/${studyId}`);
+    const { message, study } = res.body;
 
     expect(res.status).toBe(200);
-    expect(res.body.study).toHaveProperty('id', studyId);
+    expect(study).toHaveProperty('id', studyId);
   });
 
   it('요청된 studyid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
@@ -184,5 +187,21 @@ describe('PATCH /api/study/:studyid', () => {
     });
 
     expect(res.status).toBe(404);
+  });
+});
+
+describe('DELETE /api/study/:studyid', () => {
+  // FIX: Add login case
+
+  it('요청된 studyid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
+    const res = await request(app).delete('/api/study/wrong');
+
+    expect(res.status).toBe(404);
+  });
+
+  it('요청된 studyid에 해당하는 스터디 삭제', async () => {
+    const res = await request(app).delete(`/api/study/${studyId}`);
+
+    expect(res.status).toBe(200);
   });
 });
