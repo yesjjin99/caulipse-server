@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { Connection, ConnectionOptions, createConnection } from 'typeorm';
@@ -112,7 +113,7 @@ describe('회원가입 api', () => {
     const user = await repo.findOne();
     const invalidToken = jwt.sign(
       { id: user?.id },
-      process.env.SIGNUP_TOKEN_SECRET!,
+      process.env.SIGNUP_TOKEN_SECRET as string,
       {
         algorithm: 'HS256',
         expiresIn: 0,
@@ -182,5 +183,151 @@ describe('회원가입 api', () => {
     expect(id).toBeFalsy();
 
     repo.delete({ id: userId });
+  });
+});
+
+describe('사용자 정보 수정 api', () => {
+  test('사용자의 비밀번호 정보를 수정할 수 있다', async () => {
+    // given
+    const email = 'example@test.com';
+    const password = 'testpw';
+    const id = randomUUID();
+    const userDataBefore = {
+      id,
+      email,
+      password,
+      isLogout: false,
+      token: '',
+      role: UserRoleEnum.USER,
+    };
+    await conn.getRepository(User).save(userDataBefore);
+    const changedPassword = 'changed';
+
+    // when
+    const res = await request(app)
+      .patch(`/api/user/${id}`)
+      .send({ ...userDataBefore, password: changedPassword });
+    const userDataAfter = await conn.getRepository(User).findOne({ id });
+
+    // then
+    expect(res.statusCode).toBe(200);
+    expect(userDataAfter?.password).toBe(changedPassword);
+  });
+
+  test('사용자의 이메일 정보를 수정할 수 있다', async () => {
+    // given
+    const email = 'example@test.com';
+    const password = 'testpw';
+    const id = randomUUID();
+    const userDataBefore = {
+      id,
+      email,
+      password,
+      isLogout: false,
+      token: '',
+      role: UserRoleEnum.USER,
+    };
+    await conn.getRepository(User).save(userDataBefore);
+    const changedEmail = 'changed@test.com';
+
+    // when
+    const res = await request(app)
+      .patch(`/api/user/${id}`)
+      .send({ ...userDataBefore, email: changedEmail });
+    const userDataAfter = await conn.getRepository(User).findOne({ id });
+
+    // then
+    expect(res.statusCode).toBe(200);
+    expect(userDataAfter?.email).toBe(changedEmail);
+  });
+
+  test('올바르지 않은 유저에 대한 요청의 경우 404 코드로 응답한다', async () => {
+    // given
+    const email = 'test@example.com';
+    const id = randomUUID();
+    const userDataBefore = {
+      id,
+      email,
+      password: 'test',
+      isLogout: false,
+      token: '',
+      role: UserRoleEnum.USER,
+    };
+    const wrongId = 'xxxx';
+    const wrongEmail = 'abcd@example.com';
+
+    // when
+    const res = await request(app)
+      .patch(`/api/user/${wrongId}`)
+      .send({ ...userDataBefore, email: wrongEmail });
+
+    // then
+    expect(res.statusCode).toBe(404);
+  });
+});
+
+describe('회원 탈퇴 api', () => {
+  test('로그인하지 않은 상태로 회원탈퇴 요청을 보낼 경우 401 코드로 응답한다', async () => {
+    // when
+    const res = await request(app).delete('/api/user');
+
+    // then
+    expect(res.statusCode).toBe(401);
+  });
+
+  test('로그인 한 상태로 회원탈퇴 요청을 보낼 경우 200 코드로 응답한다', async () => {
+    // given
+    const email = 'example1@test.com';
+    const password = 'testpw';
+    const id = randomUUID();
+    const userDataBefore = {
+      id,
+      email,
+      password: bcrypt.hashSync('testpw', 10),
+      isLogout: false,
+      token: '',
+      role: UserRoleEnum.USER,
+    };
+    await conn.getRepository(User).save(userDataBefore);
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+
+    // when
+    const res = await request(app)
+      .delete('/api/user')
+      .set('Cookie', cookies)
+      .send();
+
+    // then
+    expect(res.statusCode).toBe(200);
+  });
+
+  test('회원탈퇴 요청을 보낸 사용자를 사용자 데이터베이스에서 삭제한다', async () => {
+    // given
+    const email = 'example1@test.com';
+    const password = 'testpw';
+    const id = randomUUID();
+    const userDataBefore = {
+      id,
+      email,
+      password: bcrypt.hashSync('testpw', 10),
+      isLogout: false,
+      token: '',
+      role: UserRoleEnum.USER,
+    };
+    await conn.getRepository(User).save(userDataBefore);
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+
+    // when
+    await request(app).delete('/api/user').set('Cookie', cookies).send();
+    const removedUser = await conn.getRepository(User).findOne({ id });
+
+    // then
+    expect(removedUser).toBeFalsy();
   });
 });
