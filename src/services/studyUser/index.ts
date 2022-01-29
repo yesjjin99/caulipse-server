@@ -31,3 +31,17 @@ export const findAllByStudyId = async (studyId: string) => {
     .where('STUDY_ID = :id', { id: studyId })
     .execute();
 };
+
+export const updateAcceptStatus = async (
+  studyId: string,
+  userId: string,
+  accept = true
+) => {
+  return await getRepository(StudyUser)
+    .createQueryBuilder()
+    .update()
+    .set({ isAccepted: accept })
+    .where('STUDY_ID = :id', { id: studyId })
+    .andWhere('USER_ID = :userid', { userid: userId })
+    .execute();
+};

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import {
   findAllByStudyId,
   saveStudyUserRecord,
+  updateAcceptStatus,
 } from '../../../services/studyUser';
 import studyService from '../../../services/study';
 
@@ -61,6 +62,47 @@ export default {
         res.status(400).json({ message: BAD_REQUEST });
       } else {
         res.status(404).json({ message: NOT_FOUND });
+      }
+    }
+  },
+  async acceptUser(req: Request, res: Response) {
+    const OK = '참가신청 현황 수정 성공';
+    const BAD_REQUEST = 'request is not valid';
+    const FORBIDDEN = '수락/거절 권한 없음';
+    const NOT_FOUND = '일치하는 studyid 가 없음';
+
+    try {
+      const accept = req.body.accept;
+      const targetUserId = req.body.userId;
+      if (!targetUserId || accept === undefined || accept === null)
+        throw new Error(BAD_REQUEST);
+
+      const studyId = req.params.studyid;
+      const study = await studyService.findStudyById(studyId);
+      const userId = (req.user as { id: string }).id;
+      if (study.HOST_ID !== userId) throw new Error(FORBIDDEN);
+
+      const updateResult = await updateAcceptStatus(
+        studyId,
+        targetUserId,
+        accept
+      );
+      if (updateResult.affected === 0) throw new Error(NOT_FOUND);
+
+      res.json({ message: OK });
+    } catch (e) {
+      const err = e as Error;
+      if (err.message === BAD_REQUEST) {
+        res.status(400).json({ message: BAD_REQUEST });
+      } else if (err.message === FORBIDDEN) {
+        res.status(403).json({ message: FORBIDDEN });
+      } else if (
+        err.message === NOT_FOUND ||
+        err.message === '데이터베이스에 일치하는 요청값이 없습니다' // FIXME
+      ) {
+        res.status(404).json({ message: NOT_FOUND });
+      } else {
+        res.status(400).json({ message: BAD_REQUEST });
       }
     }
   },

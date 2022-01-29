@@ -45,7 +45,7 @@ beforeAll(async () => {
   mockUser2 = new User();
   mockUser2.id = randomUUID();
   mockUser2.email = 'mockuser2@test.com';
-  mockUser2.password = 'testpassword';
+  mockUser2.password = bcrypt.hashSync('testpassword', 10);
   mockUser2.isLogout = false;
   mockUser2.token = '';
   await conn.getRepository(User).save(mockUser2);
@@ -349,5 +349,118 @@ describe('참가 신청중인 사용자 목록 조회 api', () => {
     expect(res.body.length).toBe(1);
     expect(res.body[0].userId).toBe(mockUser1.id);
     expect(res.body[0].studyId).toBe(studyId);
+  });
+});
+
+describe('참가신청 수락/거절 api', () => {
+  test('로그인하지 않았을 경우 401 코드로 응답한다', async () => {
+    const res = await request(app)
+      .patch(`/api/study/user/${studyId}/accept`)
+      .send();
+    expect(res.statusCode).toBe(401);
+  });
+
+  test('유효하지 않은 request body로 요청을 보낼 경우 400 코드로 응답한다', async () => {
+    // given
+    const { email } = mockHost;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+
+    // when
+    const res = await request(app)
+      .patch(`/api/study/user/${studyId}/accept`)
+      .set('Cookie', cookies)
+      .send();
+
+    // then
+    expect(res.statusCode).toBe(400);
+  });
+
+  test('자신이 개설한 스터디가 아닐 경우 403 코드로 응답한다', async () => {
+    // given
+    const { email } = mockUser2;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+
+    // when
+    const res = await request(app)
+      .patch(`/api/study/user/${studyId}/accept`)
+      .set('Cookie', cookies)
+      .send({ accept: true, userId: mockUser1.id }); // README: 스터디 신청현황 테스트에서 mockUser1의 mockStudy에 대한 참가신청을 진행함
+
+    // then
+    expect(res.statusCode).toBe(403);
+  });
+
+  test('존재하지 않는 study id 에 대한 요청은 404 코드로 응답한다', async () => {
+    // given
+    const { email } = mockHost;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+    const wrongStudyId = 'aslkdfjaldjkflasj';
+
+    // when
+    const res = await request(app)
+      .patch(`/api/study/user/${wrongStudyId}/accept`)
+      .set('Cookie', cookies)
+      .send({ accept: true, userId: mockUser1.id }); // README: 스터디 신청현황 테스트에서 mockUser1의 mockStudy에 대한 참가신청을 진행함
+
+    // then
+    expect(res.statusCode).toBe(404);
+  });
+
+  test('스터디에 신청하지 않은 사용자에 대한 참가수락 요청은 404 코드로 응답한다', async () => {
+    // given
+    const { email } = mockHost;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+
+    // when
+    const res = await request(app)
+      .patch(`/api/study/user/${studyId}/accept`)
+      .set('Cookie', cookies)
+      .send({ accept: true, userId: mockUser2.id }); // README: 스터디 신청현황 테스트에서 mockUser1의 mockStudy에 대한 참가신청을 진행함
+
+    // then
+    expect(res.statusCode).toBe(404);
+  });
+
+  test('정상적인 요청의 경우 스터디 신청 상태를 업데이트한다', async () => {
+    // given
+    const { email } = mockHost;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+
+    // when
+    const res = await request(app)
+      .patch(`/api/study/user/${studyId}/accept`)
+      .set('Cookie', cookies)
+      .send({ accept: true, userId: mockUser1.id }); // README: 스터디 신청현황 테스트에서 mockUser1의 mockStudy에 대한 참가신청을 진행함
+    const record = await conn
+      .getRepository(StudyUser)
+      .createQueryBuilder()
+      .select()
+      .where('STUDY_ID = :id', { id: studyId })
+      .andWhere('USER_ID = :userid', { userid: mockUser1.id })
+      .getOne();
+
+    // then
+    expect(res.statusCode).toBe(200);
+    expect(record?.isAccepted).toBe(true);
   });
 });
