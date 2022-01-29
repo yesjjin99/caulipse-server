@@ -1,7 +1,5 @@
 import { Router } from 'express';
-import { getRepository } from 'typeorm';
-import UserProfile from '../../../entity/UserProfileEntity';
-import { createProfile } from '../../../services/User/profile';
+import { createProfile } from '../../../services/user/profile';
 import helloWorld from '../../hello-world';
 
 const router = Router();
