@@ -37,7 +37,7 @@ beforeAll(async () => {
   mockUser1 = new User();
   mockUser1.id = randomUUID();
   mockUser1.email = 'mockuser1@test.com';
-  mockUser1.password = 'testpassword';
+  mockUser1.password = bcrypt.hashSync('testpassword', 10);
   mockUser1.isLogout = false;
   mockUser1.token = '';
   await conn.getRepository(User).save(mockUser1);
@@ -462,5 +462,98 @@ describe('참가신청 수락/거절 api', () => {
     // then
     expect(res.statusCode).toBe(200);
     expect(record?.isAccepted).toBe(true);
+  });
+});
+
+describe('스터디 참가신청 수정 api', () => {
+  test('로그인하지 않았을 경우 401 코드로 응답한다', async () => {
+    const res = await request(app).patch(`/api/study/user/${studyId}`).send();
+    expect(res.statusCode).toBe(401);
+  });
+
+  test('유효하지 않은 request body로 요청을 보낼 경우 400 코드로 응답한다', async () => {
+    // given
+    const { email } = mockUser1;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+
+    // when
+    const res = await request(app)
+      .patch(`/api/study/user/${studyId}`)
+      .set('Cookie', cookies)
+      .send();
+
+    // then
+    expect(res.statusCode).toBe(400);
+  });
+
+  test('존재하지 않는 study id 에 대한 요청은 404 코드로 응답한다', async () => {
+    // given
+    const { email } = mockUser1;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+    const wrongStudyId = 'aslkdfjaldjkflasj';
+
+    // when
+    const res = await request(app)
+      .patch(`/api/study/user/${wrongStudyId}`)
+      .set('Cookie', cookies)
+      .send({ tempBio: 'updatedTempBio' });
+
+    // then
+    expect(res.statusCode).toBe(404);
+  });
+
+  test('스터디에 신청하지 않은 사용자에 대한 신청현황 수정 요청은 404 코드로 응답한다', async () => {
+    // given
+    const { email } = mockUser2;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+
+    // when
+    const res = await request(app)
+      .patch(`/api/study/user/${studyId}`)
+      .set('Cookie', cookies)
+      .send({ tempBio: 'updatedTempBio' }); // README: 스터디 신청현황 테스트에서 mockUser1의 mockStudy에 대한 참가신청을 진행함
+
+    // then
+    expect(res.statusCode).toBe(404);
+  });
+
+  test('정상적인 요청의 경우 스터디 신청 상태를 업데이트한다', async () => {
+    // given
+    const { email } = mockUser1;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+    const updatedTempBio = 'updated tempBio';
+
+    // when
+    const res = await request(app)
+      .patch(`/api/study/user/${studyId}`)
+      .set('Cookie', cookies)
+      .send({ tempBio: updatedTempBio }); // README: 스터디 신청현황 테스트에서 mockUser1의 mockStudy에 대한 참가신청을 진행함
+    const record = await conn
+      .getRepository(StudyUser)
+      .createQueryBuilder()
+      .select()
+      .where('STUDY_ID = :id', { id: studyId })
+      .andWhere('USER_ID = :userid', { userid: mockUser1.id })
+      .getOne();
+
+    // then
+    expect(res.statusCode).toBe(200);
+    expect(record?.tempBio).toBe(updatedTempBio);
   });
 });

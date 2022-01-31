@@ -3,6 +3,7 @@ import {
   findAllByStudyId,
   saveStudyUserRecord,
   updateAcceptStatus,
+  updateUserTempBio,
 } from '../../../services/studyUser';
 import studyService from '../../../services/study';
 
@@ -100,6 +101,31 @@ export default {
         err.message === NOT_FOUND ||
         err.message === '데이터베이스에 일치하는 요청값이 없습니다' // FIXME
       ) {
+        res.status(404).json({ message: NOT_FOUND });
+      } else {
+        res.status(400).json({ message: BAD_REQUEST });
+      }
+    }
+  },
+  async updateStudyJoin(req: Request, res: Response) {
+    const BAD_REQUEST = 'request is not valid';
+    const NOT_FOUND = '일치하는 studyid가 없음';
+
+    try {
+      const { tempBio } = req.body;
+      const { studyid } = req.params;
+      if (!studyid || !tempBio) throw new Error(BAD_REQUEST);
+
+      const userId = (req.user as { id: string }).id;
+      const result = await updateUserTempBio(studyid, userId, tempBio);
+      if (result.affected === 0) throw new Error(NOT_FOUND);
+
+      res.json({ message: '참가신청 현황 수정 성공 ' });
+    } catch (e) {
+      const err = e as Error;
+      if (err.message === BAD_REQUEST) {
+        res.status(400).json({ message: BAD_REQUEST });
+      } else if (err.message === NOT_FOUND) {
         res.status(404).json({ message: NOT_FOUND });
       } else {
         res.status(400).json({ message: BAD_REQUEST });

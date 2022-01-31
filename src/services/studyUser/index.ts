@@ -45,3 +45,17 @@ export const updateAcceptStatus = async (
     .andWhere('USER_ID = :userid', { userid: userId })
     .execute();
 };
+
+export const updateUserTempBio = async (
+  studyId: string,
+  userId: string,
+  tempBio: string
+) => {
+  return await getRepository(StudyUser)
+    .createQueryBuilder()
+    .update()
+    .set({ tempBio })
+    .where('STUDY_ID = :id', { id: studyId })
+    .andWhere('USER_ID = :userid', { userid: userId })
+    .execute();
+};
