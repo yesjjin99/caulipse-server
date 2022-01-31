@@ -1,6 +1,13 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import User from './UserEntity';
 
+export enum GradeEnum {
+  ONE = 1,
+  TWO = 2,
+  THREE = 3,
+  FOUR = 4,
+  FIVE = 5,
+}
 @Entity({ name: 'USER_PROFILE' })
 export default class UserProfile {
   @PrimaryColumn('uuid')
@@ -17,8 +24,7 @@ export default class UserProfile {
   @Column({ name: 'DEPT' })
   dept!: string;
 
-  // FIXME: enum type으로 수정
-  @Column({ name: 'GRADE' })
+  @Column('enum', { enum: GradeEnum, name: 'GRADE' })
   grade!: string;
 
   @Column({ name: 'BIO' })
