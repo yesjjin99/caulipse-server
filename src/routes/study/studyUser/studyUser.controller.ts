@@ -168,7 +168,7 @@ export default {
  *             properties:
  *               message:
  *                 type: string
- *                 example: "로그인 필요"
+ *                 example: "로그인이 필요한 서비스입니다"
  *         403:
  *           description: "자신이 개설한 스터디가 아닌 경우"
  *           schema:
@@ -237,7 +237,7 @@ export default {
  *             properties:
  *               message:
  *                 type: string
- *                 example: "로그인 필요"
+ *                 example: "로그인이 필요한 서비스입니다"
  *         404:
  *           description: "전달한 studyid가 데이터베이스에 없는 경우입니다"
  *           schema:
@@ -246,4 +246,121 @@ export default {
  *               message:
  *                 type: string
  *                 example: "일치하는 studyid가 없음"
+ *     patch:
+ *        tags:
+ *        - study/user
+ *        summary: "참가신청 현황 수정"
+ *        description: "사용자가 해당 스터디에 대한 자신의 참가신청 현황을 수정하기 위한 엔드포인트입니다."
+ *        parameters:
+ *        - in: "path"
+ *          name: "studyid"
+ *          description: "참가신청 현황을 수정할 스터디 id"
+ *          required: true
+ *          type: string
+ *          format: uuid
+ *        - in: "body"
+ *          name: "body"
+ *          description: "참가신청을 보내는 유저의 정보를 포함한 객체"
+ *          required: true
+ *          schema:
+ *            type: object
+ *            properties:
+ *              tempBio:
+ *                type: string
+ *                description: "스터디 호스트에게 보내지는 사용자의 인사말 / 소개글"
+ *
+ *        responses:
+ *          200:
+ *            description: "올바른 요청"
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *                  example: "참가신청 현황 수정 성공"
+ *          400:
+ *            description: "요청 body에 필요 프로퍼티가 존재하지 않거나 study id가 유효하지 않은 경우입니다"
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *                  example: "request is not valid"
+ *          401:
+ *            description: "로그인이 되어있지 않은 경우"
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *                  example: "로그인이 필요한 서비스입니다"
+ *          404:
+ *            description: "userid와 studyid가 일치하는 레코드가 데이터베이스에 존재하지 않는 경우입니다"
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *                  example: "일치하는 studyid가 없음"
+ *
+ * /study/user/{studyid}/accept:
+ *   patch:
+ *     tags:
+ *     - study/user
+ *     summary: "참가신청 수락 / 거절"
+ *     description: "해당 스터디의 참가신청을 보낸 사용자의 요청을 수락 또는 거절하기위한 엔드포인트입니다."
+ *     parameters:
+ *     - in: "path"
+ *       name: "studyid"
+ *       description: "참가신청 현황을 수정할 스터디 id"
+ *       required: true
+ *       type: string
+ *       format: uuid
+ *     - in: "body"
+ *       name: "body"
+ *       description: "참가신청을 보내는 유저의 정보를 포함한 객체"
+ *       required: true
+ *       schema:
+ *         type: object
+ *         properties:
+ *           accept:
+ *             type: boolean
+ *             description: "해당 유저를 수락할지 여부. true면 수락, false 라면 거절"
+ *           userId:
+ *             type: string
+ *             description: "스터디 참가를 수락/거절할 사용자의 id"
+ *
+ *     responses:
+ *       200:
+ *         description: "올바른 요청"
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               example: "참가신청 현황 수정 성공"
+ *       400:
+ *         description: "요청값이 유효하지 않은 경우입니다"
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               example: "request is not valid"
+ *       401:
+ *         description: "로그인이 되어있지 않은 경우"
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               example: "로그인이 필요한 서비스입니다"
+ *       404:
+ *         description: "전달한 studyid가 데이터베이스에 없는 경우입니다"
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               example: "일치하는 studyid가 없음"
  */
