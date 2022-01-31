@@ -19,9 +19,9 @@ import Category from '../src/entity/CategoryEntity';
 import Comment from '../src/entity/CommentEntity';
 
 let conn: Connection;
-let userId: string;
-let studyId: string;
-let commentId: string;
+let userid: string;
+let studyid: string;
+let commentid: string;
 
 beforeAll(async () => {
   conn = await createConnection({
@@ -29,11 +29,11 @@ beforeAll(async () => {
     database: process.env.DB_DATABASE_TEST,
   } as ConnectionOptions);
 
-  userId = randomUUID();
+  userid = randomUUID();
   const password = bcrypt.hashSync('test', 10);
   const userRepo = getRepository(User);
   const user = new User();
-  user.id = userId;
+  user.id = userid;
   user.email = 'test@gmail.com';
   user.password = password;
   user.isLogout = false;
@@ -50,10 +50,10 @@ beforeAll(async () => {
 
   await categoryRepo.save(category);
 
-  studyId = randomUUID();
+  studyid = randomUUID();
   const studyRepo = getRepository(Study);
   const study = new Study();
-  study.id = studyId;
+  study.id = studyid;
   study.createdAt = new Date();
   study.title = '스터디 제목';
   study.studyAbout = '스터디 내용';
@@ -86,37 +86,49 @@ afterAll(async () => {
 });
 
 describe('POST /api/study/:studyid/comment', () => {
-  // login
+  let cookies = '';
+  beforeEach(async () => {
+    // login
+    const res = await request(app).post('/api/user/login').send({
+      email: 'test@gmail.com',
+      password: 'test',
+    });
+    cookies = res.headers['set-cookie'];
+  });
 
   it('body에 작성내용, 유저 id가 포함된 요청을 받으면 studyid에 해당하는 스터디에 문의글을 등록하고 아이디 반환', async () => {
-    const res = await request(app).post(`/api/study/${studyId}/comment`).send({
-      content: '댓글 내용',
-      userId: userId,
-    });
+    const res = await request(app)
+      .post(`/api/study/${studyid}/comment`)
+      .set('Cookie', cookies)
+      .send({
+        content: '댓글 내용',
+      });
 
-    const { message, id } = res.body;
-    commentId = id;
+    const { commentId } = res.body;
+    commentid = commentId;
 
     expect(res.status).toBe(201);
-    expect(id).not.toBeNull();
+    expect(commentId).not.toBeNull();
   });
 
   it('body에 작성내용, 유저id, 댓글을 작성한 문의글 id가 포함된 요청을 받으면 문의글을 등록하고 아이디 반환', async () => {
-    const res = await request(app).post(`/api/study/${studyId}/comment`).send({
-      content: '대댓글 내용',
-      userId: userId,
-      replyTo: commentId,
-    });
+    const res = await request(app)
+      .post(`/api/study/${studyid}/comment`)
+      .set('Cookie', cookies)
+      .send({
+        content: '대댓글 내용',
+        replyTo: commentid,
+      });
 
-    const { message, id } = res.body;
-    commentId = id;
+    const { commentId } = res.body;
+    commentid = commentId;
 
     expect(res.status).toBe(201);
-    expect(id).not.toBeNull();
+    expect(commentId).not.toBeNull();
   });
 
   it('로그인이 되어있지 않은 경우 401 응답', async () => {
-    const res = await request(app).post(`/api/study/${studyId}/comment`).send({
+    const res = await request(app).post(`/api/study/${studyid}/comment`).send({
       content: '대댓글 내용',
     });
 
@@ -124,18 +136,21 @@ describe('POST /api/study/:studyid/comment', () => {
   });
 
   it('유효하지 않은 body를 포함하거나 body를 포함하지 않은 요청을 받으면 400 응답', async () => {
-    const res = await request(app).post(`/api/study/${studyId}/comment`).send({
-      userId: userId,
-    });
+    const res = await request(app)
+      .post(`/api/study/${studyid}/comment`)
+      .set('Cookie', cookies)
+      .send();
 
     expect(res.status).toBe(400);
   });
 
   it('요청된 studyid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
-    const res = await request(app).post('/api/study/wrong/comment').send({
-      content: '댓글 내용',
-      userId: userId,
-    });
+    const res = await request(app)
+      .post('/api/study/wrong/comment')
+      .set('Cookie', cookies)
+      .send({
+        content: '댓글 내용',
+      });
 
     expect(res.status).toBe(404);
   });
@@ -143,9 +158,9 @@ describe('POST /api/study/:studyid/comment', () => {
 
 describe('GET /api/:studyid/comment', () => {
   it('요청된 studyid에 해당하는 스터디의 모든 문의글 목록 조회', async () => {
-    const res = await request(app).get(`/api/study/${studyId}/comment`);
+    const res = await request(app).get(`/api/study/${studyid}/comment`);
 
-    const { message, comments } = res.body;
+    const { comments } = res.body;
 
     expect(res.status).toBe(200);
     expect(comments).not.toBeNull();
@@ -159,14 +174,22 @@ describe('GET /api/:studyid/comment', () => {
 });
 
 describe('PATCH /api/study/:studyid/comment/:commentid', () => {
-  // login
+  let cookies = '';
+  beforeEach(async () => {
+    // login
+    const res = await request(app).post('/api/user/login').send({
+      email: 'test@gmail.com',
+      password: 'test',
+    });
+    cookies = res.headers['set-cookie'];
+  });
 
   it('body를 포함한 요청을 받으면 studyid, commentid에 해당하는 문의글 업데이트', async () => {
     const res = await request(app)
-      .patch(`/api/study/${studyId}/comment/${commentId}`)
+      .patch(`/api/study/${studyid}/comment/${commentid}`)
+      .set('Cookie', cookies)
       .send({
         content: '수정한 내용',
-        userId: userId,
       });
 
     expect(res.status).toBe(200);
@@ -174,17 +197,16 @@ describe('PATCH /api/study/:studyid/comment/:commentid', () => {
 
   it('유효하지 않은 body를 포함하거나 body를 포함하지 않은 요청을 받으면 400 응답', async () => {
     const res = await request(app)
-      .patch(`/api/study/${studyId}/comment/${commentId}`)
-      .send({
-        userId: userId,
-      });
+      .patch(`/api/study/${studyid}/comment/${commentid}`)
+      .set('Cookie', cookies)
+      .send();
 
     expect(res.status).toBe(400);
   });
 
   it('로그인이 되어있지 않은 경우 401 응답', async () => {
     const res = await request(app)
-      .patch(`/api/study/${studyId}/comment/${commentId}`)
+      .patch(`/api/study/${studyid}/comment/${commentid}`)
       .send({
         content: '수정한 내용',
       });
@@ -194,10 +216,10 @@ describe('PATCH /api/study/:studyid/comment/:commentid', () => {
 
   it('요청된 commentid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
     const res = await request(app)
-      .patch(`/api/study/${studyId}/comment/wrong`)
+      .patch(`/api/study/${studyid}/comment/wrong`)
+      .set('Cookie', cookies)
       .send({
         content: '수정한 내용',
-        userId: userId,
       });
 
     expect(res.status).toBe(404);
@@ -206,9 +228,9 @@ describe('PATCH /api/study/:studyid/comment/:commentid', () => {
   it('요청된 studyid 또는 commentid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
     const res = await request(app)
       .patch('/api/study/wrong/comment/wrong')
+      .set('Cookie', cookies)
       .send({
         content: '수정한 내용',
-        userId: userId,
       });
 
     expect(res.status).toBe(404);

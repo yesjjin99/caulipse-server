@@ -111,24 +111,26 @@ const findStudyById = async (id: string) => {
   return study;
 };
 
-const createStudy = async ({
-  title,
-  studyAbout,
-  weekday,
-  frequency,
-  location,
-  capacity,
-  hostId,
-  categoryCode,
-}: studyDTO) => {
-  const id = randomUUID();
+const createStudy = async (
+  {
+    title,
+    studyAbout,
+    weekday,
+    frequency,
+    location,
+    capacity,
+    categoryCode,
+  }: studyDTO,
+  id: string
+) => {
+  const studyId = randomUUID();
 
-  const user = await findUserById(hostId);
+  const user = await findUserById(id);
   const category = await categoryService.findByCode(categoryCode);
 
   const repo = getRepository(Study);
   const study = new Study();
-  study.id = id;
+  study.id = studyId;
   study.createdAt = new Date();
   study.title = title;
   study.studyAbout = studyAbout;
@@ -144,7 +146,7 @@ const createStudy = async ({
   study.categoryCode = category;
 
   await repo.save(study);
-  return id;
+  return studyId;
 };
 
 const updateStudy = async (
@@ -156,7 +158,6 @@ const updateStudy = async (
     frequency,
     location,
     capacity,
-    hostId,
     categoryCode,
   }: studyDTO
 ) => {

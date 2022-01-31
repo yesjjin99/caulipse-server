@@ -6,7 +6,6 @@ import { findUserById } from '../user';
 
 interface commentType {
   content: string;
-  userId: string; // FIX
   replyTo: string | null;
 }
 
@@ -35,16 +34,17 @@ const getAllByStudy = async (id: string) => {
 
 const createComment = async (
   studyid: string,
-  { content, userId, replyTo }: commentType
+  { content, replyTo }: commentType,
+  id: string
 ) => {
-  const id = randomUUID();
+  const commentId = randomUUID();
 
   const study = await studyService.findStudyById(studyid);
-  const user = await findUserById(userId);
+  const user = await findUserById(id);
 
   const repo = getRepository(Comment);
   const comment = new Comment();
-  comment.id = id;
+  comment.id = commentId;
   comment.createdAt = new Date();
   comment.content = content;
   comment.user = user;
@@ -59,7 +59,7 @@ const createComment = async (
   }
 
   await repo.save(comment);
-  return id;
+  return commentId;
 };
 
 const updateComment = async (commentid: string, content: string) => {

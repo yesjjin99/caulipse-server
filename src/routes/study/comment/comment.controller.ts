@@ -17,26 +17,23 @@ const getComment = async (req: Request, res: Response) => {
 
 const createComment = async (req: Request, res: Response) => {
   const BAD_REQUEST = '요청값이 유효하지 않음';
-  const UNAUTHORIZED = '로그인 필요';
 
   try {
     const { studyid } = req.params;
-    const { content, userId, replyTo } = req.body; // FIX
+    const { content, replyTo } = req.body;
+    const { id } = req.user as { id: string };
 
-    if (!userId) throw new Error(UNAUTHORIZED);
     if (!content) throw new Error(BAD_REQUEST);
 
-    const id = await commentService.createComment(studyid, req.body); // FIX
+    const commentId = await commentService.createComment(studyid, req.body, id);
 
     return res.status(201).json({
       message: '문의글 생성 성공',
-      id,
+      commentId,
     });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
       return res.status(400).json({ message: (e as Error).message });
-    } else if ((e as Error).message === UNAUTHORIZED) {
-      return res.status(401).json({ message: (e as Error).message });
     } else {
       return res.status(404).json({ message: (e as Error).message });
     }
@@ -45,13 +42,11 @@ const createComment = async (req: Request, res: Response) => {
 
 const updateComment = async (req: Request, res: Response) => {
   const BAD_REQUEST = '요청값이 유효하지 않음';
-  const UNAUTHORIZED = '로그인 필요';
 
   try {
     const { commentid } = req.params;
-    const { content, userId } = req.body; // FIX
+    const { content } = req.body;
 
-    if (!userId) throw new Error(UNAUTHORIZED);
     if (!content) throw new Error(BAD_REQUEST);
 
     await commentService.updateComment(commentid, content);
@@ -60,8 +55,6 @@ const updateComment = async (req: Request, res: Response) => {
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
       return res.status(400).json({ message: (e as Error).message });
-    } else if ((e as Error).message === UNAUTHORIZED) {
-      return res.status(401).json({ message: (e as Error).message });
     } else {
       return res.status(404).json({ message: (e as Error).message });
     }
