@@ -12,7 +12,7 @@ export default {
 
     let study;
     try {
-      study = await studyService.findById(req.params.studyid);
+      study = await studyService.findStudyById(req.params.studyid);
     } catch (e) {
       res.status(404).json({ message: NOT_FOUND });
       return;

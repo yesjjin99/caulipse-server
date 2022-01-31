@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import helloWorld from '../../hello-world';
 import acceptRouter from './accept';
-import controller from './studyUser.ctrl';
+import controller from './studyUser.controller';
 
 const router = Router({ mergeParams: true });
 

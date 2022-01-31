@@ -4,7 +4,7 @@ import loginRouter from './login';
 import roleRouter from './role';
 import notificationRouter from './notification';
 import categoryRouter from './category';
-import controller from './user.ctrl';
+import controller from './user.controller';
 import { checkToken } from '../../middlewares/auth';
 
 const router = Router();
