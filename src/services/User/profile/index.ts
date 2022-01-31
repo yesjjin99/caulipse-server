@@ -83,3 +83,31 @@ export const createProfile = async (req: Request, res: Response) => {
     res.json({ error: (err as Error).message || (err as Error).toString() });
   }
 };
+
+export const getUserProfileById = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    const findUserProfileById = async (id: string) => {
+      const userProfile = await getRepository(UserProfile)
+        .createQueryBuilder('userProfile')
+        .where('userProfile.user_id = :userId', { id })
+        .getOne();
+
+      if (!userProfile)
+        throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
+
+      return userProfile;
+    };
+
+    const userProfile = await findUserProfileById(userId);
+
+    return res.status(200).json({
+      message: '해당 아이디의 유저 프로필 조회 성공',
+      userProfile,
+    });
+  } catch (err) {
+    console.error(err);
+    res.json({ error: (err as Error).message || (err as Error).toString() });
+  }
+};
