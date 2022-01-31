@@ -200,7 +200,7 @@ export default { getComment, createComment, updateComment };
  *            properties:
  *              message:
  *                type: string
- *                example: "문의글 생성 성공"
+ *                example: "문의글 수정 성공"
  *        400:
  *          description: "요청값이 유효하지 않은 경우입니다"
  *          schema:
@@ -209,6 +209,50 @@ export default { getComment, createComment, updateComment };
  *              message:
  *                type: string
  *                example: "request is not valid"
+ *        401:
+ *          description: "로그인이 되어있지 않은 경우"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "로그인 필요"
+ *        404:
+ *          description: "전달한 studyid 또는 commentid가 데이터베이스에 없는 경우입니다"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "일치하는 studyid 또는 commentid가 없음"
+ *
+ *    delete:
+ *      summary: "스터디 문의글 삭제"
+ *      description: "해당 스터디의 해당 문의글을 삭제하기 위한 엔드포인트입니다"
+ *      tags:
+ *      - study/comment
+ *      parameters:
+ *      - name: "studyid"
+ *        in: "path"
+ *        description: "문의글을 삭제할 스터디 id"
+ *        required: true
+ *        type: string
+ *        format: uuid
+ *      - name: "commentid"
+ *        in: "path"
+ *        description: "삭제할 문의글 id"
+ *        required: true
+ *        type: string
+ *        format: uuid
+ *      responses:
+ *        200:
+ *          description: "올바른 요청"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "문의글 삭제 성공"
  *        401:
  *          description: "로그인이 되어있지 않은 경우"
  *          schema:
