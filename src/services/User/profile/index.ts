@@ -41,27 +41,25 @@ export const createProfile = async (req: Request, res: Response) => {
       userId: string;
       userName: string;
       dept: string;
-      grade?: string;
+      grade?: number;
       bio: string;
       userAbout?: string;
       showDept?: boolean;
       showGrade?: boolean;
       onBreak?: boolean;
-      link1?: string;
-      link2?: string;
+      links?: string;
     }
     const {
       userId,
       userName,
       dept,
-      grade = '',
+      grade = 0,
       bio,
       userAbout = '',
       showGrade = true,
       showDept = true,
       onBreak = false,
-      link1 = '',
-      link2 = '',
+      links = '',
     }: UserProfileInterface = req.body;
 
     const userProfileRepo = getRepository(UserProfile);
@@ -75,8 +73,7 @@ export const createProfile = async (req: Request, res: Response) => {
     userProfile.showGrade = showGrade;
     userProfile.showDept = showDept;
     userProfile.onBreak = onBreak;
-    userProfile.link1 = link1;
-    userProfile.link2 = link2;
+    userProfile.links = links;
 
     await userProfileRepo.save(userProfile);
 

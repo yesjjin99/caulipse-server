@@ -25,7 +25,7 @@ export default class UserProfile {
   dept!: string;
 
   @Column('enum', { enum: GradeEnum, name: 'GRADE' })
-  grade!: string;
+  grade!: number;
 
   @Column({ name: 'BIO' })
   bio!: string;
@@ -42,9 +42,6 @@ export default class UserProfile {
   @Column({ name: 'ON_BREAK' })
   onBreak!: boolean;
 
-  @Column({ name: 'LINK1' })
-  link1!: string;
-
-  @Column({ name: 'LINK2' })
-  link2!: string;
+  @Column({ name: 'LINKS' })
+  links!: string;
 }
