@@ -42,15 +42,6 @@ export default class UserProfile {
   @Column({ name: 'ON_BREAK' })
   onBreak!: boolean;
 
-  @Column({ name: 'EMAIL1' })
-  email1!: string;
-
-  @Column({ name: 'EMAIL2' })
-  email2!: string;
-
-  @Column({ name: 'EMAIL3' })
-  email3!: string;
-
   @Column({ name: 'LINK1' })
   link1!: string;
 

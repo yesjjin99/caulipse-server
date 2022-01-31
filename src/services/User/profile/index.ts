@@ -47,9 +47,6 @@ export const createProfile = async (req: Request, res: Response) => {
       showDept?: boolean;
       showGrade?: boolean;
       onBreak?: boolean;
-      email1?: string;
-      email2?: string;
-      email3?: string;
       link1?: string;
       link2?: string;
     }
@@ -63,9 +60,6 @@ export const createProfile = async (req: Request, res: Response) => {
       showGrade = true,
       showDept = true,
       onBreak = false,
-      email1 = '',
-      email2 = '',
-      email3 = '',
       link1 = '',
       link2 = '',
     }: UserProfileInterface = req.body;
@@ -81,9 +75,6 @@ export const createProfile = async (req: Request, res: Response) => {
     userProfile.showGrade = showGrade;
     userProfile.showDept = showDept;
     userProfile.onBreak = onBreak;
-    userProfile.email1 = email1;
-    userProfile.email2 = email2;
-    userProfile.email3 = email3;
     userProfile.link1 = link1;
     userProfile.link2 = link2;
 
