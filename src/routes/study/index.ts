@@ -17,7 +17,7 @@ router.delete('/:studyid', checkToken, controller.deleteStudy);
 // 스터디 참가 신청 라우터
 router.use('/user/:studyid', checkToken, studyUserRouter);
 // 스터디 북마크 라우터
-router.use('/:studyid/bookmark', checkToken, bookmarkRouter);
+router.use('/:studyid/bookmark', bookmarkRouter);
 // 스터디 문의글 라우터
 router.use('/:studyid/comment', commentRouter);
 

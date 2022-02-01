@@ -71,9 +71,4 @@ const updateComment = async (commentid: string, content: string) => {
   await repo.save(comment);
 };
 
-export default {
-  findCommentById,
-  getAllByStudy,
-  createComment,
-  updateComment,
-};
+export default { findCommentById, getAllByStudy, createComment, updateComment };
