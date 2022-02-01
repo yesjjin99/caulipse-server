@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import helloWorld from '../../hello-world';
+import controller from './notification.controller';
 
 const router = Router({ mergeParams: true });
-router.get('/', helloWorld);
+router.get('/', controller.findAllNotification);
 // 사용자의 알림 확인 상태 갱신
 router.patch('/:notiId', helloWorld);
 // 사용자의 알림 항목을 삭제
