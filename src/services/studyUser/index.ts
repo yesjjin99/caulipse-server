@@ -59,3 +59,15 @@ export const updateUserTempBio = async (
     .andWhere('USER_ID = :userid', { userid: userId })
     .execute();
 };
+
+export const deleteByStudyAndUserId = async (
+  studyId: string,
+  userId: string
+) => {
+  return await getRepository(StudyUser)
+    .createQueryBuilder()
+    .delete()
+    .where('STUDY_ID = :id', { id: studyId })
+    .andWhere('USER_ID = :userid', { userid: userId })
+    .execute();
+};

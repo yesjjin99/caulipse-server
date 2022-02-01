@@ -557,3 +557,78 @@ describe('스터디 참가신청 수정 api', () => {
     expect(record?.tempBio).toBe(updatedTempBio);
   });
 });
+
+describe('스터디 참가신청 취소 api', () => {
+  test('로그인하지 않았을 경우 401 코드로 응답한다', async () => {
+    const res = await request(app).delete(`/api/study/user/${studyId}`);
+    expect(res.statusCode).toBe(401);
+  });
+
+  test('존재하지 않는 study id 에 대한 요청은 404 코드로 응답한다', async () => {
+    // given
+    const { email } = mockUser1;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+    const wrongStudyId = 'aslkdfjaldjkflasj';
+
+    // when
+    const res = await request(app)
+      .delete(`/api/study/user/${wrongStudyId}`)
+      .set('Cookie', cookies);
+
+    // then
+    expect(res.statusCode).toBe(404);
+  });
+
+  test('스터디에 신청하지 않은 사용자의 참가신청 취소 요청은 404 코드로 응답한다', async () => {
+    // given
+    const { email } = mockUser2;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+
+    // when
+    const res = await request(app)
+      .delete(`/api/study/user/${studyId}`)
+      .set('Cookie', cookies);
+
+    // then
+    expect(res.statusCode).toBe(404);
+  });
+
+  test('정상적인 요청의 경우 스터디 신청 상태를 업데이트한다', async () => {
+    // given
+    const { email } = mockUser1;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+    const query = async () => {
+      return await conn
+        .getRepository(StudyUser)
+        .createQueryBuilder()
+        .select()
+        .where('STUDY_ID = :id', { id: studyId })
+        .andWhere('USER_ID = :userid', { userid: mockUser1.id })
+        .getOne();
+    };
+
+    // when
+    const before = await query();
+    const res = await request(app)
+      .delete(`/api/study/user/${studyId}`)
+      .set('Cookie', cookies);
+    const after = await query();
+
+    // then
+    expect(res.statusCode).toBe(200);
+    expect(before).toBeTruthy();
+    expect(after).toBeFalsy();
+  });
+});

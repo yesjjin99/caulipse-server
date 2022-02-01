@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import {
+  deleteByStudyAndUserId,
   findAllByStudyId,
   saveStudyUserRecord,
   updateAcceptStatus,
@@ -126,6 +127,27 @@ export default {
       if (err.message === BAD_REQUEST) {
         res.status(400).json({ message: BAD_REQUEST });
       } else if (err.message === NOT_FOUND) {
+        res.status(404).json({ message: NOT_FOUND });
+      } else {
+        res.status(400).json({ message: BAD_REQUEST });
+      }
+    }
+  },
+  async deleteStudyJoin(req: Request, res: Response) {
+    const BAD_REQUEST = 'request is not valid';
+    const NOT_FOUND = '일치하는 참가신청이 없음';
+
+    try {
+      const { studyid } = req.params;
+      const userId = (req.user as { id: string }).id;
+
+      const result = await deleteByStudyAndUserId(studyid, userId);
+      if (result.affected === 0) throw new Error(NOT_FOUND);
+
+      res.json({ message: '참가신청 취소 성공' });
+    } catch (e) {
+      const err = e as Error;
+      if (err.message === NOT_FOUND) {
         res.status(404).json({ message: NOT_FOUND });
       } else {
         res.status(400).json({ message: BAD_REQUEST });
@@ -302,6 +324,45 @@ export default {
  *                message:
  *                  type: string
  *                  example: "일치하는 studyid가 없음"
+ *
+ *     delete:
+ *       tags:
+ *       - study/user
+ *       summary: "참가신청 취소"
+ *       description: "해당 사용자가 해당 스터디에 요청한 참가신청을 취소하기 위한 엔드포인트입니다."
+ *       parameters:
+ *       - in: "path"
+ *         name: "studyid"
+ *         description: "참가신청을 취소할 스터디의 id"
+ *         required: true
+ *         type: string
+ *         format: uuid
+ *
+ *       responses:
+ *         200:
+ *           description: "올바른 요청"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "참가신청 취소 성공"
+ *         401:
+ *           description: "로그인이 되어있지 않은 경우"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "로그인이 필요한 서비스입니다"
+ *         404:
+ *           description: "존재하지 않는 스터디 id 이거나 사용자가 스터디에 참가신청을 하지 않은 경우입니다."
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "일치하는 studyid가 없음"
  *
  * /study/user/{studyid}/accept:
  *   patch:
