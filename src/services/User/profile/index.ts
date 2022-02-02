@@ -103,6 +103,8 @@ export const getUserProfileById = async (req: Request, res: Response) => {
 
     const userProfile = await findUserProfileById(id);
 
+    // Todo: Link Json 파싱하기 : string -> array로 뿌리기
+
     return res.status(200).json({
       message: '해당 아이디의 유저 프로필 조회 성공',
       userProfile: userProfile[0],
