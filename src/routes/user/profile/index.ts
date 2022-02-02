@@ -11,7 +11,7 @@ const router = Router();
 // 프로필 설정 페이지
 router.post('/', checkToken, createProfile);
 // 사용자 프로필 정보 조회
-router.get('/:id', getUserProfileById);
+router.get('/:id', checkToken, getUserProfileById);
 // 사용자 프로필 갱신
 router.patch('/:id', helloWorld);
 
