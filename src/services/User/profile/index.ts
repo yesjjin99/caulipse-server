@@ -86,13 +86,14 @@ export const createProfile = async (req: Request, res: Response) => {
 
 export const getUserProfileById = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
+    const { id } = req.params;
 
-    const findUserProfileById = async (id: string) => {
+    const findUserProfileById = async (paramId: string) => {
       const userProfile = await getRepository(UserProfile)
         .createQueryBuilder('userProfile')
-        .where('userProfile.user_id = :userId', { id })
-        .getOne();
+        .select()
+        .where('userProfile.user_id = :id', { id: paramId })
+        .execute();
 
       if (!userProfile)
         throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
@@ -100,11 +101,11 @@ export const getUserProfileById = async (req: Request, res: Response) => {
       return userProfile;
     };
 
-    const userProfile = await findUserProfileById(userId);
+    const userProfile = await findUserProfileById(id);
 
     return res.status(200).json({
       message: '해당 아이디의 유저 프로필 조회 성공',
-      userProfile,
+      userProfile: userProfile[0],
     });
   } catch (err) {
     console.error(err);
