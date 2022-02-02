@@ -256,7 +256,7 @@ describe('참가 신청중인 사용자 목록 조회 api', () => {
     expect(res.statusCode).toBe(404);
   });
 
-  test('자신이 소유하지 않은 스터디에 대한 신청자 현황을 요청하면 403 코드로 응답한다', async () => {
+  test('자신이 소유하지 않은 스터디에 대한 신청자 현황을 요청하면 참가가 수락된 인원만 반환한다', async () => {
     // given
     const loginRes = await request(app)
       .post('/api/user/login')
@@ -269,7 +269,8 @@ describe('참가 신청중인 사용자 목록 조회 api', () => {
       .set('Cookie', cookies);
 
     // then
-    expect(res.statusCode).toBe(403);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.length).toBe(0);
   });
 
   test('자신이 소유한 스터디에 대한 신청자 현황을 요청하면 200 코드로 응답한다', async () => {

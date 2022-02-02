@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import {
   deleteByStudyAndUserId,
+  findAcceptedByStudyId,
   findAllByStudyId,
   saveStudyUserRecord,
   updateAcceptStatus,
@@ -24,7 +25,18 @@ export default {
     try {
       const userId = (req.user as { id: string }).id;
       const hasAuthority = study?.HOST_ID === userId;
-      if (!hasAuthority) throw new Error(FORBIDDEN);
+      if (!hasAuthority) {
+        const result = await findAcceptedByStudyId(req.params.studyid);
+        res.json(
+          result.map((record: Record<string, string | boolean>) => ({
+            studyId: record.StudyUser_STUDY_ID,
+            userId: record.StudyUser_USER_ID,
+            isAccepted: record.StudyUser_IS_ACCEPTED,
+            tempBio: record.StudyUser_TEMP_BIO,
+          }))
+        );
+        return;
+      }
     } catch (e) {
       res.status(403).json({ message: FORBIDDEN });
       return;
