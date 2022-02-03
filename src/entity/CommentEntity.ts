@@ -26,16 +26,18 @@ export default class Comment {
   @Column({ name: 'CONTENT' })
   content!: string;
 
-  @ManyToOne(() => User, (user) => user.comments)
+  @ManyToOne(() => User, (user) => user.comments, { nullable: true })
   @JoinColumn({ name: 'USER_ID' })
-  user!: User;
+  user?: User | null;
 
   @OneToMany(() => Comment, (comment) => comment.parentComment)
   nestedComments!: Comment[];
 
-  @ManyToOne(() => Comment, (comment) => comment.nestedComments)
+  @ManyToOne(() => Comment, (comment) => comment.nestedComments, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'NESTED_COMMENT_ID' })
-  parentComment!: Comment;
+  parentComment?: Comment | null;
 
   @ManyToOne(() => Study, (study) => study.id)
   @JoinColumn({ name: 'STUDY_ID' })

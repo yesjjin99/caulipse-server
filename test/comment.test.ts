@@ -17,11 +17,13 @@ import Study, {
 } from '../src/entity/StudyEntity';
 import Category from '../src/entity/CategoryEntity';
 import Comment from '../src/entity/CommentEntity';
+import commentService from '../src/services/comment';
 
 let conn: Connection;
 let userid: string;
 let studyid: string;
-let commentid: string;
+let commentid1: string;
+let commentid2: string;
 
 beforeAll(async () => {
   conn = await createConnection({
@@ -72,12 +74,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await getRepository(Comment)
-    .createQueryBuilder('comment')
-    .delete()
-    .where('comment.NESTED_COMMENT_ID IS NOT NULL')
-    .execute();
-  await getRepository(Comment).createQueryBuilder().delete().execute();
   await getRepository(Study).createQueryBuilder().delete().execute();
   await getRepository(User).createQueryBuilder().delete().execute();
   await getRepository(Category).createQueryBuilder().delete().execute();
@@ -105,7 +101,7 @@ describe('POST /api/study/:studyid/comment', () => {
       });
 
     const { commentId } = res.body;
-    commentid = commentId;
+    commentid1 = commentId;
 
     expect(res.status).toBe(201);
     expect(commentId).not.toBeNull();
@@ -117,11 +113,11 @@ describe('POST /api/study/:studyid/comment', () => {
       .set('Cookie', cookies)
       .send({
         content: '대댓글 내용',
-        replyTo: commentid,
+        replyTo: commentid1,
       });
 
     const { commentId } = res.body;
-    commentid = commentId;
+    commentid2 = commentId;
 
     expect(res.status).toBe(201);
     expect(commentId).not.toBeNull();
@@ -186,7 +182,7 @@ describe('PATCH /api/study/:studyid/comment/:commentid', () => {
 
   it('body를 포함한 요청을 받으면 studyid, commentid에 해당하는 문의글 업데이트', async () => {
     const res = await request(app)
-      .patch(`/api/study/${studyid}/comment/${commentid}`)
+      .patch(`/api/study/${studyid}/comment/${commentid2}`)
       .set('Cookie', cookies)
       .send({
         content: '수정한 내용',
@@ -197,7 +193,7 @@ describe('PATCH /api/study/:studyid/comment/:commentid', () => {
 
   it('유효하지 않은 body를 포함하거나 body를 포함하지 않은 요청을 받으면 400 응답', async () => {
     const res = await request(app)
-      .patch(`/api/study/${studyid}/comment/${commentid}`)
+      .patch(`/api/study/${studyid}/comment/${commentid2}`)
       .set('Cookie', cookies)
       .send();
 
@@ -206,7 +202,7 @@ describe('PATCH /api/study/:studyid/comment/:commentid', () => {
 
   it('로그인이 되어있지 않은 경우 401 응답', async () => {
     const res = await request(app)
-      .patch(`/api/study/${studyid}/comment/${commentid}`)
+      .patch(`/api/study/${studyid}/comment/${commentid2}`)
       .send({
         content: '수정한 내용',
       });
@@ -234,5 +230,74 @@ describe('PATCH /api/study/:studyid/comment/:commentid', () => {
       });
 
     expect(res.status).toBe(404);
+  });
+});
+
+describe('DELETE /api/study/:studyid/comment/:commentid', () => {
+  let cookies = '';
+  beforeEach(async () => {
+    // login
+    const res = await request(app).post('/api/user/login').send({
+      email: 'test@gmail.com',
+      password: 'test',
+    });
+    cookies = res.headers['set-cookie'];
+  });
+
+  it('로그인이 되어있지 않은 경우 401 응답', async () => {
+    const res = await request(app)
+      .delete(`/api/study/${studyid}/comment/${commentid2}`)
+      .send();
+
+    expect(res.status).toBe(401);
+  });
+
+  it('요청된 commentid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
+    const res = await request(app)
+      .delete(`/api/study/${studyid}/comment/wrong`)
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(404);
+  });
+
+  it('요청된 studyid 또는 commentid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
+    const res = await request(app)
+      .delete('/api/study/wrong/comment/wrong')
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(404);
+  });
+
+  it('대댓글이 달려있는 댓글을 삭제할 때는 데이터베이스에서 삭제하지 않고, 사용자 아이디와 내용 업데이트하여 삭제 처리', async () => {
+    const res = await request(app)
+      .delete(`/api/study/${studyid}/comment/${commentid1}`)
+      .set('Cookie', cookies)
+      .send();
+
+    const comment = await commentService.findCommentById(commentid1);
+
+    expect(res.status).toBe(200);
+    expect(comment.user).toBeUndefined();
+    expect(comment.content).toEqual('삭제된 문의글입니다.');
+  });
+
+  it('대댓글을 삭제할 때는 바로 데이터베이스에서 삭제', async () => {
+    const res = await request(app)
+      .delete(`/api/study/${studyid}/comment/${commentid2}`)
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(200);
+  });
+
+  it('대댓글이 남아있지 않은 댓글을 삭제할 때는 바로 데이터베이스에서 삭제', async () => {
+    const res = await request(app)
+      .delete(`/api/study/${studyid}/comment/${commentid1}`)
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(200);
   });
 });
