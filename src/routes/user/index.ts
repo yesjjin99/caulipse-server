@@ -4,6 +4,7 @@ import loginRouter from './login';
 import roleRouter from './role';
 import notificationRouter from './notification';
 import categoryRouter from './category';
+import bookmarkRouter from './bookmark';
 import controller from './user.controller';
 import { checkToken } from '../../middlewares/auth';
 
@@ -12,6 +13,7 @@ router.use('/notification', checkToken, notificationRouter);
 router.use('/category', categoryRouter);
 router.use('/profile', profileRouter);
 router.use('/login', loginRouter);
+router.use('/bookmark', checkToken, bookmarkRouter);
 
 router.post('/', controller.saveUser);
 router.delete('/', checkToken, controller.deleteUser);

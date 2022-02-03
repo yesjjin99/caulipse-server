@@ -10,6 +10,7 @@ import Comment from './CommentEntity';
 import Notification from './NotificationEntity';
 import Category from './CategoryEntity';
 import Notice from './NoticeEntity';
+import Study from './StudyEntity';
 
 export enum UserRoleEnum {
   GUEST = 'GUEST',
@@ -59,6 +60,12 @@ export default class User {
     },
   })
   categories!: Category[];
+
+  @ManyToMany(() => Study, (study) => study.bookmarks)
+  bookmarks!: Study[];
+
+  @ManyToMany(() => Comment, (comment) => comment.metooComment)
+  metooComment!: Comment[];
 }
 
 /**
