@@ -41,33 +41,25 @@ export const createProfile = async (req: Request, res: Response) => {
       userId: string;
       userName: string;
       dept: string;
-      grade?: string;
+      grade?: number;
       bio: string;
       userAbout?: string;
       showDept?: boolean;
       showGrade?: boolean;
       onBreak?: boolean;
-      email1?: string;
-      email2?: string;
-      email3?: string;
-      link1?: string;
-      link2?: string;
+      links?: string;
     }
     const {
       userId,
       userName,
       dept,
-      grade = '',
+      grade = 0,
       bio,
       userAbout = '',
       showGrade = true,
       showDept = true,
       onBreak = false,
-      email1 = '',
-      email2 = '',
-      email3 = '',
-      link1 = '',
-      link2 = '',
+      links = '',
     }: UserProfileInterface = req.body;
 
     const userProfileRepo = getRepository(UserProfile);
@@ -81,15 +73,42 @@ export const createProfile = async (req: Request, res: Response) => {
     userProfile.showGrade = showGrade;
     userProfile.showDept = showDept;
     userProfile.onBreak = onBreak;
-    userProfile.email1 = email1;
-    userProfile.email2 = email2;
-    userProfile.email3 = email3;
-    userProfile.link1 = link1;
-    userProfile.link2 = link2;
+    userProfile.links = links;
 
     await userProfileRepo.save(userProfile);
 
     res.status(201).json({ message: 'Created. 유저가 생성되었습니다.' });
+  } catch (err) {
+    console.error(err);
+    res.json({ error: (err as Error).message || (err as Error).toString() });
+  }
+};
+
+export const getUserProfileById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const findUserProfileById = async (paramId: string) => {
+      const userProfile = await getRepository(UserProfile)
+        .createQueryBuilder('userProfile')
+        .select()
+        .where('userProfile.user_id = :id', { id: paramId })
+        .execute();
+
+      if (!userProfile)
+        throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
+
+      return userProfile;
+    };
+
+    const userProfile = await findUserProfileById(id);
+
+    // Todo: Link Json 파싱하기 : string -> array로 뿌리기
+
+    return res.status(200).json({
+      message: '해당 아이디의 유저 프로필 조회 성공',
+      userProfile: userProfile[0],
+    });
   } catch (err) {
     console.error(err);
     res.json({ error: (err as Error).message || (err as Error).toString() });
