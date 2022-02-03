@@ -31,3 +31,52 @@ export const findAllByStudyId = async (studyId: string) => {
     .where('STUDY_ID = :id', { id: studyId })
     .execute();
 };
+
+export const findAcceptedByStudyId = async (studyId: string) => {
+  return await getRepository(StudyUser)
+    .createQueryBuilder()
+    .select()
+    .where('STUDY_ID = :id', { id: studyId })
+    .andWhere('IS_ACCEPTED = 1')
+    .execute();
+};
+
+export const updateAcceptStatus = async (
+  studyId: string,
+  userId: string,
+  accept = true
+) => {
+  return await getRepository(StudyUser)
+    .createQueryBuilder()
+    .update()
+    .set({ isAccepted: accept })
+    .where('STUDY_ID = :id', { id: studyId })
+    .andWhere('USER_ID = :userid', { userid: userId })
+    .execute();
+};
+
+export const updateUserTempBio = async (
+  studyId: string,
+  userId: string,
+  tempBio: string
+) => {
+  return await getRepository(StudyUser)
+    .createQueryBuilder()
+    .update()
+    .set({ tempBio })
+    .where('STUDY_ID = :id', { id: studyId })
+    .andWhere('USER_ID = :userid', { userid: userId })
+    .execute();
+};
+
+export const deleteByStudyAndUserId = async (
+  studyId: string,
+  userId: string
+) => {
+  return await getRepository(StudyUser)
+    .createQueryBuilder()
+    .delete()
+    .where('STUDY_ID = :id', { id: studyId })
+    .andWhere('USER_ID = :userid', { userid: userId })
+    .execute();
+};

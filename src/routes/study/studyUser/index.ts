@@ -1,15 +1,13 @@
 import { Router } from 'express';
-import helloWorld from '../../hello-world';
-import acceptRouter from './accept';
 import controller from './studyUser.controller';
 
 const router = Router({ mergeParams: true });
 
 router.get('/', controller.getStudyUserList);
 router.post('/', controller.joinStudy);
-router.patch('/', helloWorld);
-router.delete('/', helloWorld);
+router.patch('/', controller.updateStudyJoin);
+router.delete('/', controller.deleteStudyJoin);
 
-router.use('/accept', acceptRouter);
+router.patch('/accept', controller.acceptUser);
 
 export default router;
