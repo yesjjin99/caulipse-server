@@ -172,4 +172,16 @@ export default class Study {
  *      views:
  *        type: integer
  *        description: "현재 스터디 조회수"
+ *
+ *  Bookmark:
+ *    type: object
+ *    properties:
+ *      userId:
+ *        type: string
+ *        format: uuid
+ *        description: "북마크를 등록한 사용자의 id"
+ *      studyId:
+ *        type: string
+ *        format: uuid
+ *        description: "북마크를 등록된 study의 id"
  */

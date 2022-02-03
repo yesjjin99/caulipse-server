@@ -25,6 +25,5 @@ export interface studyDTO {
   frequency: FrequencyEnum;
   location: LocationEnum;
   capacity: number;
-  hostId: string; // FIX
   categoryCode: number;
 }

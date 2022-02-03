@@ -1,17 +1,15 @@
 import { Router } from 'express';
-import helloWorld from '../../hello-world';
 import metooRouter from './metoo';
 import controller from './comment.controller';
+import { checkToken } from '../../../middlewares/auth';
 
 const router = Router({ mergeParams: true });
 
-router.get('/', controller.getComment);
-// FIX: 액세스 토큰 검증 미들웨어 추가
-router.post('/', controller.createComment);
+router.get('/', controller.getAllComment);
+router.post('/', checkToken, controller.createComment);
 
-// FIX: 액세스 토큰 검증 미들웨어 추가
-router.patch('/:commentid', controller.updateComment);
-router.delete('/:commentid', helloWorld);
+router.patch('/:commentid', checkToken, controller.updateComment);
+router.delete('/:commentid', checkToken, controller.deleteComment);
 
 router.use('/:commentid/metoo', metooRouter);
 

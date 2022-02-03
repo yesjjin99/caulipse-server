@@ -37,7 +37,6 @@ const getAllStudy = async (req: Request, res: Response) => {
 
 const createStudy = async (req: Request, res: Response) => {
   const BAD_REQUEST = '요청값이 유효하지 않음';
-  const UNAUTHORIZED = '로그인 필요';
 
   try {
     const {
@@ -47,11 +46,10 @@ const createStudy = async (req: Request, res: Response) => {
       frequency,
       location,
       capacity,
-      hostId, // FIX
       categoryCode,
     } = req.body;
 
-    if (!hostId) throw new Error(UNAUTHORIZED);
+    const { id } = req.user as { id: string };
 
     if (
       !title ||
@@ -64,19 +62,15 @@ const createStudy = async (req: Request, res: Response) => {
     )
       throw new Error(BAD_REQUEST);
 
-    const id = await studyService.createStudy(req.body);
+    const studyId = await studyService.createStudy(req.body, id);
 
     return res.status(201).json({
       message: '새로운 스터디 생성 성공',
-      id,
+      studyId,
     });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
       return res.status(400).json({
-        message: (e as Error).message,
-      });
-    } else if ((e as Error).message === UNAUTHORIZED) {
-      return res.status(401).json({
         message: (e as Error).message,
       });
     } else {
@@ -105,7 +99,6 @@ const getStudybyId = async (req: Request, res: Response) => {
 
 const updateStudy = async (req: Request, res: Response) => {
   const BAD_REQUEST = '요청값이 유효하지 않음';
-  const UNAUTHORIZED = '로그인 필요';
 
   try {
     const { studyid } = req.params;
@@ -116,11 +109,8 @@ const updateStudy = async (req: Request, res: Response) => {
       frequency,
       location,
       capacity,
-      hostId, // FIX
       categoryCode,
     } = req.body;
-
-    if (!hostId) throw new Error(UNAUTHORIZED);
 
     if (
       !title ||
@@ -138,8 +128,6 @@ const updateStudy = async (req: Request, res: Response) => {
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
       return res.status(400).json({ message: (e as Error).message });
-    } else if ((e as Error).message === UNAUTHORIZED) {
-      return res.status(401).json({ message: (e as Error).message });
     } else {
       return res.status(404).json({ message: (e as Error).message });
     }
@@ -148,7 +136,6 @@ const updateStudy = async (req: Request, res: Response) => {
 
 const deleteStudy = async (req: Request, res: Response) => {
   try {
-    // FIX: req.user -> 로그인 확인 코드 추가
     const { studyid } = req.params;
 
     await studyService.deleteStudy(studyid);
