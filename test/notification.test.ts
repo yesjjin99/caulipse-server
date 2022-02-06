@@ -106,3 +106,5 @@ describe('사용자 알림 조회 api', () => {
     expect(data[0].Notification_STUDY_ID).toBe(mockStudy.id);
   });
 });
+
+// TODO: 사용자 알림 확인 상태 갱신 테스트코드 구현
