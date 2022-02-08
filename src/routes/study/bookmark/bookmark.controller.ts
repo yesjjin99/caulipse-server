@@ -1,20 +1,36 @@
 import { Request, Response } from 'express';
 import bookmarkService from '../../../services/study/bookmark';
+import { findUserById } from '../../../services/user';
 
 export const registerBookmark = async (req: Request, res: Response) => {
+  const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
+
   try {
     const { studyid } = req.params;
     const { id } = req.user as { id: string };
+    const user = await findUserById(id);
+    if (!user) {
+      throw new Error(NOT_FOUND);
+    }
+    const bookmarks = await bookmarkService.findBookmarksByStudyId(studyid);
+    if (bookmarks.length === 0) {
+      throw new Error(NOT_FOUND);
+    }
 
-    await bookmarkService.createBookmark(studyid, id);
-
+    await bookmarkService.createBookmark(bookmarks, user);
     return res.status(201).json({
       message: '북마크 생성 성공',
     });
   } catch (e) {
-    return res.status(404).json({
-      message: (e as Error).message,
-    });
+    if ((e as Error).message === NOT_FOUND) {
+      return res.status(404).json({
+        message: NOT_FOUND,
+      });
+    } else {
+      return res.status(500).json({
+        message: (e as Error).message,
+      });
+    }
   }
 };
 

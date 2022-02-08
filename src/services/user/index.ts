@@ -45,15 +45,10 @@ export const findUserByEmail = async (email: string) => {
 };
 
 export const findUserById = async (id: string) => {
-  const user = await getRepository(User)
+  return await getRepository(User)
     .createQueryBuilder('user')
     .where('user.id = :id', { id })
     .getOne();
-
-  if (!user) throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
-  // status 404
-
-  return user;
 };
 
 interface UpdateUserDTO {

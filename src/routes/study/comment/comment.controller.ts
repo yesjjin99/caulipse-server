@@ -1,22 +1,39 @@
 import { Request, Response } from 'express';
 import commentService from '../../../services/comment';
+import studyService from '../../../services/study';
+import { findUserById } from '../../../services/user';
 
 const getAllComment = async (req: Request, res: Response) => {
+  const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
+
   try {
     const { studyid } = req.params;
+    const study = await studyService.findStudyById(studyid);
     const comments = await commentService.getAllByStudy(studyid);
-
+    // FIX: study check
+    if (!study || !comments) {
+      throw new Error(NOT_FOUND);
+    }
     return res.status(200).json({
       message: '문의글 목록 조회 성공',
       comments,
     });
   } catch (e) {
-    return res.status(404).json({ message: (e as Error).message });
+    if ((e as Error).message === NOT_FOUND) {
+      return res.status(404).json({
+        message: NOT_FOUND,
+      });
+    } else {
+      return res.status(500).json({
+        message: (e as Error).message,
+      });
+    }
   }
 };
 
 const createComment = async (req: Request, res: Response) => {
   const BAD_REQUEST = '요청값이 유효하지 않음';
+  const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
 
   try {
     const { studyid } = req.params;
@@ -25,23 +42,49 @@ const createComment = async (req: Request, res: Response) => {
 
     if (!content) throw new Error(BAD_REQUEST);
 
-    const commentId = await commentService.createComment(studyid, req.body, id);
+    const study = await studyService.findStudyById(studyid);
+    const user = await findUserById(id);
+    let reply = null;
 
+    if (!study || !user) {
+      throw new Error(NOT_FOUND);
+    }
+    if (replyTo) {
+      reply = await commentService.findCommentById(replyTo);
+      if (!reply) {
+        throw new Error(NOT_FOUND);
+      }
+    }
+    const commentId = await commentService.createComment(
+      content,
+      study,
+      user,
+      reply
+    );
     return res.status(201).json({
       message: '문의글 생성 성공',
       commentId,
     });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
-      return res.status(400).json({ message: (e as Error).message });
+      return res.status(400).json({
+        message: BAD_REQUEST,
+      });
+    } else if ((e as Error).message === NOT_FOUND) {
+      return res.status(404).json({
+        message: NOT_FOUND,
+      });
     } else {
-      return res.status(404).json({ message: (e as Error).message });
+      return res.status(500).json({
+        message: (e as Error).message,
+      });
     }
   }
 };
 
 const updateComment = async (req: Request, res: Response) => {
   const BAD_REQUEST = '요청값이 유효하지 않음';
+  const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
 
   try {
     const { commentid } = req.params;
@@ -49,27 +92,52 @@ const updateComment = async (req: Request, res: Response) => {
 
     if (!content) throw new Error(BAD_REQUEST);
 
-    await commentService.updateComment(commentid, content);
+    const comment = await commentService.findCommentById(commentid);
 
+    if (!comment) {
+      throw new Error(NOT_FOUND);
+    }
+    await commentService.updateComment(content, comment);
     return res.status(200).json({ message: '문의글 수정 성공' });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
-      return res.status(400).json({ message: (e as Error).message });
+      return res.status(400).json({
+        message: BAD_REQUEST,
+      });
+    } else if ((e as Error).message === NOT_FOUND) {
+      return res.status(404).json({
+        message: NOT_FOUND,
+      });
     } else {
-      return res.status(404).json({ message: (e as Error).message });
+      return res.status(500).json({
+        message: (e as Error).message,
+      });
     }
   }
 };
 
 const deleteComment = async (req: Request, res: Response) => {
+  const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
+
   try {
     const { commentid } = req.params;
+    const comment = await commentService.findCommentById(commentid);
 
-    await commentService.deleteComment(commentid);
-
+    if (!comment) {
+      throw new Error(NOT_FOUND);
+    }
+    await commentService.deleteComment(comment);
     return res.status(200).json({ message: '문의글 삭제 성공' });
   } catch (e) {
-    return res.status(404).json({ message: (e as Error).message });
+    if ((e as Error).message === NOT_FOUND) {
+      return res.status(404).json({
+        message: NOT_FOUND,
+      });
+    } else {
+      return res.status(500).json({
+        message: (e as Error).message,
+      });
+    }
   }
 };
 

@@ -4,36 +4,17 @@ import Comment from '../../entity/CommentEntity';
 import studyService from '../study';
 import { findUserById } from '../user';
 import Study from '../../entity/StudyEntity';
-
-interface commentType {
-  content: string;
-  replyTo: string | null;
-}
+import User from '../../entity/UserEntity';
 
 const findCommentById = async (id: string) => {
-  const comment = await getRepository(Comment)
+  return await getRepository(Comment)
     .createQueryBuilder('comment')
     .where('comment.id = :id', { id })
     .getOne();
-
-  if (!comment) throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
-  // status 404
-
-  return comment;
 };
 
 const getAllByStudy = async (id: string) => {
-  const exist = await getRepository(Study)
-    .createQueryBuilder('study')
-    .where('study.id = :id', { id })
-    .getCount();
-
-  if (exist === 0) {
-    // status 404
-    throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
-  }
-
-  const comments = await getRepository(Comment)
+  return await getRepository(Comment)
     .createQueryBuilder('comment')
     .leftJoinAndSelect('comment.study', 'study')
     .leftJoinAndSelect('comment.user', 'user')
@@ -42,20 +23,15 @@ const getAllByStudy = async (id: string) => {
     .addOrderBy('comment.createdAt', 'ASC')
     .addOrderBy('comment.isNested', 'ASC')
     .getMany();
-
-  return comments;
 };
 
 const createComment = async (
-  studyid: string,
-  { content, replyTo }: commentType,
-  id: string
+  content: string,
+  study: Study,
+  user: User,
+  reply: Comment | null
 ) => {
   const commentId = randomUUID();
-
-  const study = await studyService.findStudyById(studyid);
-  const user = await findUserById(id);
-  const repo = getRepository(Comment);
 
   const comment = new Comment();
   comment.id = commentId;
@@ -64,34 +40,27 @@ const createComment = async (
   comment.user = user;
   comment.study = study;
 
-  if (replyTo) {
-    // 대댓글인 경우
-    const reply = await findCommentById(replyTo);
-    comment.isNested = true;
-    comment.parentComment = reply;
-  } else {
+  if (reply === null) {
     // 댓글인 경우
     comment.isNested = false;
     comment.parentComment = comment;
+  } else {
+    // 대댓글인 경우
+    comment.isNested = true;
+    comment.parentComment = reply;
   }
 
-  await repo.save(comment);
+  await getRepository(Comment).save(comment);
   return commentId;
 };
 
-const updateComment = async (commentid: string, content: string) => {
-  const comment = await findCommentById(commentid);
-
-  const repo = getRepository(Comment);
+const updateComment = async (content: string, comment: Comment) => {
   comment.content = content;
-
-  await repo.save(comment);
+  await getRepository(Comment).save(comment);
 };
 
-const deleteComment = async (commentid: string) => {
-  const comment = await findCommentById(commentid);
+const deleteComment = async (comment: Comment) => {
   const repo = getRepository(Comment);
-
   if (comment.isNested === false) {
     // 댓글인 경우
     const reply = await repo

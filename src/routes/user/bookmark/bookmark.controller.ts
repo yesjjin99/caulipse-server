@@ -12,7 +12,7 @@ export const getBookmarksByUser = async (req: Request, res: Response) => {
       message: '북마크 목록 조회 성공',
     });
   } catch (e) {
-    return res.json({
+    return res.status(500).json({
       message: (e as Error).message,
     });
   }
