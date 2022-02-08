@@ -77,7 +77,7 @@ afterAll(async () => {
   conn.close();
 });
 
-describe('POST /study/:studyid/bookmark', () => {
+describe('POST /api/study/:studyid/bookmark', () => {
   let cookies = '';
   beforeEach(async () => {
     // login
@@ -112,5 +112,31 @@ describe('POST /study/:studyid/bookmark', () => {
       .send();
 
     expect(res.status).toBe(404);
+  });
+});
+
+describe('GET /api/user/bookmark', () => {
+  let cookies = '';
+  beforeEach(async () => {
+    // login
+    const res = await request(app).post('/api/user/login').send({
+      email: 'test@gmail.com',
+      password: 'test',
+    });
+    cookies = res.headers['set-cookie'];
+  });
+
+  it('해당 사용자의 모든 북마크 목록 반환', async () => {
+    const res = await request(app)
+      .get('/api/user/bookmark')
+      .set('Cookie', cookies);
+
+    expect(res.status).toBe(200);
+  });
+
+  it('로그인이 되어있지 않은 경우 401 응답', async () => {
+    const res = await request(app).get('/api/user/bookmark');
+
+    expect(res.status).toBe(401);
   });
 });

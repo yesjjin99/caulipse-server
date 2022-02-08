@@ -23,4 +23,17 @@ const createBookmark = async (studyid: string, userid: string) => {
   await repo.save(bookmarks);
 };
 
-export default { createBookmark };
+const getBookmarksByUser = async (id: string) => {
+  // TODO: 페이지네이션 추가
+  const bookmarks = await getRepository(Study)
+    .createQueryBuilder('study')
+    .leftJoin('study.bookmarks', 'user')
+    .leftJoinAndSelect('study.categoryCode', 'category')
+    .where('user.id = :id', { id })
+    .orderBy('study.createdAt', 'DESC')
+    .getMany();
+
+  return bookmarks;
+};
+
+export default { createBookmark, getBookmarksByUser };

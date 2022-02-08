@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
-import { getRepository } from 'typeorm';
 import bookmarkService from '../../../services/study/bookmark';
 
-const registerBookmark = async (req: Request, res: Response) => {
+export const registerBookmark = async (req: Request, res: Response) => {
   try {
     const { studyid } = req.params;
     const { id } = req.user as { id: string };
@@ -18,8 +17,6 @@ const registerBookmark = async (req: Request, res: Response) => {
     });
   }
 };
-
-export default { registerBookmark };
 
 /**
  * @swagger
