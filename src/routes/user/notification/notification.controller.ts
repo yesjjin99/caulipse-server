@@ -19,7 +19,7 @@ export default {
     const NOT_FOUND = '일치하는 userid 또는 notiid가 없음';
 
     try {
-      const notiId = req.params.notiid;
+      const notiId = req.params.notiId;
       const userId = (req.user as { id: string }).id;
       const result = await updateReadstatusByNotiAndUserId(notiId, userId);
 
