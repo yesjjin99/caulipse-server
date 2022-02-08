@@ -43,7 +43,7 @@ export default class Comment {
   @JoinColumn({ name: 'STUDY_ID' })
   study!: Study;
 
-  @ManyToMany(() => User)
+  @ManyToMany(() => User, { cascade: true })
   @JoinTable({
     name: 'USER_METOO_COMMENT',
     joinColumn: {
