@@ -98,7 +98,7 @@ export const getUserProfileById = async (req: Request, res: Response) => {
         .where('userProfile.user_id = :id', { id: paramId })
         .execute();
 
-      if (!userProfile)
+      if (!userProfile?.length)
         throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
 
       return userProfile;
@@ -110,7 +110,7 @@ export const getUserProfileById = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: '해당 아이디의 유저 프로필 조회 성공',
-      userProfile: userProfile[0],
+      userProfile: userProfile,
     });
   } catch (err) {
     console.error(err);
