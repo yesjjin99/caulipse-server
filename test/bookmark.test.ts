@@ -140,3 +140,41 @@ describe('GET /api/user/bookmark', () => {
     expect(res.status).toBe(401);
   });
 });
+
+describe('DELETE /api/study/:studyid/bookmark', () => {
+  let cookies = '';
+  beforeEach(async () => {
+    // login
+    const res = await request(app).post('/api/user/login').send({
+      email: 'test@gmail.com',
+      password: 'test',
+    });
+    cookies = res.headers['set-cookie'];
+  });
+
+  it('studyid에 해당하는 스터디의 북마크 취소', async () => {
+    const res = await request(app)
+      .delete(`/api/study/${studyid}/bookmark`)
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(200);
+  });
+
+  it('로그인이 되어있지 않은 경우 401 응답', async () => {
+    const res = await request(app)
+      .delete(`/api/study/${studyid}/bookmark`)
+      .send();
+
+    expect(res.status).toBe(401);
+  });
+
+  it('요청된 studyid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
+    const res = await request(app)
+      .delete(`/api/study/wrong/bookmark`)
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(404);
+  });
+});

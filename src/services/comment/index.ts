@@ -1,8 +1,6 @@
 import { getRepository } from 'typeorm';
 import { randomUUID } from 'crypto';
 import Comment from '../../entity/CommentEntity';
-import studyService from '../study';
-import { findUserById } from '../user';
 import Study from '../../entity/StudyEntity';
 import User from '../../entity/UserEntity';
 

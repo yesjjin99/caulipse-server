@@ -10,7 +10,7 @@ const getAllComment = async (req: Request, res: Response) => {
     const { studyid } = req.params;
     const study = await studyService.findStudyById(studyid);
     const comments = await commentService.getAllByStudy(studyid);
-    // FIX: study check
+
     if (!study || !comments) {
       throw new Error(NOT_FOUND);
     }

@@ -29,4 +29,17 @@ const getBookmarksByUser = async (id: string) => {
     .getMany();
 };
 
-export default { findBookmarksByStudyId, createBookmark, getBookmarksByUser };
+const deleteBookmark = async (study: Study, user: User) => {
+  return await getRepository(Study)
+    .createQueryBuilder('study')
+    .relation('bookmarks')
+    .of(study)
+    .remove(user);
+};
+
+export default {
+  findBookmarksByStudyId,
+  createBookmark,
+  getBookmarksByUser,
+  deleteBookmark,
+};

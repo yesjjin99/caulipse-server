@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import helloWorld from '../../hello-world';
-import { registerBookmark } from './bookmark.controller';
+import controller from './bookmark.controller';
 
 const router = Router({ mergeParams: true });
 
-router.post('/', registerBookmark);
-router.delete('/', helloWorld);
+router.post('/', controller.registerBookmark);
+router.delete('/', controller.deleteBookmark);
 
 export default router;
