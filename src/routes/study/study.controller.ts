@@ -195,19 +195,12 @@ export default {
  *        type: string
  *      responses:
  *        200:
- *          description: "올바른 요청"
+ *          description: "올바른 요청. next_cursor(다음 페이지 조회를 위해 사용될 페이지네이션 커서), message와 함께 스터디 목록을 반환합니다"
  *          schema:
- *            type: object
  *            allOf:
- *              - $ref: "#/definitions/Study"
- *              - type: object
- *                properties:
- *                  message:
- *                    type: string
- *                    example: "스터디 목록 조회 성공"
- *                  next_cursor:
- *                    type: string
- *                    description: "다음 페이지네이션 조회에 사용될 커서 위치"
+ *            - type: array
+ *              items:
+ *                $ref: "#/definitions/Study"
  *
  *    post:
  *      summary: "새로운 스터디 생성"
@@ -304,16 +297,9 @@ export default {
  *        format: uuid
  *      responses:
  *        200:
- *          description: "올바른 요청"
+ *          description: "올바른 요청, message와 함께 스터디 정보를 반환합니다"
  *          schema:
- *            type: object
- *            allOf:
- *              - type: object
- *                properties:
- *                  message:
- *                    type: string
- *                    example: "각 스터디별 상세 정보 조회 성공"
- *              - $ref: "#/definitions/Study"
+ *            $ref: "#/definitions/Study"
  *        404:
  *          description: "전달한 studyid가 데이터베이스에 없는 경우입니다"
  *          schema:

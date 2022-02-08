@@ -60,12 +60,6 @@ export default class User {
     },
   })
   categories!: Category[];
-
-  @ManyToMany(() => Study, (study) => study.bookmarks)
-  bookmarks!: Study[];
-
-  @ManyToMany(() => Comment, (comment) => comment.metooComment)
-  metooComment!: Comment[];
 }
 
 /**

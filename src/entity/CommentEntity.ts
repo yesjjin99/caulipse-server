@@ -39,6 +39,9 @@ export default class Comment {
   @JoinColumn({ name: 'NESTED_COMMENT_ID' })
   parentComment?: Comment | null;
 
+  @Column('uuid')
+  NESTED_COMMENT_ID!: string;
+
   @ManyToOne(() => Study, (study) => study.id)
   @JoinColumn({ name: 'STUDY_ID' })
   study!: Study;
