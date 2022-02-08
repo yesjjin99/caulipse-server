@@ -47,7 +47,8 @@ export const createProfile = async (req: Request, res: Response) => {
       showDept?: boolean;
       showGrade?: boolean;
       onBreak?: boolean;
-      links?: string;
+      link1?: string;
+      link2?: string;
     }
     const {
       userId,
@@ -59,7 +60,8 @@ export const createProfile = async (req: Request, res: Response) => {
       showGrade = true,
       showDept = true,
       onBreak = false,
-      links = '',
+      link1 = '',
+      link2 = '',
     }: UserProfileInterface = req.body;
 
     const userProfileRepo = getRepository(UserProfile);
@@ -73,7 +75,8 @@ export const createProfile = async (req: Request, res: Response) => {
     userProfile.showGrade = showGrade;
     userProfile.showDept = showDept;
     userProfile.onBreak = onBreak;
-    userProfile.links = links;
+    userProfile.link1 = link1;
+    userProfile.link2 = link2;
 
     await userProfileRepo.save(userProfile);
 

@@ -42,6 +42,9 @@ export default class UserProfile {
   @Column({ name: 'ON_BREAK' })
   onBreak!: boolean;
 
-  @Column({ name: 'LINKS' })
-  links!: string;
+  @Column({ name: 'LINK1' })
+  link1!: string;
+
+  @Column({ name: 'LINK2' })
+  link2!: string;
 }
