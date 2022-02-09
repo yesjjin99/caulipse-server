@@ -3,7 +3,7 @@ import { checkToken } from '../../../middlewares/auth';
 import {
   createProfile,
   getUserProfileById,
-} from '../../../services/user/profile';
+} from '../../../services/User/profile';
 import helloWorld from '../../hello-world';
 
 const router = Router();
