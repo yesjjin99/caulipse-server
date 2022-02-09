@@ -10,10 +10,10 @@ const registerMetoo = async (req: Request, res: Response) => {
   try {
     const { studyid, commentid } = req.params;
     const { id } = req.user as { id: string };
-    const study = await studyService.findStudyById(studyid);
+    const study = await studyService.checkStudyById(studyid);
     const user = await findUserById(id);
 
-    if (!study || !user) {
+    if (study === 0 || !user) {
       throw new Error(NOT_FOUND);
     }
     const metoo = await metooService.findMetooByCommentId(commentid);
@@ -43,10 +43,10 @@ const getMetooCount = async (req: Request, res: Response) => {
 
   try {
     const { studyid, commentid } = req.params;
-    const study = await studyService.findStudyById(studyid);
+    const study = await studyService.checkStudyById(studyid);
     const comment = await commentService.findCommentById(commentid);
 
-    if (!study || !comment) {
+    if (study === 0 || !comment) {
       throw new Error(NOT_FOUND);
     }
     const count = await metooService.getMetooCount(commentid);
@@ -68,7 +68,38 @@ const getMetooCount = async (req: Request, res: Response) => {
   }
 };
 
-export default { registerMetoo, getMetooCount };
+const deleteMetoo = async (req: Request, res: Response) => {
+  const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
+
+  try {
+    const { studyid, commentid } = req.params;
+    const { id } = req.user as { id: string };
+    const study = await studyService.checkStudyById(studyid);
+    const comment = await commentService.findCommentById(commentid);
+    const user = await findUserById(id);
+
+    if (study === 0 || !comment || !user) {
+      throw new Error(NOT_FOUND);
+    }
+    await metooService.deleteMetoo(comment, user);
+
+    return res.status(200).json({
+      message: '나도 궁금해요 해제 성공',
+    });
+  } catch (e) {
+    if ((e as Error).message === NOT_FOUND) {
+      return res.status(404).json({
+        message: NOT_FOUND,
+      });
+    } else {
+      return res.status(500).json({
+        message: (e as Error).message,
+      });
+    }
+  }
+};
+
+export default { registerMetoo, getMetooCount, deleteMetoo };
 
 /**
  * @swagger
@@ -140,6 +171,50 @@ export default { registerMetoo, getMetooCount };
  *              message:
  *                type: string
  *                example: "나도 궁금해요 생성 성공"
+ *        401:
+ *          description: "로그인이 되어있지 않은 경우"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "로그인 필요"
+ *        404:
+ *          description: "전달한 studyid 또는 commentid가 데이터베이스에 없는 경우입니다"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "일치하는 studyid 또는 commentid가 없음"
+ *
+ *    delete:
+ *      summary: "나도 궁금해요 해제"
+ *      description: "스터디 문의글에 등록되어 있던 나도 궁금해요를 해제하기 위한 엔드포인트입니다"
+ *      tags:
+ *      - study/comment/metoo
+ *      parameters:
+ *      - name: "studyid"
+ *        in: "path"
+ *        description: "문의글이 등록되어 있는 스터디 id"
+ *        required: true
+ *        type: string
+ *        format: uuid
+ *      - name: "commentid"
+ *        in: "path"
+ *        description: "나도 궁금해요를 해제할 문의글의 id"
+ *        required: true
+ *        type: string
+ *        format: uuid
+ *      responses:
+ *        200:
+ *          description: "올바른 요청"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "나도 궁금해요 해제 성공"
  *        401:
  *          description: "로그인이 되어있지 않은 경우"
  *          schema:

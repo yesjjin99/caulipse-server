@@ -152,15 +152,6 @@ describe('DELETE /api/study/:studyid/bookmark', () => {
     cookies = res.headers['set-cookie'];
   });
 
-  it('studyid에 해당하는 스터디의 북마크 취소', async () => {
-    const res = await request(app)
-      .delete(`/api/study/${studyid}/bookmark`)
-      .set('Cookie', cookies)
-      .send();
-
-    expect(res.status).toBe(200);
-  });
-
   it('로그인이 되어있지 않은 경우 401 응답', async () => {
     const res = await request(app)
       .delete(`/api/study/${studyid}/bookmark`)
@@ -176,5 +167,14 @@ describe('DELETE /api/study/:studyid/bookmark', () => {
       .send();
 
     expect(res.status).toBe(404);
+  });
+
+  it('studyid에 해당하는 스터디의 북마크 취소', async () => {
+    const res = await request(app)
+      .delete(`/api/study/${studyid}/bookmark`)
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(200);
   });
 });

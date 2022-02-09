@@ -145,11 +145,19 @@ const updateStudy = async (
   if (capacity) study.capacity = capacity;
   if (category) study.categoryCode = category;
 
-  await getRepository(Study).save(study);
+  return await getRepository(Study).save(study);
 };
 
 const deleteStudy = async (study: Study) => {
-  await getRepository(Study).remove(study);
+  return await getRepository(Study).remove(study);
+};
+
+const checkStudyById = async (id: string) => {
+  // only for check
+  return await getRepository(Study)
+    .createQueryBuilder('study')
+    .where('study.id = :id', { id })
+    .getCount();
 };
 
 export default {
@@ -158,4 +166,5 @@ export default {
   createStudy,
   updateStudy,
   deleteStudy,
+  checkStudyById,
 };

@@ -12,7 +12,6 @@ const findMetooByCommentId = async (id: string) => {
 const registerMetoo = async (metoo: Comment[], user: User) => {
   metoo.forEach((metoo) => {
     metoo.metooComment.push(user);
-    // console.log(metoo.metooComment);
   });
 
   await getRepository(Comment).save(metoo);
@@ -26,4 +25,17 @@ const getMetooCount = async (id: string) => {
     .getCount();
 };
 
-export default { findMetooByCommentId, registerMetoo, getMetooCount };
+const deleteMetoo = async (comment: Comment, user: User) => {
+  return await getRepository(Comment)
+    .createQueryBuilder('comment')
+    .relation('metooComment')
+    .of(comment)
+    .remove(user);
+};
+
+export default {
+  findMetooByCommentId,
+  registerMetoo,
+  getMetooCount,
+  deleteMetoo,
+};

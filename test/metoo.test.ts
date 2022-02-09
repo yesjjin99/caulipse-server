@@ -161,3 +161,50 @@ describe('GET /api/study/:studyid/comment/:commentid/metoo', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('DELETE /api/study/:studyid/comment/:commentid/metoo', () => {
+  let cookies = '';
+  beforeEach(async () => {
+    // login
+    const res = await request(app).post('/api/user/login').send({
+      email: 'test@gmail.com',
+      password: 'test',
+    });
+    cookies = res.headers['set-cookie'];
+  });
+
+  it('로그인이 되어있지 않은 경우 401 응답', async () => {
+    const res = await request(app)
+      .delete(`/api/study/${studyid}/comment/${commentid}/metoo`)
+      .send();
+
+    expect(res.status).toBe(401);
+  });
+
+  it('요청된 commentid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
+    const res = await request(app)
+      .delete(`/api/study/${studyid}/comment/wrong/metoo`)
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(404);
+  });
+
+  it('요청된 studyid 또는 commentid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
+    const res = await request(app)
+      .delete(`/api/study/wrong/comment/wrong/metoo`)
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(404);
+  });
+
+  it('commentid에 해당하는 문의글의 나도 궁금해요 해제', async () => {
+    const res = await request(app)
+      .delete(`/api/study/${studyid}/comment/${commentid}/metoo`)
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(200);
+  });
+});
