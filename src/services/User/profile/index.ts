@@ -88,22 +88,22 @@ export const createProfile = async (req: Request, res: Response) => {
   }
 };
 
+export const findUserProfileById = async (paramId: string) => {
+  const userProfile = await getRepository(UserProfile)
+    .createQueryBuilder('userProfile')
+    .select()
+    .where('userProfile.user_id = :id', { id: paramId })
+    .execute();
+
+  if (!userProfile?.length)
+    throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
+
+  return userProfile;
+};
+
 export const getUserProfileById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-
-    const findUserProfileById = async (paramId: string) => {
-      const userProfile = await getRepository(UserProfile)
-        .createQueryBuilder('userProfile')
-        .select()
-        .where('userProfile.user_id = :id', { id: paramId })
-        .execute();
-
-      if (!userProfile?.length)
-        throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
-
-      return userProfile;
-    };
 
     const userProfile = await findUserProfileById(id);
 
@@ -124,6 +124,50 @@ export const getUserProfileById = async (req: Request, res: Response) => {
         ],
       },
     });
+  } catch (err) {
+    console.error(err);
+    res.json({ error: (err as Error).message || (err as Error).toString() });
+  }
+};
+
+export const updateUserProfileById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userProfile = await findUserProfileById(id);
+
+    const {
+      userName = userProfile[0].userProfile_USER_NAME,
+      dept = userProfile[0].userProfile_DEPT,
+      grade = userProfile[0].userProfile_GRADE,
+      bio = userProfile[0].userProfile_BIO,
+      showDept = Boolean(userProfile[0].userProfile_SHOW_DEPT),
+      showGrade = Boolean(userProfile[0].userProfile_SHOW_GRADE),
+      onBreak = Boolean(userProfile[0].userProfile_ON_BREAK),
+      links = [
+        userProfile[0].userProfile_LINK1,
+        userProfile[0].userProfile_LINK2,
+      ],
+    } = req.body;
+
+    const result = await getRepository(UserProfile)
+      .createQueryBuilder()
+      .update()
+      .set({
+        userName,
+        dept,
+        grade,
+        bio,
+        showDept,
+        showGrade,
+        onBreak,
+        link1: links?.[0],
+        link2: links?.[1],
+      })
+      .where('user_id = :id', { id })
+      .execute();
+
+    if (result.affected === 0) throw new Error('유저 프로필 업데이트 실패');
+    else return res.json({ message: '회원 프로필 수정 성공' });
   } catch (err) {
     console.error(err);
     res.json({ error: (err as Error).message || (err as Error).toString() });

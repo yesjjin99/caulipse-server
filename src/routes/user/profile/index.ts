@@ -3,6 +3,7 @@ import { checkToken } from '../../../middlewares/auth';
 import {
   createProfile,
   getUserProfileById,
+  updateUserProfileById,
 } from '../../../services/user/profile';
 import helloWorld from '../../hello-world';
 
@@ -13,6 +14,6 @@ router.post('/:id', createProfile);
 // 사용자 프로필 정보 조회
 router.get('/:id', getUserProfileById);
 // 사용자 프로필 갱신
-router.patch('/:id', helloWorld);
+router.patch('/:id', updateUserProfileById);
 
 export default router;
