@@ -1,6 +1,5 @@
 import { getRepository } from 'typeorm';
 import UserProfile from '../../../entity/UserProfileEntity';
-import { Request, Response } from 'express';
 
 /**
  * @swagger
@@ -34,58 +33,48 @@ import { Request, Response } from 'express';
  *              type: string
  *              example: "남"
  */
+interface UserProfileInterface {
+  userId: string;
+  userName: string;
+  dept: string;
+  grade?: number;
+  bio: string;
+  userAbout?: string;
+  showDept?: boolean;
+  showGrade?: boolean;
+  onBreak?: boolean;
+  link1?: string;
+  link2?: string;
+}
 
-export const createProfile = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
+export const postUserProfile = async ({
+  userId,
+  userName,
+  dept,
+  grade = 0,
+  bio,
+  userAbout = '',
+  showGrade = true,
+  showDept = true,
+  onBreak = false,
+  link1 = '',
+  link2 = '',
+}: UserProfileInterface) => {
+  const userProfileRepo = getRepository(UserProfile);
+  const userProfile = new UserProfile();
+  userProfile.USER_ID = userId;
+  userProfile.userName = userName;
+  userProfile.dept = dept;
+  userProfile.grade = grade;
+  userProfile.bio = bio;
+  userProfile.userAbout = userAbout;
+  userProfile.showGrade = showGrade;
+  userProfile.showDept = showDept;
+  userProfile.onBreak = onBreak;
+  userProfile.link1 = link1;
+  userProfile.link2 = link2;
 
-    interface UserProfileInterface {
-      userId: string;
-      userName: string;
-      dept: string;
-      grade?: number;
-      bio: string;
-      userAbout?: string;
-      showDept?: boolean;
-      showGrade?: boolean;
-      onBreak?: boolean;
-      link1?: string;
-      link2?: string;
-    }
-    const {
-      userName,
-      dept,
-      grade = 0,
-      bio,
-      userAbout = '',
-      showGrade = true,
-      showDept = true,
-      onBreak = false,
-      link1 = '',
-      link2 = '',
-    }: UserProfileInterface = req.body;
-
-    const userProfileRepo = getRepository(UserProfile);
-    const userProfile = new UserProfile();
-    userProfile.USER_ID = id;
-    userProfile.userName = userName;
-    userProfile.dept = dept;
-    userProfile.grade = grade;
-    userProfile.bio = bio;
-    userProfile.userAbout = userAbout;
-    userProfile.showGrade = showGrade;
-    userProfile.showDept = showDept;
-    userProfile.onBreak = onBreak;
-    userProfile.link1 = link1;
-    userProfile.link2 = link2;
-
-    await userProfileRepo.save(userProfile);
-
-    res.status(201).json({ message: 'Created. 유저가 생성되었습니다.' });
-  } catch (err) {
-    console.error(err);
-    res.json({ error: (err as Error).message || (err as Error).toString() });
-  }
+  await userProfileRepo.save(userProfile);
 };
 
 export const findUserProfileById = async (paramId: string) => {
@@ -101,75 +90,33 @@ export const findUserProfileById = async (paramId: string) => {
   return userProfile;
 };
 
-export const getUserProfileById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    const userProfile = await findUserProfileById(id);
-
-    return res.status(200).json({
-      message: '해당 아이디의 유저 프로필 조회 성공',
-      userProfile: {
-        userId: userProfile[0].userProfile_USER_ID,
-        userName: userProfile[0].userProfile_USER_NAME,
-        dept: userProfile[0].userProfile_DEPT,
-        grade: userProfile[0].userProfile_GRADE,
-        bio: userProfile[0].userProfile_BIO,
-        showDept: Boolean(userProfile[0].userProfile_SHOW_DEPT),
-        showGrade: Boolean(userProfile[0].userProfile_SHOW_GRADE),
-        onBreak: Boolean(userProfile[0].userProfile_ON_BREAK),
-        links: [
-          userProfile[0].userProfile_LINK1,
-          userProfile[0].userProfile_LINK2,
-        ],
-      },
-    });
-  } catch (err) {
-    console.error(err);
-    res.json({ error: (err as Error).message || (err as Error).toString() });
-  }
-};
-
-export const updateUserProfileById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const userProfile = await findUserProfileById(id);
-
-    const {
-      userName = userProfile[0].userProfile_USER_NAME,
-      dept = userProfile[0].userProfile_DEPT,
-      grade = userProfile[0].userProfile_GRADE,
-      bio = userProfile[0].userProfile_BIO,
-      showDept = Boolean(userProfile[0].userProfile_SHOW_DEPT),
-      showGrade = Boolean(userProfile[0].userProfile_SHOW_GRADE),
-      onBreak = Boolean(userProfile[0].userProfile_ON_BREAK),
-      links = [
-        userProfile[0].userProfile_LINK1,
-        userProfile[0].userProfile_LINK2,
-      ],
-    } = req.body;
-
-    const result = await getRepository(UserProfile)
-      .createQueryBuilder()
-      .update()
-      .set({
-        userName,
-        dept,
-        grade,
-        bio,
-        showDept,
-        showGrade,
-        onBreak,
-        link1: links?.[0],
-        link2: links?.[1],
-      })
-      .where('user_id = :id', { id })
-      .execute();
-
-    if (result.affected === 0) throw new Error('유저 프로필 업데이트 실패');
-    else return res.json({ message: '회원 프로필 수정 성공' });
-  } catch (err) {
-    console.error(err);
-    res.json({ error: (err as Error).message || (err as Error).toString() });
-  }
+export const updateUserProfile = async ({
+  userId,
+  userName,
+  dept,
+  grade,
+  bio,
+  showDept,
+  showGrade,
+  onBreak,
+  link1,
+  link2,
+}: UserProfileInterface) => {
+  const result = await getRepository(UserProfile)
+    .createQueryBuilder()
+    .update()
+    .set({
+      userName,
+      dept,
+      grade,
+      bio,
+      showDept,
+      showGrade,
+      onBreak,
+      link1,
+      link2,
+    })
+    .where('user_id = :id', { id: userId })
+    .execute();
+  return result;
 };
