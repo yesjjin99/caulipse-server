@@ -37,6 +37,8 @@ import { Request, Response } from 'express';
 
 export const createProfile = async (req: Request, res: Response) => {
   try {
+    const { id } = req.params;
+
     interface UserProfileInterface {
       userId: string;
       userName: string;
@@ -51,7 +53,6 @@ export const createProfile = async (req: Request, res: Response) => {
       link2?: string;
     }
     const {
-      userId,
       userName,
       dept,
       grade = 0,
@@ -66,7 +67,7 @@ export const createProfile = async (req: Request, res: Response) => {
 
     const userProfileRepo = getRepository(UserProfile);
     const userProfile = new UserProfile();
-    userProfile.USER_ID = userId;
+    userProfile.USER_ID = id;
     userProfile.userName = userName;
     userProfile.dept = dept;
     userProfile.grade = grade;
