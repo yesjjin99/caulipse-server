@@ -18,7 +18,7 @@ const registerBookmark = async (req: Request, res: Response) => {
       throw new Error(NOT_FOUND);
     }
 
-    await bookmarkService.createBookmark(bookmarks, user);
+    await bookmarkService.registerBookmark(bookmarks, user);
     return res.status(201).json({
       message: '북마크 생성 성공',
     });

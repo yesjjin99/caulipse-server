@@ -16,7 +16,6 @@ import Study, {
   LocationEnum,
 } from '../src/entity/StudyEntity';
 import Category from '../src/entity/CategoryEntity';
-import Comment from '../src/entity/CommentEntity';
 import commentService from '../src/services/comment';
 
 let conn: Connection;

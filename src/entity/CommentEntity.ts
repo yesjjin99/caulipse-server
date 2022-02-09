@@ -93,4 +93,16 @@ export default class Comment {
  *        type: string
  *        format: uuid
  *        description: "해당 질문글이 어떤 질문글의 답변으로 작성되었을 경우, 그 대상 질문글의 id"
+ *
+ *  UserMetooComment:
+ *    type: object
+ *    properties:
+ *      userId:
+ *        type: string
+ *        format: uuid
+ *        description: "나도 궁금해요를 등록한 사용자 id"
+ *      commentId:
+ *        type: string
+ *        format: uuid
+ *        description: "나도 궁금해요가 등록된 댓글 id"
  */

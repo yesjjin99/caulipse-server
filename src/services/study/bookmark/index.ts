@@ -9,7 +9,7 @@ const findBookmarksByStudyId = async (id: string) => {
   });
 };
 
-const createBookmark = async (bookmarks: Study[], user: User) => {
+const registerBookmark = async (bookmarks: Study[], user: User) => {
   bookmarks.forEach((bookmark) => {
     bookmark.bookmarks.push(user);
     // console.log(bookmark.bookmarks);
@@ -39,7 +39,7 @@ const deleteBookmark = async (study: Study, user: User) => {
 
 export default {
   findBookmarksByStudyId,
-  createBookmark,
+  registerBookmark,
   getBookmarksByUser,
   deleteBookmark,
 };
