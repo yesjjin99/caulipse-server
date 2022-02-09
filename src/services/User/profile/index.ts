@@ -107,11 +107,22 @@ export const getUserProfileById = async (req: Request, res: Response) => {
 
     const userProfile = await findUserProfileById(id);
 
-    // Todo: Link Json 파싱하기 : string -> array로 뿌리기
-
     return res.status(200).json({
       message: '해당 아이디의 유저 프로필 조회 성공',
-      userProfile: userProfile,
+      userProfile: {
+        userId: userProfile[0].userProfile_USER_ID,
+        userName: userProfile[0].userProfile_USER_NAME,
+        dept: userProfile[0].userProfile_DEPT,
+        grade: userProfile[0].userProfile_GRADE,
+        bio: userProfile[0].userProfile_BIO,
+        showDept: Boolean(userProfile[0].userProfile_SHOW_DEPT),
+        showGrade: Boolean(userProfile[0].userProfile_SHOW_GRADE),
+        onBreak: Boolean(userProfile[0].userProfile_ON_BREAK),
+        links: [
+          userProfile[0].userProfile_LINK1,
+          userProfile[0].userProfile_LINK2,
+        ],
+      },
     });
   } catch (err) {
     console.error(err);
