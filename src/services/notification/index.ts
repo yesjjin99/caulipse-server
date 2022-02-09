@@ -21,3 +21,12 @@ export const updateReadstatusByNotiAndUserId = async (
     .andWhere('USER_ID = :userid', { userid: userId })
     .execute();
 };
+
+export const deleteByNotiAndUserId = async (notiId: string, userId: string) => {
+  return await getRepository(Notification)
+    .createQueryBuilder()
+    .delete()
+    .where('id = :id', { id: notiId })
+    .andWhere('USER_ID = :userid', { userid: userId })
+    .execute();
+};

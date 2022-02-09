@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import {
+  deleteByNotiAndUserId,
   findAllByUserId,
   updateReadstatusByNotiAndUserId,
 } from '../../../services/notification';
@@ -22,6 +23,26 @@ export default {
       const notiId = req.params.notiId;
       const userId = (req.user as { id: string }).id;
       const result = await updateReadstatusByNotiAndUserId(notiId, userId);
+
+      if (result.affected === 0) throw new Error(NOT_FOUND);
+      res.json({ message: OK });
+    } catch (e) {
+      const err = e as Error;
+      if (err.message === NOT_FOUND) {
+        res.status(404).json({ message: NOT_FOUND });
+      } else {
+        res.status(400).json({ message: 'error' });
+      }
+    }
+  },
+  async deleteNotification(req: Request, res: Response) {
+    const OK = '사용자의 알림 항목 삭제 성공';
+    const NOT_FOUND = '일치하는 userid 또는 notiid가 없음';
+
+    try {
+      const notiId = req.params.notiId;
+      const userId = (req.user as { id: string }).id;
+      const result = await deleteByNotiAndUserId(notiId, userId);
 
       if (result.affected === 0) throw new Error(NOT_FOUND);
       res.json({ message: OK });
