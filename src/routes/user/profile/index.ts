@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { checkToken } from '../../../middlewares/auth';
 import controller from './profile.controller';
+import { checkToken } from '../../../middlewares/auth';
 
 const router = Router();
 
