@@ -5,7 +5,7 @@ import { Connection, ConnectionOptions, createConnection } from 'typeorm';
 import app from '../src';
 import { db } from '../src/config/db';
 import Category from '../src/entity/CategoryEntity';
-import User, { UserRoleEnum } from '../src/entity/UserEntity';
+import User from '../src/entity/UserEntity';
 import Notification from '../src/entity/NotificationEntity';
 import Study, {
   FrequencyEnum,
@@ -14,9 +14,11 @@ import Study, {
 } from '../src/entity/StudyEntity';
 
 let conn: Connection;
+// host:  mockUser2
 let mockStudy: Study;
 let mockUser1: User, mockUser2: User;
-let mockNoti1: Notification, mockNoti2: Notification, mockNoti3: Notification;
+// mockNoti1 - owner: mockUser1
+let mockNoti1: Notification;
 
 beforeAll(async () => {
   conn = await createConnection({
@@ -104,5 +106,125 @@ describe('사용자 알림 조회 api', () => {
     expect(data[0].Notification_ID).toBe(mockNoti1.id);
     expect(data[0].Notification_USER_ID).toBe(mockUser1.id);
     expect(data[0].Notification_STUDY_ID).toBe(mockStudy.id);
+  });
+});
+
+describe('사용자 알림 확인 상태 갱신 api', () => {
+  test('로그인하지 않았을 시 401 코드로 응답한다', async () => {
+    const res = await request(app)
+      .patch(`/api/user/notification/${mockNoti1.id}`)
+      .send();
+    expect(res.statusCode).toBe(401);
+  });
+
+  test('올바르지 않은 알림 id로 요청을 보낼 경우 404 코드로 응답한다', async () => {
+    // given
+    const { email } = mockUser1;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+    const wrongId = 'asdfjlasjdflj';
+
+    // when
+    const res = await request(app)
+      .patch(`/api/user/notification/${wrongId}`)
+      .set('Cookie', cookies)
+      .send();
+
+    // then
+    expect(res.statusCode).toBe(404);
+  });
+
+  test('올바른 요청을 보낼 경우 알림의 확인 상태를 false에서 true로 갱신한다', async () => {
+    // given
+    const { email } = mockUser1;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+    const query = async () => {
+      return await conn
+        .getRepository(Notification)
+        .createQueryBuilder()
+        .select()
+        .where('id = :id', { id: mockNoti1.id })
+        .getOne();
+    };
+
+    // when
+    const before = await query();
+    const res = await request(app)
+      .patch(`/api/user/notification/${mockNoti1.id}`)
+      .set('Cookie', cookies)
+      .send();
+    const after = await query();
+
+    // then
+    expect(res.statusCode).toBe(200);
+    expect(before?.read).toBeFalsy();
+    expect(after?.read).not.toBeFalsy();
+  });
+});
+
+describe('사용자 알림 삭제 api', () => {
+  test('로그인하지 않았을 시 401 코드로 응답한다', async () => {
+    const res = await request(app)
+      .delete(`/api/user/notification/${mockNoti1.id}`)
+      .send();
+    expect(res.statusCode).toBe(401);
+  });
+
+  test('올바르지 않은 알림 id로 요청을 보낼 경우 404 코드로 응답한다', async () => {
+    // given
+    const { email } = mockUser1;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+    const wrongId = 'asdjfoiajdfio';
+
+    // when
+    const res = await request(app)
+      .delete(`/api/user/notification/${wrongId}`)
+      .set('Cookie', cookies)
+      .send();
+
+    // then
+    expect(res.statusCode).toBe(404);
+  });
+
+  test('올바른 요청을 보낼 경우 알림 항목을 삭제한다', async () => {
+    // given
+    const { email } = mockUser1;
+    const password = 'testpassword';
+    const loginRes = await request(app)
+      .post('/api/user/login')
+      .send({ email, password });
+    const cookies = loginRes.headers['set-cookie'];
+    const query = async () => {
+      return await conn
+        .getRepository(Notification)
+        .createQueryBuilder()
+        .select()
+        .where('id = :id', { id: mockNoti1.id })
+        .getOne();
+    };
+
+    // when
+    const before = await query();
+    const res = await request(app)
+      .delete(`/api/user/notification/${mockNoti1.id}`)
+      .set('Cookie', cookies)
+      .send();
+    const after = await query();
+
+    // then
+    expect(res.statusCode).toBe(200);
+    expect(before).toBeTruthy();
+    expect(after).toBeFalsy();
   });
 });

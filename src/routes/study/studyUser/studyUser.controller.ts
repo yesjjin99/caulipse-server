@@ -53,7 +53,7 @@ export default {
         }))
       );
     } catch (e) {
-      res.status(400).json({ message: '올바르지 않은 요청' });
+      res.status(500).json({ message: 'error' });
     }
   },
   async joinStudy(req: Request, res: Response) {
@@ -116,7 +116,7 @@ export default {
       ) {
         res.status(404).json({ message: NOT_FOUND });
       } else {
-        res.status(400).json({ message: BAD_REQUEST });
+        res.status(500).json({ message: 'error' });
       }
     }
   },
@@ -141,7 +141,7 @@ export default {
       } else if (err.message === NOT_FOUND) {
         res.status(404).json({ message: NOT_FOUND });
       } else {
-        res.status(400).json({ message: BAD_REQUEST });
+        res.status(500).json({ message: 'error' });
       }
     }
   },
@@ -162,7 +162,7 @@ export default {
       if (err.message === NOT_FOUND) {
         res.status(404).json({ message: NOT_FOUND });
       } else {
-        res.status(400).json({ message: BAD_REQUEST });
+        res.status(500).json({ message: 'error' });
       }
     }
   },
