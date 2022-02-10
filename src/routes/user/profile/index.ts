@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { checkToken } from '../../../middlewares/auth';
 import controller from './profile.controller';
+import {
+  createProfile,
+  getUserProfileById,
+} from '../../../services/User/profile';
+import helloWorld from '../../hello-world';
 
 const router = Router();
 
