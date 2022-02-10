@@ -1,6 +1,5 @@
 import { getRepository } from 'typeorm';
 import UserProfile from '../../../entity/UserProfileEntity';
-import { Request, Response } from 'express';
 
 /**
  * @swagger
@@ -34,83 +33,90 @@ import { Request, Response } from 'express';
  *              type: string
  *              example: "남"
  */
+interface UserProfileInterface {
+  userId: string;
+  userName: string;
+  dept: string;
+  grade?: number;
+  bio: string;
+  userAbout?: string;
+  showDept?: boolean;
+  showGrade?: boolean;
+  onBreak?: boolean;
+  link1?: string;
+  link2?: string;
+}
 
-export const createProfile = async (req: Request, res: Response) => {
-  try {
-    interface UserProfileInterface {
-      userId: string;
-      userName: string;
-      dept: string;
-      grade?: number;
-      bio: string;
-      userAbout?: string;
-      showDept?: boolean;
-      showGrade?: boolean;
-      onBreak?: boolean;
-      links?: string;
-    }
-    const {
-      userId,
-      userName,
-      dept,
-      grade = 0,
-      bio,
-      userAbout = '',
-      showGrade = true,
-      showDept = true,
-      onBreak = false,
-      links = '',
-    }: UserProfileInterface = req.body;
+export const postUserProfile = async ({
+  userId,
+  userName,
+  dept,
+  grade = 0,
+  bio,
+  userAbout = '',
+  showGrade = true,
+  showDept = true,
+  onBreak = false,
+  link1 = '',
+  link2 = '',
+}: UserProfileInterface) => {
+  const userProfileRepo = getRepository(UserProfile);
+  const userProfile = new UserProfile();
+  userProfile.USER_ID = userId;
+  userProfile.userName = userName;
+  userProfile.dept = dept;
+  userProfile.grade = grade;
+  userProfile.bio = bio;
+  userProfile.userAbout = userAbout;
+  userProfile.showGrade = showGrade;
+  userProfile.showDept = showDept;
+  userProfile.onBreak = onBreak;
+  userProfile.link1 = link1;
+  userProfile.link2 = link2;
 
-    const userProfileRepo = getRepository(UserProfile);
-    const userProfile = new UserProfile();
-    userProfile.USER_ID = userId;
-    userProfile.userName = userName;
-    userProfile.dept = dept;
-    userProfile.grade = grade;
-    userProfile.bio = bio;
-    userProfile.userAbout = userAbout;
-    userProfile.showGrade = showGrade;
-    userProfile.showDept = showDept;
-    userProfile.onBreak = onBreak;
-    userProfile.links = links;
-
-    await userProfileRepo.save(userProfile);
-
-    res.status(201).json({ message: 'Created. 유저가 생성되었습니다.' });
-  } catch (err) {
-    console.error(err);
-    res.json({ error: (err as Error).message || (err as Error).toString() });
-  }
+  await userProfileRepo.save(userProfile);
 };
 
-export const getUserProfileById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
+export const findUserProfileById = async (paramId: string) => {
+  const userProfile = await getRepository(UserProfile)
+    .createQueryBuilder('userProfile')
+    .select()
+    .where('userProfile.user_id = :id', { id: paramId })
+    .execute();
 
-    const findUserProfileById = async (paramId: string) => {
-      const userProfile = await getRepository(UserProfile)
-        .createQueryBuilder('userProfile')
-        .select()
-        .where('userProfile.user_id = :id', { id: paramId })
-        .execute();
+  if (!userProfile?.length)
+    throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
 
-      if (!userProfile)
-        throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
+  return userProfile;
+};
 
-      return userProfile;
-    };
-
-    const userProfile = await findUserProfileById(id);
-
-    // Todo: Link Json 파싱하기 : string -> array로 뿌리기
-
-    return res.status(200).json({
-      message: '해당 아이디의 유저 프로필 조회 성공',
-      userProfile: userProfile[0],
-    });
-  } catch (err) {
-    console.error(err);
-    res.json({ error: (err as Error).message || (err as Error).toString() });
-  }
+export const updateUserProfile = async ({
+  userId,
+  userName,
+  dept,
+  grade,
+  bio,
+  showDept,
+  showGrade,
+  onBreak,
+  link1,
+  link2,
+}: UserProfileInterface) => {
+  const result = await getRepository(UserProfile)
+    .createQueryBuilder()
+    .update()
+    .set({
+      userName,
+      dept,
+      grade,
+      bio,
+      showDept,
+      showGrade,
+      onBreak,
+      link1,
+      link2,
+    })
+    .where('user_id = :id', { id: userId })
+    .execute();
+  return result;
 };
