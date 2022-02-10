@@ -12,7 +12,7 @@ export default {
       const result = await findAllByUserId(userId);
       res.json(result);
     } catch (e) {
-      res.status(400).json({ message: 'error' });
+      res.status(500).json({ message: 'error' });
     }
   },
   async updateReadstatus(req: Request, res: Response) {
@@ -31,7 +31,7 @@ export default {
       if (err.message === NOT_FOUND) {
         res.status(404).json({ message: NOT_FOUND });
       } else {
-        res.status(400).json({ message: 'error' });
+        res.status(500).json({ message: 'error' });
       }
     }
   },
@@ -51,7 +51,7 @@ export default {
       if (err.message === NOT_FOUND) {
         res.status(404).json({ message: NOT_FOUND });
       } else {
-        res.status(400).json({ message: 'error' });
+        res.status(500).json({ message: 'error' });
       }
     }
   },

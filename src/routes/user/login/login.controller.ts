@@ -54,6 +54,8 @@ export default {
         res.status(403).json({ message: '로그인 싪패: ' + UNAUTHORIZED });
       } else if (err.message === NOT_FOUND) {
         res.status(404).json({ message: '로그인 싪패: ' + NOT_FOUND });
+      } else {
+        res.status(500).json({ message: 'error ' });
       }
     }
   },
