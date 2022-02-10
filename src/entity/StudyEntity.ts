@@ -85,7 +85,7 @@ export default class Study {
   @Column('int', { name: 'VIEWS' })
   views!: number;
 
-  @ManyToMany(() => User)
+  @ManyToMany(() => User, { cascade: true })
   @JoinTable({
     name: 'BOOKMARK',
     joinColumn: {

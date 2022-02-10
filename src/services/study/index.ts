@@ -2,8 +2,8 @@ import { getRepository } from 'typeorm';
 import { randomUUID } from 'crypto';
 import Study from '../../entity/StudyEntity';
 import { orderByEnum, paginationDTO, studyDTO } from '../../types/study.dto';
-import { findUserById } from '../user';
-import categoryService from '../category';
+import User from '../../entity/UserEntity';
+import Category from '../../entity/CategoryEntity';
 
 const getAllStudy = async ({
   frequencyFilter,
@@ -100,35 +100,18 @@ const getAllStudy = async ({
 };
 
 const findStudyById = async (id: string) => {
-  const study = await getRepository(Study)
+  return await getRepository(Study)
     .createQueryBuilder('study')
     .where('study.id = :id', { id })
     .getOne();
-
-  if (!study) throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
-  // ststus 404
-
-  return study;
 };
 
 const createStudy = async (
-  {
-    title,
-    studyAbout,
-    weekday,
-    frequency,
-    location,
-    capacity,
-    categoryCode,
-  }: studyDTO,
-  id: string
+  { title, studyAbout, weekday, frequency, location, capacity }: studyDTO,
+  user: User,
+  category: Category
 ) => {
   const studyId = randomUUID();
-
-  const user = await findUserById(id);
-  const category = await categoryService.findByCode(categoryCode);
-
-  const repo = getRepository(Study);
   const study = new Study();
   study.id = studyId;
   study.createdAt = new Date();
@@ -145,46 +128,36 @@ const createStudy = async (
   study.views = 0;
   study.categoryCode = category;
 
-  await repo.save(study);
+  await getRepository(Study).save(study);
   return studyId;
 };
 
 const updateStudy = async (
-  studyid: string,
-  {
-    title,
-    studyAbout,
-    weekday,
-    frequency,
-    location,
-    capacity,
-    categoryCode,
-  }: studyDTO
+  { title, studyAbout, weekday, frequency, location, capacity }: studyDTO,
+  study: Study,
+  category: Category | null
 ) => {
-  const repo = getRepository(Study);
-  const study = await findStudyById(studyid);
-
   if (title) study.title = title;
   if (studyAbout) study.studyAbout = studyAbout;
   if (weekday) study.weekday = weekday;
   if (frequency) study.frequency = frequency;
   if (location) study.location = location;
   if (capacity) study.capacity = capacity;
-  if (categoryCode) {
-    study.categoryCode = await categoryService.findByCode(categoryCode);
-  }
+  if (category) study.categoryCode = category;
 
-  await repo.save(study);
+  return await getRepository(Study).save(study);
 };
 
-const deleteStudy = async (id: string) => {
-  try {
-    const study = await findStudyById(id);
+const deleteStudy = async (study: Study) => {
+  return await getRepository(Study).remove(study);
+};
 
-    await getRepository(Study).remove(study);
-  } catch (e) {
-    throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
-  }
+const checkStudyById = async (id: string) => {
+  // only for check
+  return await getRepository(Study)
+    .createQueryBuilder('study')
+    .where('study.id = :id', { id })
+    .getCount();
 };
 
 export default {
@@ -193,4 +166,5 @@ export default {
   createStudy,
   updateStudy,
   deleteStudy,
+  checkStudyById,
 };

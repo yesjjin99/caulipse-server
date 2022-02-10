@@ -39,11 +39,14 @@ export default class Comment {
   @JoinColumn({ name: 'NESTED_COMMENT_ID' })
   parentComment?: Comment | null;
 
+  @Column('uuid')
+  NESTED_COMMENT_ID!: string;
+
   @ManyToOne(() => Study, (study) => study.id)
   @JoinColumn({ name: 'STUDY_ID' })
   study!: Study;
 
-  @ManyToMany(() => User)
+  @ManyToMany(() => User, { cascade: true })
   @JoinTable({
     name: 'USER_METOO_COMMENT',
     joinColumn: {
@@ -90,4 +93,16 @@ export default class Comment {
  *        type: string
  *        format: uuid
  *        description: "해당 질문글이 어떤 질문글의 답변으로 작성되었을 경우, 그 대상 질문글의 id"
+ *
+ *  UserMetooComment:
+ *    type: object
+ *    properties:
+ *      userId:
+ *        type: string
+ *        format: uuid
+ *        description: "나도 궁금해요를 등록한 사용자 id"
+ *      commentId:
+ *        type: string
+ *        format: uuid
+ *        description: "나도 궁금해요가 등록된 댓글 id"
  */

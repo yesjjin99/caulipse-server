@@ -16,7 +16,6 @@ import Study, {
   LocationEnum,
 } from '../src/entity/StudyEntity';
 import Category from '../src/entity/CategoryEntity';
-import Comment from '../src/entity/CommentEntity';
 import commentService from '../src/services/comment';
 
 let conn: Connection;
@@ -279,8 +278,8 @@ describe('DELETE /api/study/:studyid/comment/:commentid', () => {
     const comment = await commentService.findCommentById(commentid1);
 
     expect(res.status).toBe(200);
-    expect(comment.user).toBeUndefined();
-    expect(comment.content).toEqual('삭제된 문의글입니다.');
+    expect(comment?.user).toBeUndefined();
+    expect(comment?.content).toEqual('삭제된 문의글입니다.');
   });
 
   it('대댓글을 삭제할 때는 바로 데이터베이스에서 삭제', async () => {

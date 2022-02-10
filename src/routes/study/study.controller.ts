@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+import { findCategoryByCode } from '../../services/category';
 import studyService from '../../services/study';
+import { findUserById } from '../../services/user';
 import { orderByEnum } from '../../types/study.dto';
 
 const getAllStudy = async (req: Request, res: Response) => {
@@ -31,12 +33,15 @@ const getAllStudy = async (req: Request, res: Response) => {
       next_cursor,
     }); // 각 페이지별 스터디 목록, 다음 조회에 사용될 cursor 위치(페이지네이션)
   } catch (e) {
-    return res.json({ message: (e as Error).message });
+    return res.status(500).json({
+      message: (e as Error).message,
+    });
   }
 };
 
 const createStudy = async (req: Request, res: Response) => {
   const BAD_REQUEST = '요청값이 유효하지 않음';
+  const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
 
   try {
     const {
@@ -62,7 +67,14 @@ const createStudy = async (req: Request, res: Response) => {
     )
       throw new Error(BAD_REQUEST);
 
-    const studyId = await studyService.createStudy(req.body, id);
+    const user = await findUserById(id);
+    const category = await findCategoryByCode(categoryCode);
+
+    if (!user || !category) {
+      throw new Error(NOT_FOUND);
+    }
+
+    const studyId = await studyService.createStudy(req.body, user, category);
 
     return res.status(201).json({
       message: '새로운 스터디 생성 성공',
@@ -71,10 +83,14 @@ const createStudy = async (req: Request, res: Response) => {
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
       return res.status(400).json({
-        message: (e as Error).message,
+        message: BAD_REQUEST,
+      });
+    } else if ((e as Error).message === NOT_FOUND) {
+      return res.status(404).json({
+        message: NOT_FOUND,
       });
     } else {
-      return res.status(404).json({
+      return res.status(500).json({
         message: (e as Error).message,
       });
     }
@@ -82,23 +98,35 @@ const createStudy = async (req: Request, res: Response) => {
 };
 
 const getStudybyId = async (req: Request, res: Response) => {
+  const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
+
   try {
     const { studyid } = req.params;
     const study = await studyService.findStudyById(studyid);
 
+    if (!study) {
+      throw new Error(NOT_FOUND);
+    }
     return res.status(200).json({
       message: '각 스터디별 상세 정보 조회 성공',
       study,
     });
   } catch (e) {
-    return res.status(404).json({
-      message: (e as Error).message,
-    });
+    if ((e as Error).message === NOT_FOUND) {
+      return res.status(404).json({
+        message: NOT_FOUND,
+      });
+    } else {
+      return res.status(500).json({
+        message: (e as Error).message,
+      });
+    }
   }
 };
 
 const updateStudy = async (req: Request, res: Response) => {
   const BAD_REQUEST = '요청값이 유효하지 않음';
+  const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
 
   try {
     const { studyid } = req.params;
@@ -113,35 +141,68 @@ const updateStudy = async (req: Request, res: Response) => {
     } = req.body;
 
     if (
-      !title ||
-      !studyAbout ||
-      !weekday ||
-      !frequency ||
-      !location ||
-      !capacity ||
+      !title &&
+      !studyAbout &&
+      !weekday &&
+      !frequency &&
+      !location &&
+      !capacity &&
       !categoryCode
     )
       throw new Error(BAD_REQUEST);
 
-    await studyService.updateStudy(studyid, req.body);
+    const study = await studyService.findStudyById(studyid);
+    let category = null;
+    if (!study) {
+      throw new Error(NOT_FOUND);
+    }
+    if (categoryCode) {
+      category = await findCategoryByCode(categoryCode);
+      if (!category) {
+        throw new Error(NOT_FOUND);
+      }
+    }
+    await studyService.updateStudy(req.body, study, category);
     return res.status(200).json({ message: '스터디 정보 업데이트 성공' });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
-      return res.status(400).json({ message: (e as Error).message });
+      return res.status(400).json({
+        message: BAD_REQUEST,
+      });
+    } else if ((e as Error).message === NOT_FOUND) {
+      return res.status(404).json({
+        message: NOT_FOUND,
+      });
     } else {
-      return res.status(404).json({ message: (e as Error).message });
+      return res.status(500).json({
+        message: (e as Error).message,
+      });
     }
   }
 };
 
 const deleteStudy = async (req: Request, res: Response) => {
+  const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
+
   try {
     const { studyid } = req.params;
+    const study = await studyService.findStudyById(studyid);
 
-    await studyService.deleteStudy(studyid);
+    if (!study) {
+      throw new Error(NOT_FOUND);
+    }
+    await studyService.deleteStudy(study);
     return res.status(200).json({ message: '스터디 삭제 성공' });
   } catch (e) {
-    return res.status(404).json({ message: (e as Error).message });
+    if ((e as Error).message === NOT_FOUND) {
+      return res.status(404).json({
+        message: NOT_FOUND,
+      });
+    } else {
+      return res.status(500).json({
+        message: (e as Error).message,
+      });
+    }
   }
 };
 
@@ -195,19 +256,12 @@ export default {
  *        type: string
  *      responses:
  *        200:
- *          description: "올바른 요청"
+ *          description: "올바른 요청. next_cursor(다음 페이지 조회를 위해 사용될 페이지네이션 커서), message와 함께 스터디 목록을 반환합니다"
  *          schema:
- *            type: object
  *            allOf:
- *              - $ref: "#/definitions/Study"
- *              - type: object
- *                properties:
- *                  message:
- *                    type: string
- *                    example: "스터디 목록 조회 성공"
- *                  next_cursor:
- *                    type: string
- *                    description: "다음 페이지네이션 조회에 사용될 커서 위치"
+ *            - type: array
+ *              items:
+ *                $ref: "#/definitions/Study"
  *
  *    post:
  *      summary: "새로운 스터디 생성"
@@ -304,16 +358,9 @@ export default {
  *        format: uuid
  *      responses:
  *        200:
- *          description: "올바른 요청"
+ *          description: "올바른 요청, message와 함께 스터디 정보를 반환합니다"
  *          schema:
- *            type: object
- *            allOf:
- *              - type: object
- *                properties:
- *                  message:
- *                    type: string
- *                    example: "각 스터디별 상세 정보 조회 성공"
- *              - $ref: "#/definitions/Study"
+ *            $ref: "#/definitions/Study"
  *        404:
  *          description: "전달한 studyid가 데이터베이스에 없는 경우입니다"
  *          schema:

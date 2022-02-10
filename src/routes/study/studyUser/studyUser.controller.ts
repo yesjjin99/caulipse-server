@@ -94,7 +94,7 @@ export default {
       const studyId = req.params.studyid;
       const study = await studyService.findStudyById(studyId);
       const userId = (req.user as { id: string }).id;
-      if (study.HOST_ID !== userId) throw new Error(FORBIDDEN);
+      if (study && study.HOST_ID !== userId) throw new Error(FORBIDDEN);
 
       const updateResult = await updateAcceptStatus(
         studyId,

@@ -25,5 +25,4 @@ export interface studyDTO {
   frequency: FrequencyEnum;
   location: LocationEnum;
   capacity: number;
-  categoryCode: number;
 }
