@@ -146,7 +146,7 @@ export default { getAllComment, createComment, updateComment, deleteComment };
 /**
  * @swagger
  * paths:
- *  /study/:studyid/comment:
+ *  /api/study/{studyid}/comment:
  *    get:
  *      summary: "스터디 문의글 목록 조회"
  *      description: "해당 스터디의 문의글 목록을 조회하기 위한 엔드포인트입니다"
@@ -242,7 +242,7 @@ export default { getAllComment, createComment, updateComment, deleteComment };
  *                type: string
  *                example: "일치하는 studyid가 없음"
  *
- *  /study/:studyid/comment/:commentid:
+ *  /api/study/{studyid}/comment/{commentid}:
  *    patch:
  *      summary: "스터디 문의글 수정"
  *      description: "해당 스터디의 해당 문의글을 수정하기 위한 엔드포인트입니다"

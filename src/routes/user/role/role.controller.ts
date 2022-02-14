@@ -47,7 +47,7 @@ export default {
 
 /**
  * @swagger
- * /user/:userid/role:
+ * /api/user/{userid}/role:
  *  patch:
  *    tags:
  *    - user

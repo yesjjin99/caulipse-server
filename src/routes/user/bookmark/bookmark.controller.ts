@@ -21,7 +21,7 @@ export const getBookmarksByUser = async (req: Request, res: Response) => {
 /**
  * @swagger
  * paths:
- *  /user/bookmark:
+ *  /api/user/bookmark:
  *    post:
  *      summary: "사용자의 북마크 목록 조회"
  *      description: "마이페이지에서 사용자가 등록해놓은 스터디 북마크의 목록을 조회하기 위한 엔드포인트입니다"

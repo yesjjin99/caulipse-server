@@ -59,7 +59,7 @@ export default {
 
 /**
  * @swagger
- * /user/notification:
+ * /api/user/notification:
  *   get:
  *     tags:
  *     - user/notification
@@ -93,7 +93,7 @@ export default {
  *               type: string
  *               example: "로그인이 필요한 서비스입니다"
  *
- * /user/notification/{notiid}:
+ * /api/user/notification/{notiid}:
  *   patch:
  *     tags:
  *     - user/notification
