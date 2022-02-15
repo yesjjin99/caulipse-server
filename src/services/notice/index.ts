@@ -15,3 +15,23 @@ export const findAllNotice = async ({
     .limit(amount)
     .execute();
 };
+
+export const updateNoticeById = async ({
+  noticeId,
+  title,
+  noticeAbout,
+}: {
+  noticeId: string;
+  title: string;
+  noticeAbout: string;
+}) => {
+  return await getRepository(Notice)
+    .createQueryBuilder()
+    .update()
+    .set({
+      title,
+      about: noticeAbout,
+    })
+    .where('id = :id', { id: noticeId })
+    .execute();
+};

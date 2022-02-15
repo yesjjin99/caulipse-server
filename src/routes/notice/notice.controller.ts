@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
-import { findAllNotice } from '../../services/notice';
+import { UserRoleEnum } from '../../entity/UserEntity';
+import { findAllNotice, updateNoticeById } from '../../services/notice';
+import { findUserById } from '../../services/user';
 
 export default {
   async findAllNotice(req: Request, res: Response) {
@@ -14,6 +16,35 @@ export default {
       res.json(result);
     } catch (e) {
       res.status(500).json({ message: '오류 발생' });
+    }
+  },
+  async updateNoticeById(req: Request, res: Response) {
+    const BAD_REQUEST = 'request is not valid';
+    const FORBIDDEN = '권한이 없어 승인 불가능';
+    const NOT_FOUND = '일치하는 noticeid가 없음';
+
+    try {
+      const noticeId = req.params.noticeid;
+      const { title, noticeAbout } = req.body;
+      if (!noticeId || !title || !noticeAbout) throw new Error(BAD_REQUEST);
+
+      const userId = (req.user as { id: string }).id;
+      const user = await findUserById(userId);
+      if (user?.role !== UserRoleEnum.ADMIN) throw new Error(FORBIDDEN);
+
+      const result = await updateNoticeById({ noticeId, title, noticeAbout });
+      if (result.affected === 0) throw new Error(NOT_FOUND);
+    } catch (e) {
+      const err = e as Error;
+      if (err.message === BAD_REQUEST) {
+        res.status(404).json({ message: BAD_REQUEST });
+      } else if (err.message === FORBIDDEN) {
+        res.status(404).json({ message: FORBIDDEN });
+      } else if (err.message === NOT_FOUND) {
+        res.status(404).json({ message: NOT_FOUND });
+      } else {
+        res.status(500).json({ message: '오류 발생' });
+      }
     }
   },
 };
