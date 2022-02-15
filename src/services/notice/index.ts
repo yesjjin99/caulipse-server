@@ -1,6 +1,17 @@
 import { getRepository } from 'typeorm';
 import Notice from '../../entity/NoticeEntity';
 
-export const findAllNotice = async () => {
-  await getRepository(Notice).createQueryBuilder().select().execute();
+export const findAllNotice = async ({
+  amount,
+  cursor,
+}: {
+  amount: number;
+  cursor: string;
+}) => {
+  return await getRepository(Notice)
+    .createQueryBuilder()
+    .select()
+    .orderBy('createdAt', 'DESC')
+    .limit(amount)
+    .execute();
 };
