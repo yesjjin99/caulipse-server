@@ -54,7 +54,7 @@ export default {
 
 /**
  * @swagger
- * /user:
+ * /api/user:
  *  post:
  *    tags:
  *    - user
@@ -129,7 +129,7 @@ export default {
 
 /**
  * @swagger
- * /user/:userid:
+ * /api/user/{userid}:
  *   patch:
  *     tags:
  *     - user

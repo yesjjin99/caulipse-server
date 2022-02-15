@@ -104,7 +104,7 @@ export default { registerMetoo, getMetooCount, deleteMetoo };
 /**
  * @swagger
  * paths:
- *  /study/:studyid/comment/:commentid/metoo:
+ *  /api/study/{studyid}/comment/{commentid}/metoo:
  *    get:
  *      summary: "스터디 문의글의 나도 궁금해요 카운트"
  *      description: "해당 문의글에 등록되어 있는 나도 궁금해요의 총 개수를 불러오기 위한 엔드포인트입니다"

@@ -217,7 +217,7 @@ export default {
 /**
  * @swagger
  * paths:
- *  /study:
+ *  /api/study:
  *    get:
  *      summary: "스터디 목록 조회"
  *      tags:
@@ -343,7 +343,7 @@ export default {
  *                type: string
  *                example: "로그인 필요"
  *
- *  /study/:studyid:
+ *  /api/study/{studyid}:
  *    get:
  *      summary: "스터디 아이디에 해당하는 스터디 정보 조회"
  *      description: "스터디 상세페이지에서 각 스터디 아이디 아이디에 해당하는 모든 상세 정보들을 조회할 엔드포인트입니다"

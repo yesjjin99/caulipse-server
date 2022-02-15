@@ -63,7 +63,7 @@ export default {
 
 /**
  *  @swagger
- *  /user/login:
+ *  /api/user/login:
  *    post:
  *      tags:
  *      - user

@@ -69,7 +69,7 @@ export default { registerBookmark, deleteBookmark };
 /**
  * @swagger
  * paths:
- *  /study/:studyid/bookmark:
+ *  /api/study/{studyid}/bookmark:
  *    post:
  *      summary: "스터디 북마크 등록"
  *      description: "사용자가 스터디에 북마크를 등록하기 위한 엔드포인트입니다"

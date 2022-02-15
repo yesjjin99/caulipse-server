@@ -170,7 +170,7 @@ export default {
 
 /**
  * @swagger
- * /study/user/{studyid}:
+ * /api/study/user/{studyid}:
  *     get:
  *       tags:
  *       - study/user
@@ -376,7 +376,7 @@ export default {
  *                 type: string
  *                 example: "일치하는 studyid가 없음"
  *
- * /study/user/{studyid}/accept:
+ * /api/study/user/{studyid}/accept:
  *   patch:
  *     tags:
  *     - study/user
