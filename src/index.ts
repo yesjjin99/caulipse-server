@@ -9,10 +9,17 @@ import swaggerOption from './config/swagger';
 import swaggerJSDoc from 'swagger-jsdoc';
 import { db } from './config/db';
 import rootRouter from './routes';
+import cors from 'cors';
 
 const swaggerSpec = swaggerJSDoc(swaggerOption);
 
 const app = express();
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
