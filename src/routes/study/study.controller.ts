@@ -311,7 +311,7 @@ export default {
  *                  - "기타"
  *                capacity:
  *                  type: number
- *                categorycode:
+ *                categoryCode:
  *                  type: number
  *      responses:
  *        201:
