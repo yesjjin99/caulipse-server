@@ -54,6 +54,13 @@ with open('reset.sql', 'w') as f:
     f.write('DELETE FROM USER;')
     f.write('DELETE FROM CATEGORY;')
     f.write('INSERT INTO CATEGORY(CODE, MAIN, SUB) VALUES(100, \'프로그래밍\', \'c/c++\'), (101, \'프로그래밍\', \'자바스크립트\'), (200, \'어학\', \'토익\'), (201, \'어학\', \'토플\');')
+    f.write('INSERT INTO USER(ID, EMAIL, PASSWORD, IS_LOGOUT, TOKEN, ROLE) \
+        VALUES(\'28464dc7-7537-4b91-9d52-764b6de32122\', \'testadmin1@cau.ac.kr\', \'$2b$10$18n8DFDZ1QUrhBlf9CDr6O8LiN7cjIRAFX37HfK.SpnyJg1y7c.5K\', 0, \'\', \'ADMIN\'), \
+        (\'9b083624-9475-4ad2-b5c0-eb40c98411c2\', \'testuser1@cau.ac.kr\', \'$2b$10$xtp6zwK8.0FqRrq4okZRXOcTkH9oCXhA8X02NJaAXgPockMw9ZFWi\', 0, \'\', \'USER\'), \
+        (\'cd915b33-d4c3-4379-b5c1-fe8d389b0de7\', \'testguest1@cau.ac.kr\', \'$2b$10$f69XmMM3DPKDs91.6qgmOebP/bfrdKcCQNQG/ldl71GXet3BYBjEq\', 0, \'\', \'GUEST\'), \
+        (\'dea61890-363d-4574-8ad1-ef1fa6fe66db\', \'testadmin2@cau.ac.kr\', \'$2b$10$jsUh3x5kvMfBECfEoiq15.hRnhtrVLRCid2d2r8tMQTtCa6ILNr/u\', 0, \'\', \'ADMIN\'), \
+        (\'ec7283be-d2e5-4b39-b723-1cfa000a9303\', \'testuser2@cau.ac.kr\', \'$2b$10$Ls2oCM/bHbss5S18VyWgB.R2jet9xdATWFU8ZdNXZ3JR7PjAoXdwy\', 0, \'\', \'USER\'), \
+        (\'492a437d-14ca-4e15-9347-0748ba14e269\', \'testguest2@cau.ac.kr\', \'$2b$10$sGJji6iVcZc/JJTq/cpFcukB3YXwUSbsygBFmKVJvw6QRmhpVPV0m\', 0, \'\', \'GUEST\');') # 테스트계정
     f.write('source userdata.sql;')
     f.write('source studydata.sql;')
     f.write('source userprofiledata.sql;')
