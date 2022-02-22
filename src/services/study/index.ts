@@ -58,15 +58,32 @@ const getAllStudy = async (paginationDTO: paginationDTO) => {
   }
 
   if (orderBy === orderByEnum.LATEST) {
-    return await sq
-      .andWhere(
-        'study.createdAt < :date OR (study.createdAt = :date AND study.id > :id)',
-        { date: last[1], id: last[0] }
-      )
-      .orderBy('study.createdAt', 'DESC')
-      .addOrderBy('study.id', 'ASC')
-      .limit(12)
-      .getMany();
+    if (!cursor) {
+      const study = await getLastStudy(paginationDTO);
+      if (study) {
+        return await sq
+          .andWhere(
+            'study.createdAt <= :date OR (study.createdAt = :date AND study.id >= :id)',
+            { date: study.createdAt, id: study.id }
+          )
+          .orderBy('study.createdAt', 'DESC')
+          .addOrderBy('study.id', 'ASC')
+          .limit(12)
+          .getMany();
+      } else {
+        return null;
+      }
+    } else {
+      return await sq
+        .andWhere(
+          'study.createdAt < :date OR (study.createdAt = :date AND study.id > :id)',
+          { date: last[1], id: last[0] }
+        )
+        .orderBy('study.createdAt', 'DESC')
+        .addOrderBy('study.id', 'ASC')
+        .limit(12)
+        .getMany();
+    }
   } else if (orderBy === orderByEnum.LAST) {
     if (!cursor) {
       return await sq
@@ -104,15 +121,32 @@ const getAllStudy = async (paginationDTO: paginationDTO) => {
         .getMany();
     }
   } else if (orderBy === orderByEnum.LARGE_VACANCY) {
-    return await sq
-      .andWhere(
-        'study.vacancy < :vacancy OR (study.vacancy = :vacancy AND study.id > :id)',
-        { vacancy: last[2], id: last[0] }
-      )
-      .orderBy('study.vacancy', 'DESC')
-      .addOrderBy('study.id', 'ASC')
-      .limit(12)
-      .getMany();
+    if (!cursor) {
+      const study = await getLastStudy(paginationDTO);
+      if (study) {
+        return await sq
+          .andWhere(
+            'study.vacancy <= :vacancy OR (study.vacancy = :vacancy AND study.id >= :id)',
+            { vacancy: study.vacancy, id: study.id }
+          )
+          .orderBy('study.vacancy', 'DESC')
+          .addOrderBy('study.id', 'ASC')
+          .limit(12)
+          .getMany();
+      } else {
+        return null;
+      }
+    } else {
+      return await sq
+        .andWhere(
+          'study.vacancy < :vacancy OR (study.vacancy = :vacancy AND study.id > :id)',
+          { vacancy: last[2], id: last[0] }
+        )
+        .orderBy('study.vacancy', 'DESC')
+        .addOrderBy('study.id', 'ASC')
+        .limit(12)
+        .getMany();
+    }
   }
 };
 

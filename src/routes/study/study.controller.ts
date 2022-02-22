@@ -14,50 +14,13 @@ const getAllStudy = async (req: Request, res: Response) => {
   const cursor: string = req.query.cursor as string;
 
   try {
-    let studies;
-
-    if (orderBy === orderByEnum.LAST || orderBy === orderByEnum.SMALL_VACANCY) {
-      studies = await studyService.getAllStudy({
-        frequencyFilter,
-        weekdayFilter,
-        locationFilter,
-        orderBy,
-        cursor,
-      });
-    } else {
-      if (!cursor) {
-        // 1 page
-        const last = await studyService.getLastStudy({
-          frequencyFilter,
-          weekdayFilter,
-          locationFilter,
-          orderBy,
-          cursor,
-        });
-        if (!last) {
-          return res
-            .status(200)
-            .json({ message: '요청에 해당하는 스터디가 존재하지 않습니다' });
-        } else {
-          const last_cursor = `${last.id}_${last.createdAt}_${last.vacancy}`;
-          studies = await studyService.getAllStudy({
-            frequencyFilter,
-            weekdayFilter,
-            locationFilter,
-            orderBy,
-            cursor: last_cursor,
-          });
-        }
-      } else {
-        studies = await studyService.getAllStudy({
-          frequencyFilter,
-          weekdayFilter,
-          locationFilter,
-          orderBy,
-          cursor,
-        });
-      }
-    }
+    const studies = await studyService.getAllStudy({
+      frequencyFilter,
+      weekdayFilter,
+      locationFilter,
+      orderBy,
+      cursor,
+    });
 
     if (!studies) {
       return res
