@@ -16,7 +16,7 @@ export interface paginationDTO {
   weekdayFilter: string;
   locationFilter: string;
   orderBy: string;
-  cursor: Date | number;
+  cursor: string;
 }
 export interface studyDTO {
   title: string;

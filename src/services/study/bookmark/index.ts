@@ -19,7 +19,6 @@ const registerBookmark = async (bookmarks: Study[], user: User) => {
 };
 
 const getBookmarksByUser = async (id: string) => {
-  // TODO: 페이지네이션 추가 + 카테고리별로
   return await getRepository(Study)
     .createQueryBuilder('study')
     .leftJoin('study.bookmarks', 'user')

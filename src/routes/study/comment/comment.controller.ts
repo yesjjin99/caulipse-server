@@ -161,7 +161,7 @@ export default { getAllComment, createComment, updateComment, deleteComment };
  *        format: uuid
  *      responses:
  *        200:
- *          description: "문의글 목록 조회 성공. message와 함께 문의글 목록({문의글, 스터디, 유저})을 반환함 (문의글 목록은 댓글 뒤에 해당 댓글에 달린 대댓글이 순서대로 정렬되어 반환되는 형태)"
+ *          description: "문의글 목록 조회 성공. message와 함께 문의글 목록({문의글, 스터디, 유저})을 반환함"
  *          schema:
  *            type: array
  *            items:
