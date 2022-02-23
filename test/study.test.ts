@@ -119,15 +119,15 @@ describe('GET /api/study', () => {
       weekdayFilter: WeekDayEnum.MON,
       locationFilter: LocationEnum.CAFE,
     });
-    const { perPage_studies, next_cursor } = res.body;
+    const { studies, next_cursor } = res.body;
 
     expect(res.status).toBe(200);
-    expect(perPage_studies).not.toBeNull();
+    expect(studies).not.toBeNull();
     expect(next_cursor).not.toBeNull();
 
-    expect(perPage_studies[0]).toHaveProperty('frequency', FrequencyEnum.TWICE);
-    expect(perPage_studies[0]).toHaveProperty('weekday', WeekDayEnum.MON);
-    expect(perPage_studies[0]).toHaveProperty('location', LocationEnum.CAFE);
+    expect(studies[0]).toHaveProperty('frequency', FrequencyEnum.TWICE);
+    expect(studies[0]).toHaveProperty('weekday', WeekDayEnum.MON);
+    expect(studies[0]).toHaveProperty('location', LocationEnum.CAFE);
   });
 });
 
