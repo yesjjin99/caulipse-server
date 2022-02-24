@@ -17,9 +17,7 @@ const getAllByStudy = async (id: string) => {
     .leftJoinAndSelect('comment.study', 'study')
     .leftJoinAndSelect('comment.user', 'user')
     .where('comment.study.id = :id', { id })
-    .orderBy('comment.parentComment.id')
-    .addOrderBy('comment.createdAt', 'ASC')
-    .addOrderBy('comment.isNested', 'ASC')
+    .orderBy('comment.createdAt', 'ASC')
     .getMany();
 };
 
