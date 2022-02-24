@@ -6,6 +6,7 @@ import {
   postUserProfile,
   updateUserProfile,
 } from '../../../services/user/profile';
+import { findUserById } from '../../../services/user';
 
 /**
  * @swagger
@@ -90,8 +91,15 @@ import {
  *              example: "남"
  */
 export const createProfile = async (req: Request, res: Response) => {
+  const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
+
   try {
     const { id } = req.params;
+
+    const user = await findUserById(id);
+    if (!user) {
+      throw new Error(NOT_FOUND);
+    }
 
     await postUserProfile({ userId: id, ...req.body });
 
@@ -103,6 +111,7 @@ export const createProfile = async (req: Request, res: Response) => {
 };
 
 export const getUserProfileById = async (req: Request, res: Response) => {
+
   try {
     const { id } = req.params;
 
