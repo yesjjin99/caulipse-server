@@ -11,15 +11,10 @@ const getAllStudy = async (req: Request, res: Response) => {
   const orderBy: string = req.query.order_by
     ? (req.query.order_by as string)
     : orderByEnum.LATEST;
-  const cursor: Date | number = !req.query.cursor
-    ? 0
-    : typeof req.query.cursor === 'number'
-    ? (req.query.cursor as number)
-    : Date.parse(req.query.cursor as string);
-  // cursor default value(1 page): 0
+  const cursor: string = req.query.cursor as string;
 
   try {
-    const { perPage_studies, next_cursor } = await studyService.getAllStudy({
+    const studies = await studyService.getAllStudy({
       frequencyFilter,
       weekdayFilter,
       locationFilter,
@@ -27,11 +22,20 @@ const getAllStudy = async (req: Request, res: Response) => {
       cursor,
     });
 
-    return res.status(200).json({
-      message: '스터디 목록 조회 성공',
-      perPage_studies,
-      next_cursor,
-    }); // 각 페이지별 스터디 목록, 다음 조회에 사용될 cursor 위치(페이지네이션)
+    if (!studies) {
+      return res
+        .status(200)
+        .json({ message: '요청에 해당하는 스터디가 존재하지 않습니다' });
+    } else {
+      const study = studies[studies.length - 1];
+      const next_cursor = `${study.id}_${study.createdAt}_${study.vacancy}`;
+
+      return res.status(200).json({
+        message: '스터디 목록 조회 성공',
+        studies,
+        next_cursor,
+      }); // 각 페이지별 스터디 목록, 다음 조회에 사용될 cursor 위치(페이지네이션)
+    }
   } catch (e) {
     return res.status(500).json({
       message: (e as Error).message,
@@ -311,7 +315,7 @@ export default {
  *                  - "기타"
  *                capacity:
  *                  type: number
- *                categorycode:
+ *                categoryCode:
  *                  type: number
  *      responses:
  *        201:
@@ -346,7 +350,7 @@ export default {
  *  /api/study/{studyid}:
  *    get:
  *      summary: "스터디 아이디에 해당하는 스터디 정보 조회"
- *      description: "스터디 상세페이지에서 각 스터디 아이디 아이디에 해당하는 모든 상세 정보들을 조회할 엔드포인트입니다"
+ *      description: "스터디 상세페이지에서 각 스터디 아이디에 해당하는 모든 상세 정보들을 조회할 엔드포인트입니다"
  *      tags:
  *      - "study"
  *      parameters:
