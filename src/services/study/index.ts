@@ -40,7 +40,7 @@ const getLastStudy = async (paginationDto: paginationDTO) => {
 const getAllStudy = async (paginationDTO: paginationDTO) => {
   const { frequencyFilter, weekdayFilter, locationFilter, orderBy, cursor } =
     paginationDTO;
-  const last = cursor.split('_'); // id, createdAt, vacancy 순
+  const last = cursor?.split('_'); // id, createdAt, vacancy 순
 
   const sq = getRepository(Study)
     .createQueryBuilder('study')
