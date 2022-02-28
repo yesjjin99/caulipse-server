@@ -139,6 +139,18 @@ export default {
  * @swagger
  * paths:
  *  /api/notice:
+ *    get:
+ *      summary: "공지사항 목록 조회"
+ *      description: "모든 공지사항의 목록을 조회하기 위한 엔드포인트입니다"
+ *      tags:
+ *      - "notice"
+ *      responses:
+ *        200:
+ *          description: "올바른 요청"
+ *          schema:
+ *            type: array
+ *            items:
+ *              $ref: "#/definitions/Notice"
  *    post:
  *      summary: "새로운 공지사항 생성"
  *      description: "ADMIN 권한을 가진 사용자가 공지사항을 생성할 때 사용되는 엔드포인트입니다"
