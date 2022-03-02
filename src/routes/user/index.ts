@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import profileRouter from './profile';
 import loginRouter from './login';
+import logoutRouter from './logout';
 import roleRouter from './role';
 import notificationRouter from './notification';
 import categoryRouter from './category';
@@ -13,6 +14,7 @@ router.use('/notification', checkToken, notificationRouter);
 router.use('/category', categoryRouter);
 router.use('/profile', profileRouter);
 router.use('/login', loginRouter);
+router.use('/logout', logoutRouter);
 router.use('/bookmark', checkToken, bookmarkRouter);
 
 router.post('/', controller.saveUser);
