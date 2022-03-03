@@ -12,11 +12,13 @@ export enum orderByEnum {
 }
 
 export interface paginationDTO {
+  categoryCode: number;
   frequencyFilter: string;
   weekdayFilter: string;
   locationFilter: string;
   orderBy: string;
-  cursor: string;
+  pageNo: number;
+  limit: number;
 }
 export interface studyDTO {
   title: string;
@@ -25,4 +27,5 @@ export interface studyDTO {
   frequency: FrequencyEnum;
   location: LocationEnum;
   capacity: number;
+  categoryCode: number;
 }

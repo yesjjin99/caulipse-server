@@ -1,40 +1,53 @@
 import { Request, Response } from 'express';
-import { findCategoryByCode } from '../../services/category';
 import studyService from '../../services/study';
 import { findUserById } from '../../services/user';
 import { orderByEnum } from '../../types/study.dto';
 
 const getAllStudy = async (req: Request, res: Response) => {
+  const categoryCode = Number(req.query.categoryCode);
   const frequencyFilter: string = req.query.frequency as string;
   const weekdayFilter: string = req.query.weekday as string;
   const locationFilter: string = req.query.location as string;
-  const orderBy: string = req.query.order_by
-    ? (req.query.order_by as string)
-    : orderByEnum.LATEST;
-  const cursor: string = req.query.cursor as string;
+  const orderBy: string = req.query.order_by as string | orderByEnum.LATEST;
+  // offset
+  const pageNo = Number(req.query.pageNo) || 1;
+  const limit = Number(req.query.limit) || 12;
 
   try {
     const studies = await studyService.getAllStudy({
+      categoryCode,
       frequencyFilter,
       weekdayFilter,
       locationFilter,
       orderBy,
-      cursor,
+      pageNo,
+      limit,
     });
+    const total = await studyService.countAllStudy({
+      categoryCode,
+      frequencyFilter,
+      weekdayFilter,
+      locationFilter,
+      orderBy,
+      pageNo,
+      limit,
+    });
+    const lastpage = total % limit;
+    const pages =
+      lastpage === 0 ? total / limit : Math.trunc(total / limit) + 1;
 
     if (!studies) {
       return res
         .status(200)
         .json({ message: '요청에 해당하는 스터디가 존재하지 않습니다' });
     } else {
-      const study = studies[studies.length - 1];
-      const next_cursor = `${study.id}_${study.createdAt}_${study.vacancy}`;
-
       return res.status(200).json({
         message: '스터디 목록 조회 성공',
         studies,
-        next_cursor,
-      }); // 각 페이지별 스터디 목록, 다음 조회에 사용될 cursor 위치(페이지네이션)
+        pageNo,
+        pages,
+        total,
+      });
     }
   } catch (e) {
     return res.status(500).json({
@@ -72,13 +85,11 @@ const createStudy = async (req: Request, res: Response) => {
       throw new Error(BAD_REQUEST);
 
     const user = await findUserById(id);
-    const category = await findCategoryByCode(categoryCode);
-
-    if (!user || !category) {
+    if (!user) {
       throw new Error(NOT_FOUND);
     }
 
-    const studyId = await studyService.createStudy(req.body, user, category);
+    const studyId = await studyService.createStudy(req.body, user);
 
     return res.status(201).json({
       message: '새로운 스터디 생성 성공',
@@ -156,17 +167,10 @@ const updateStudy = async (req: Request, res: Response) => {
       throw new Error(BAD_REQUEST);
 
     const study = await studyService.findStudyById(studyid);
-    let category = null;
     if (!study) {
       throw new Error(NOT_FOUND);
     }
-    if (categoryCode) {
-      category = await findCategoryByCode(categoryCode);
-      if (!category) {
-        throw new Error(NOT_FOUND);
-      }
-    }
-    await studyService.updateStudy(req.body, study, category);
+    await studyService.updateStudy(req.body, study);
     return res.status(200).json({ message: '스터디 정보 업데이트 성공' });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
@@ -228,9 +232,9 @@ export default {
  *      - "study"
  *      description: "메인페이지에서 모든 스터디의 목록을 조회하기 위한 엔드포인트입니다"
  *      parameters:
- *      - name: "row_num"
+ *      - name: "categoryCode"
  *        in: "query"
- *        description: "한 페이지에 포함할 항목의 갯수, 기본값: 12"
+ *        description: "조회할 카테고리 코드"
  *        required: false
  *        type: integer
  *      - name: "frequency"
@@ -253,14 +257,19 @@ export default {
  *        description: "정렬 조건 기본값: 최근 등록순 (enum: latest, small_vacancy, large_vacancy)"
  *        required: false
  *        type: string
- *      - name: "cursor"
+ *      - name: "pageNo"
  *        in: "query"
- *        description: "페이지네이션에 사용할 커서 위치값: 지난 페이지에서 다음 조회에 사용될 커서 위치를 받아 사용 (정렬 조건에 따라 createdAt, vacancy)"
+ *        description: "조회할 페이지"
  *        required: false
- *        type: string
+ *        type: integer
+ *      - name: "limit"
+ *        in: "query"
+ *        description: "한 페이지를 조회할 때 들어갈 스터디의 개수 (기본값: 12개)"
+ *        required: false
+ *        type: integer
  *      responses:
  *        200:
- *          description: "올바른 요청. next_cursor(다음 페이지 조회를 위해 사용될 페이지네이션 커서), message와 함께 스터디 목록을 반환합니다"
+ *          description: "올바른 요청. 스터디 객체 배열, 현재 페이지, 전체 페이지 수, 전체 스터디 개수를 반환합니다."
  *          schema:
  *            allOf:
  *            - type: array
