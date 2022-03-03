@@ -9,6 +9,7 @@ import bcrypt from 'bcrypt';
 
 let conn: Connection;
 const noticeId = randomUUID();
+const admin = new User();
 
 beforeAll(async () => {
   conn = await createConnection({
@@ -16,7 +17,6 @@ beforeAll(async () => {
     database: process.env.DB_DATABASE_TEST,
   } as ConnectionOptions);
 
-  const admin = new User();
   admin.id = randomUUID();
   admin.email = 'testadmin@cau.ac.kr';
   admin.password = bcrypt.hashSync('testadmin', 10);
@@ -54,6 +54,65 @@ describe('공지사항 조회 api', () => {
   test('로그인하지 않아도 401 코드로 응답하지 않는다.', async () => {
     const res = await request(app).get('/api/notice');
     expect(res.statusCode).not.toBe(401);
+  });
+
+  test('데이터를 조회한다', async () => {
+    const res = await request(app).get('/api/notice');
+    expect(res.statusCode).toBe(200);
+    expect(res.body.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('공지사항 페이지네이션', () => {
+  beforeAll(async () => {
+    const notices = [];
+    const itemNumber = 30;
+    const makeNoticeRecord = (idx: number) => {
+      const notice = new Notice();
+      notice.id = randomUUID();
+      notice.title = `페이지네이션 테스트`;
+      notice.about = `${idx}`;
+      notice.views = 0;
+      notice.createdAt = new Date();
+      notice.hostId = admin;
+      return notice;
+    };
+    for (let i = 0; i < itemNumber; i++) notices.push(makeNoticeRecord(i));
+    await conn
+      .getRepository(Notice)
+      .createQueryBuilder()
+      .insert()
+      .values(notices)
+      .execute();
+  });
+
+  afterAll(async () => {
+    await conn
+      .getRepository(Notice)
+      .createQueryBuilder()
+      .delete()
+      .where('TITLE = :title', { title: '페이지네이션 테스트' })
+      .execute();
+  });
+
+  test('5개의 항목을 요청하면 5개의 항목만 반환한다', async () => {
+    // given
+    const amount = 5;
+
+    // when
+    const res = await request(app).get(`/api/notice?amount=${amount}`);
+
+    // then
+    expect(res.body.length).toBe(5);
+  });
+
+  test('쿼리스트링 정보를 아무것도 주지 않으면 12개의 항목을 반환한다', async () => {
+    // given
+    // when
+    const res = await request(app).get('/api/notice');
+
+    // then
+    expect(res.body.length).toBe(12);
   });
 });
 

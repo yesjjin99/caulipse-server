@@ -5,16 +5,17 @@ import User from '../../entity/UserEntity';
 
 export const findAllNotice = async ({
   amount,
-  cursor,
+  offset,
 }: {
   amount: number;
-  cursor: string;
+  offset: number;
 }) => {
   return await getRepository(Notice)
     .createQueryBuilder()
     .select()
-    .orderBy('createdAt', 'DESC')
+    .orderBy('CREATED_AT', 'DESC')
     .limit(amount)
+    .offset(offset)
     .execute();
 };
 

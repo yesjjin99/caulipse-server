@@ -76,3 +76,12 @@ export const deleteUserById = async (id: string) => {
     .where('id = :id', { id })
     .execute();
 };
+
+export const logoutUserById = async (id: string) => {
+  return await getRepository(User)
+    .createQueryBuilder()
+    .update()
+    .set({ isLogout: true })
+    .where('ID = :id', { id })
+    .execute();
+};
