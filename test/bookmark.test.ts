@@ -63,7 +63,7 @@ beforeAll(async () => {
   study.membersCount = 0;
   study.vacancy = 10;
   study.isOpen = true;
-  study.categoryCode = category;
+  study.categoryCode = 101;
   study.views = 0;
 
   await studyRepo.save(study);

@@ -14,6 +14,8 @@ router.get('/:studyid', controller.getStudybyId);
 router.patch('/:studyid', checkToken, controller.updateStudy);
 router.delete('/:studyid', checkToken, controller.deleteStudy);
 
+router.get('/search', controller.searchStudy);
+
 // 스터디 참가 신청 라우터
 router.use('/user/:studyid', checkToken, studyUserRouter);
 // 스터디 북마크 라우터

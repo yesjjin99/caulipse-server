@@ -9,7 +9,6 @@ import {
   JoinTable,
 } from 'typeorm';
 import User from './UserEntity';
-import Category from './CategoryEntity';
 
 export enum WeekDayEnum {
   MON = '월',
@@ -78,9 +77,8 @@ export default class Study {
   @Column({ name: 'IS_OPEN' })
   isOpen!: boolean;
 
-  @ManyToOne(() => Category, (category) => category.code)
-  @JoinColumn({ name: 'CATEGORY_CODE' })
-  categoryCode!: Category;
+  @Column('int', { name: 'CATEGORY_CODE' })
+  categoryCode!: number;
 
   @Column('int', { name: 'VIEWS' })
   views!: number;
