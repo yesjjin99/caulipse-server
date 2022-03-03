@@ -1,8 +1,5 @@
 import { Request, Response } from 'express';
-import {
-  findCategoryByCode,
-  postInterestCategory,
-} from '../../../services/category';
+import { postInterestCategory } from '../../../services/category';
 import { findUserById } from '../../../services/user';
 
 const registerInterestCategory = async (req: Request, res: Response) => {
@@ -11,13 +8,12 @@ const registerInterestCategory = async (req: Request, res: Response) => {
   try {
     const { userId, categoryCode } = req.body;
     const user = await findUserById(userId);
-    const category = await findCategoryByCode(categoryCode);
 
-    if (!user || !category) {
+    if (!user) {
       throw new Error(NOT_FOUND);
     }
 
-    await postInterestCategory(user, category);
+    await postInterestCategory(user, categoryCode);
 
     return res.status(201).json({
       message: '관심 카테고리 생성 성공',

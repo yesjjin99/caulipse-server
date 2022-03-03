@@ -5,9 +5,9 @@ import {
   deleteNotice,
   findAllNotice,
   findNoticeById,
+  updateNoticeById,
 } from '../../services/notice';
 import { UserRoleEnum } from '../../entity/UserEntity';
-import { findAllNotice, updateNoticeById } from '../../services/notice';
 
 export default {
   async findAllNotice(req: Request, res: Response) {

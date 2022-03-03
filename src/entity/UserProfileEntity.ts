@@ -42,6 +42,9 @@ export default class UserProfile {
   @Column({ name: 'ON_BREAK' })
   onBreak!: boolean;
 
+  @Column('int', { name: 'USER_INTEREST_CATEGORY' })
+  categories!: number[];
+
   @Column({ name: 'LINK1' })
   link1!: string;
 

@@ -1,16 +1,7 @@
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import Comment from './CommentEntity';
 import Notification from './NotificationEntity';
-import Category from './CategoryEntity';
 import Notice from './NoticeEntity';
-import Study from './StudyEntity';
 
 export enum UserRoleEnum {
   GUEST = 'GUEST',
@@ -46,20 +37,6 @@ export default class User {
 
   @OneToMany(() => Comment, (comment) => comment.user)
   comments!: Comment[];
-
-  @ManyToMany(() => Category)
-  @JoinTable({
-    name: 'USER_INTEREST_CATEGORY',
-    joinColumn: {
-      name: 'USER_ID',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'CATEGORY_CODE',
-      referencedColumnName: 'code',
-    },
-  })
-  categories!: Category[];
 }
 
 /**
