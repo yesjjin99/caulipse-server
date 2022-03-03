@@ -29,7 +29,6 @@ export default {
       }));
       res.json(response);
     } catch (e) {
-      console.log((e as Error).message);
       res.status(500).json({ message: '오류 발생' });
     }
   },
