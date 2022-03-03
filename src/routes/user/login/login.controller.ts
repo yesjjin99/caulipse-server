@@ -41,10 +41,16 @@ export default {
       res.cookie('accessToken', accessToken, {
         httpOnly: true,
         expires: new Date(Date.now() + 3 * hour),
+        domain: 'cau.rudy3091.com',
+        sameSite: 'none',
+        secure: true,
       });
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         expires: new Date(Date.now() + 14 * day),
+        domain: 'cau.rudy3091.com',
+        sameSite: 'none',
+        secure: true,
       });
 
       res.json({ message: '로그인 성공' });

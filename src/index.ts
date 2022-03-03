@@ -12,11 +12,12 @@ import rootRouter from './routes';
 import cors from 'cors';
 
 const swaggerSpec = swaggerJSDoc(swaggerOption);
+const PORT = process.env.PORT || 3000;
 
 const app = express();
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'https://localhost:3000'],
     credentials: true,
   })
 );
@@ -30,7 +31,7 @@ app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 if (process.env.NODE_ENV !== 'test') {
   createConnection(db)
     .then(() => {
-      app.listen(3000, () => console.log('listening'));
+      app.listen(PORT, () => console.log('listening'));
     })
     .catch((err) => {
       console.log(err);

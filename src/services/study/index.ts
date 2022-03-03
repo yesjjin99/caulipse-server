@@ -36,7 +36,7 @@ const getAllStudy = async (paginationDTO: paginationDTO) => {
   } = paginationDTO;
   const offset = (pageNo - 1) * limit;
 
-  const sq = await getRepository(Study)
+  const sq = getRepository(Study)
     .createQueryBuilder('study')
     .leftJoinAndSelect('study.hostId', 'user')
     .where('study.categoryCode = :categoryCode', { categoryCode });
