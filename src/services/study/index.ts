@@ -1,4 +1,4 @@
-import { getRepository } from 'typeorm';
+import { Brackets, getRepository, Like } from 'typeorm';
 import { randomUUID } from 'crypto';
 import Study from '../../entity/StudyEntity';
 import User from '../../entity/UserEntity';
@@ -39,7 +39,6 @@ const getAllStudy = async (paginationDTO: paginationDTO) => {
   const sq = await getRepository(Study)
     .createQueryBuilder('study')
     .leftJoinAndSelect('study.hostId', 'user')
-    .leftJoinAndSelect('study.categoryCode', 'category')
     .where('study.categoryCode = :categoryCode', { categoryCode });
 
   if (frequencyFilter) {
@@ -142,6 +141,77 @@ const checkStudyById = async (id: string) => {
     .getCount();
 };
 
+const countSearched = async (keyword: string, paginationDTO: paginationDTO) => {
+  const { frequencyFilter, weekdayFilter, locationFilter } = paginationDTO;
+
+  const query = await getRepository(Study)
+    .createQueryBuilder('study')
+    .where(
+      new Brackets((qb) => {
+        qb.where('study.title LIKE :keyword', { keyword: `%${keyword}%` });
+        qb.orWhere('study.studyAbout LIKE :keyword', {
+          keyword: `%${keyword}%`,
+        });
+      })
+    );
+
+  if (frequencyFilter) {
+    query.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
+  }
+  if (weekdayFilter) {
+    query.andWhere('study.weekday = :weekdayFilter', { weekdayFilter });
+  }
+  if (locationFilter) {
+    query.andWhere('study.location = :locationFilter', { locationFilter });
+  }
+  return await query.getCount();
+};
+
+const searchStudy = async (keyword: string, paginationDTO: paginationDTO) => {
+  const {
+    frequencyFilter,
+    weekdayFilter,
+    locationFilter,
+    orderBy,
+    pageNo,
+    limit,
+  } = paginationDTO;
+  const offset = (pageNo - 1) * limit;
+
+  const query = await getRepository(Study)
+    .createQueryBuilder('study')
+    .leftJoinAndSelect('study.hostId', 'user')
+    .where(
+      new Brackets((qb) => {
+        qb.where('study.title LIKE :keyword', { keyword: `%${keyword}%` });
+        qb.orWhere('study.studyAbout LIKE :keyword', {
+          keyword: `%${keyword}%`,
+        });
+      })
+    );
+
+  if (frequencyFilter) {
+    query.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
+  }
+  if (weekdayFilter) {
+    query.andWhere('study.weekday = :weekdayFilter', { weekdayFilter });
+  }
+  if (locationFilter) {
+    query.andWhere('study.location = :locationFilter', { locationFilter });
+  }
+
+  if (orderBy === orderByEnum.LATEST) {
+    query.orderBy('study.createdAt', 'DESC');
+  } else if (orderBy === orderByEnum.LAST) {
+    query.orderBy('study.createdAt', 'ASC');
+  } else if (orderBy === orderByEnum.SMALL_VACANCY) {
+    query.orderBy('study.vacancy', 'ASC');
+  } else if (orderBy === orderByEnum.LARGE_VACANCY) {
+    query.orderBy('study.vacancy', 'DESC');
+  }
+  return await query.limit(limit).offset(offset).getMany();
+};
+
 export default {
   countAllStudy,
   getAllStudy,
@@ -150,4 +220,6 @@ export default {
   updateStudy,
   deleteStudy,
   checkStudyById,
+  countSearched,
+  searchStudy,
 };

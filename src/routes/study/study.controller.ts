@@ -214,12 +214,66 @@ const deleteStudy = async (req: Request, res: Response) => {
   }
 };
 
+const searchStudy = async (req: Request, res: Response) => {
+  const keyword: string = req.query.keyword as string;
+  const frequencyFilter: string = req.query.frequency as string;
+  const weekdayFilter: string = req.query.weekday as string;
+  const locationFilter: string = req.query.location as string;
+  const orderBy: string = req.query.order_by as string | orderByEnum.LATEST;
+  // offset
+  const pageNo = Number(req.query.pageNo) || 1;
+  const limit = Number(req.query.limit) || 12;
+
+  try {
+    const studies = await studyService.searchStudy(keyword, {
+      categoryCode: 0,
+      frequencyFilter,
+      weekdayFilter,
+      locationFilter,
+      orderBy,
+      pageNo,
+      limit,
+    });
+    const total = await studyService.countSearched(keyword, {
+      categoryCode: 0,
+      frequencyFilter,
+      weekdayFilter,
+      locationFilter,
+      orderBy,
+      pageNo,
+      limit,
+    });
+    const lastpage = total % limit;
+    const pages =
+      lastpage === 0 ? total / limit : Math.trunc(total / limit) + 1;
+
+    if (!studies) {
+      return res
+        .status(200)
+        .json({ message: '요청에 해당하는 스터디가 존재하지 않습니다' });
+    } else {
+      return res.status(200).json({
+        message: '스터디 검색 성공',
+        studies,
+        pageNo,
+        pages,
+        total,
+      });
+    }
+  } catch (e) {
+    return res.status(500).json({
+      message: (e as Error).message,
+    });
+  }
+};
+
 export default {
   getAllStudy,
   createStudy,
   getStudybyId,
   updateStudy,
   deleteStudy,
+  searchStudy,
 };
 
 /**
@@ -510,4 +564,55 @@ export default {
  *              message:
  *                type: string
  *                example: "일치하는 studyid가 없음"
+ *
+ *  /api/study/search:
+ *    get:
+ *      summary: "스터디 검색 목록 조회"
+ *      tags:
+ *      - "study"
+ *      description: "사용자가 검색한 스터디의 목록을 조회할 수 있습니다"
+ *      parameters:
+ *      - name: "keyword"
+ *        in: "query"
+ *        description: "검색어로 입력한 키워드"
+ *        required: true
+ *        type: string
+ *      - name: "frequency"
+ *        in: "query"
+ *        description: "필터 조건 - 스터디 빈도 / FrequencyEnum"
+ *        required: false
+ *        type: string
+ *      - name: "weekday"
+ *        in: "query"
+ *        description: "필터 조건 - 요일 / WeekDayEnum"
+ *        required: false
+ *        type: string
+ *      - name: "location"
+ *        in: "query"
+ *        description: "필터 조건 - 장소 / LocationEnum"
+ *        required: false
+ *        type: string
+ *      - name: "order_by"
+ *        in: "query"
+ *        description: "정렬 조건 기본값: 최근 등록순 (enum: latest, small_vacancy, large_vacancy)"
+ *        required: false
+ *        type: string
+ *      - name: "pageNo"
+ *        in: "query"
+ *        description: "조회할 페이지"
+ *        required: false
+ *        type: integer
+ *      - name: "limit"
+ *        in: "query"
+ *        description: "한 페이지를 조회할 때 들어갈 스터디의 개수 (기본값: 12개)"
+ *        required: false
+ *        type: integer
+ *      responses:
+ *        200:
+ *          description: "올바른 요청. 스터디 객체 배열, 현재 페이지, 전체 페이지 수, 전체 스터디 개수를 반환합니다."
+ *          schema:
+ *            allOf:
+ *            - type: array
+ *              items:
+ *                $ref: "#/definitions/Study"
  */

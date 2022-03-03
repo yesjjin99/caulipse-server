@@ -1,8 +1,6 @@
 import { Router } from 'express';
 import { checkToken } from '../../middlewares/auth';
-import helloWorld from '../hello-world';
 import controller from './notice.controller';
-import { checkToken } from '../../middlewares/auth';
 
 const router = Router();
 router.get('/', controller.findAllNotice);

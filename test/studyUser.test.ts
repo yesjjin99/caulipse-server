@@ -59,7 +59,7 @@ beforeAll(async () => {
   mockStudy.location = LocationEnum.LIBRARY;
   mockStudy.capacity = 10;
   mockStudy.hostId = mockHost;
-  mockStudy.categoryCode = new Category();
+  mockStudy.categoryCode = 100;
   mockStudy.membersCount = 10;
   mockStudy.vacancy = 10;
   mockStudy.isOpen = true;
@@ -300,7 +300,7 @@ describe('참가 신청중인 사용자 목록 조회 api', () => {
         location: LocationEnum.LIBRARY,
         capacity: 10,
         hostId: newUser,
-        categoryCode: new Category(),
+        categoryCode: 100,
         membersCount: 10,
         vacancy: 10,
         isOpen: true,
