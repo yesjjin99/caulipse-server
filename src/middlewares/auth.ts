@@ -28,8 +28,10 @@ export const refresh = async (req: Request, res: Response) => {
     const newAccessToken = generateToken({ id: decoded.id });
 
     res.cookie('accessToken', newAccessToken, {
-      httpOnly: true,
       expires: new Date(Date.now() + 1000 * 60 * 60 * 3),
+      domain: 'cau.rudy3091.com',
+      sameSite: 'none',
+      secure: true,
     });
   } catch (e) {
     res.status(403).json({ message: (e as Error).message });
