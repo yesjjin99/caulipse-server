@@ -27,8 +27,9 @@ export const refresh = async (req: Request, res: Response) => {
 
     const newAccessToken = generateToken({ id: decoded.id });
 
+    const hour = 3600 * 1000;
     res.cookie('accessToken', newAccessToken, {
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 3),
+      expires: new Date(Date.now() + 3 * hour),
       domain: 'cau.rudy3091.com',
       sameSite: 'none',
       secure: true,
