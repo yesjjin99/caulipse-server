@@ -37,18 +37,18 @@ export default {
         }
       );
 
-      const hour = 3600 * 1000;
-      const day = 24 * hour;
+      const HOUR = 3600 * 1000;
+      const DAY = 24 * HOUR;
       res.cookie('accessToken', accessToken, {
         httpOnly: true,
-        expires: new Date(Date.now() + 3 * hour),
+        expires: new Date(Date.now() + 3 * HOUR),
         domain: 'cau.rudy3091.com',
         sameSite: 'none',
         secure: true,
       });
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        expires: new Date(Date.now() + 14 * day),
+        expires: new Date(Date.now() + 14 * DAY),
         domain: 'cau.rudy3091.com',
         sameSite: 'none',
         secure: true,
