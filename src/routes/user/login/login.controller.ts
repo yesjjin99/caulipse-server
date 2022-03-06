@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { findUserByEmail } from '../../../services/user';
+import { findUserByEmail, loginUserById } from '../../../services/user';
 
 export default {
   async login(req: Request, res: Response) {
@@ -18,6 +18,7 @@ export default {
 
       const isUser = bcrypt.compareSync(password, user?.password);
       if (!isUser) throw new Error(UNAUTHORIZED);
+      await loginUserById(user.id);
 
       const accessToken = jwt.sign(
         { id: user.id },

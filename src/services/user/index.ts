@@ -77,11 +77,15 @@ export const deleteUserById = async (id: string) => {
     .execute();
 };
 
-export const logoutUserById = async (id: string) => {
+const _setLogoutStatusById = (logoutStatus: boolean) => async (id: string) => {
   return await getRepository(User)
     .createQueryBuilder()
     .update()
-    .set({ isLogout: true })
+    .set({ isLogout: logoutStatus })
     .where('ID = :id', { id })
     .execute();
 };
+
+export const logoutUserById = _setLogoutStatusById(true);
+
+export const loginUserById = _setLogoutStatusById(false);
