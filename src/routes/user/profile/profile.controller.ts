@@ -134,6 +134,10 @@ export const getUserProfileById = async (req: Request, res: Response) => {
           userProfile[0].userProfile_LINK1,
           userProfile[0].userProfile_LINK2,
         ],
+        categories:
+          userProfile[0].userProfile_USER_INTEREST_CATEGORY.split(','),
+        userAbout: userProfile[0].userProfile_USER_ABOUT,
+        shortUserAbout: userProfile[0].userProfile_SHORT_USER_ABOUT,
       },
     });
   } catch (err) {
