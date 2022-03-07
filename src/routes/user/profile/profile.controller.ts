@@ -159,23 +159,27 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
         userProfile[0].userProfile_LINK1,
         userProfile[0].userProfile_LINK2,
       ],
+      categories = userProfile[0].categories,
+      shortUserAbout = userProfile.shortUserAbout,
     } = req.body;
 
-    // const result = await updateUserProfile({
-    //   userId: id,
-    //   userName,
-    //   dept,
-    //   grade,
-    //   bio,
-    //   showDept,
-    //   showGrade,
-    //   onBreak,
-    //   link1: links?.[0],
-    //   link2: links?.[1],
-    // });
+    const result = await updateUserProfile({
+      userId: id,
+      userName,
+      dept,
+      grade,
+      bio,
+      showDept,
+      showGrade,
+      onBreak,
+      link1: links?.[0],
+      link2: links?.[1],
+      categories,
+      shortUserAbout,
+    });
 
-    // if (result.affected === 0) throw new Error('유저 프로필 업데이트 실패');
-    // else return res.json({ message: '회원 프로필 수정 성공' });
+    if (result.affected === 0) throw new Error('유저 프로필 업데이트 실패');
+    else return res.json({ message: '회원 프로필 수정 성공' });
   } catch (err) {
     console.error(err);
     res.json({ error: (err as Error).message || (err as Error).toString() });

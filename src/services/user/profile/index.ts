@@ -45,8 +45,8 @@ interface UserProfileInterface {
   onBreak?: boolean;
   link1?: string;
   link2?: string;
-  categories: string[];
-  shortUserAbout: string;
+  categories?: string[];
+  shortUserAbout?: string;
 }
 
 export const postUserProfile = async ({
@@ -107,6 +107,8 @@ export const updateUserProfile = async ({
   onBreak,
   link1,
   link2,
+  categories,
+  shortUserAbout,
 }: UserProfileInterface) => {
   const result = await getRepository(UserProfile)
     .createQueryBuilder()
@@ -121,6 +123,8 @@ export const updateUserProfile = async ({
       onBreak,
       link1,
       link2,
+      categories,
+      shortUserAbout,
     })
     .where('user_id = :id', { id: userId })
     .execute();
