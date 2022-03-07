@@ -12,11 +12,11 @@ import { UserRoleEnum } from '../../entity/UserEntity';
 export default {
   async findAllNotice(req: Request, res: Response) {
     try {
-      const amount = req.query.amount || 12;
+      const limit = req.query.amount || 12;
       const offset = req.query.offset || 0; // FIXME: cursor 디폴트값 설정
 
       const result = await findAllNotice({
-        amount: +amount,
+        amount: +limit,
         offset: +offset,
       });
       const response = result.map((item: Record<string, string | Date>) => ({
@@ -152,6 +152,17 @@ export default {
  *      description: "모든 공지사항의 목록을 조회하기 위한 엔드포인트입니다"
  *      tags:
  *      - "notice"
+ *      parameters:
+ *      - name: "offset"
+ *        in: "query"
+ *        description: "조회할 공지사항 페이지 번호"
+ *        required: false
+ *        type: integer
+ *      - name: "limit"
+ *        in: "query"
+ *        description: "한 페이지를 조회할 때 들어갈 공지사항 항목의 개수 (기본값: 12개)"
+ *        required: false
+ *        type: integer
  *      responses:
  *        200:
  *          description: "올바른 요청"

@@ -221,7 +221,7 @@ const searchStudy = async (req: Request, res: Response) => {
   const locationFilter: string = req.query.location as string;
   const orderBy: string = req.query.order_by as string | orderByEnum.LATEST;
   // offset
-  const pageNo = Number(req.query.pageNo) || 1;
+  const pageNo = Number(req.query.offset) || 1;
   const limit = Number(req.query.limit) || 12;
 
   try {
@@ -311,7 +311,7 @@ export default {
  *        description: "정렬 조건 기본값: 최근 등록순 (enum: latest, small_vacancy, large_vacancy)"
  *        required: false
  *        type: string
- *      - name: "pageNo"
+ *      - name: "offset"
  *        in: "query"
  *        description: "조회할 페이지"
  *        required: false
