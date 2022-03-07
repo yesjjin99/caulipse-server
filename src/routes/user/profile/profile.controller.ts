@@ -101,7 +101,10 @@ export const createProfile = async (req: Request, res: Response) => {
       throw new Error(NOT_FOUND);
     }
 
-    await postUserProfile({ userId: id, ...req.body });
+    await postUserProfile({
+      userId: id,
+      ...req.body,
+    });
 
     res.status(201).json({ message: 'Created. 유저가 생성되었습니다.' });
   } catch (err) {
@@ -111,7 +114,6 @@ export const createProfile = async (req: Request, res: Response) => {
 };
 
 export const getUserProfileById = async (req: Request, res: Response) => {
-
   try {
     const { id } = req.params;
 
@@ -159,21 +161,21 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
       ],
     } = req.body;
 
-    const result = await updateUserProfile({
-      userId: id,
-      userName,
-      dept,
-      grade,
-      bio,
-      showDept,
-      showGrade,
-      onBreak,
-      link1: links?.[0],
-      link2: links?.[1],
-    });
+    // const result = await updateUserProfile({
+    //   userId: id,
+    //   userName,
+    //   dept,
+    //   grade,
+    //   bio,
+    //   showDept,
+    //   showGrade,
+    //   onBreak,
+    //   link1: links?.[0],
+    //   link2: links?.[1],
+    // });
 
-    if (result.affected === 0) throw new Error('유저 프로필 업데이트 실패');
-    else return res.json({ message: '회원 프로필 수정 성공' });
+    // if (result.affected === 0) throw new Error('유저 프로필 업데이트 실패');
+    // else return res.json({ message: '회원 프로필 수정 성공' });
   } catch (err) {
     console.error(err);
     res.json({ error: (err as Error).message || (err as Error).toString() });

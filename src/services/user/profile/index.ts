@@ -45,13 +45,15 @@ interface UserProfileInterface {
   onBreak?: boolean;
   link1?: string;
   link2?: string;
+  categories: string[];
+  shortUserAbout: string;
 }
 
 export const postUserProfile = async ({
   userId,
   userName,
   dept,
-  grade = 0,
+  grade = 1,
   bio,
   userAbout = '',
   showGrade = true,
@@ -59,6 +61,8 @@ export const postUserProfile = async ({
   onBreak = false,
   link1 = '',
   link2 = '',
+  categories = [],
+  shortUserAbout = '',
 }: UserProfileInterface) => {
   const userProfileRepo = getRepository(UserProfile);
   const userProfile = new UserProfile();
@@ -73,6 +77,8 @@ export const postUserProfile = async ({
   userProfile.onBreak = onBreak;
   userProfile.link1 = link1;
   userProfile.link2 = link2;
+  userProfile.categories = categories;
+  userProfile.shortUserAbout = shortUserAbout;
 
   await userProfileRepo.save(userProfile);
 };
