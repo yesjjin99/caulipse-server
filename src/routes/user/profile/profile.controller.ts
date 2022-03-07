@@ -10,7 +10,7 @@ import { findUserById } from '../../../services/user';
 
 /**
  * @swagger
- *  /api/user/profile/{userid}:
+ *  /api/user/profile/{userId}:
  *    post:
  *      summary: "유저 프로필 생성"
  *      tags:
@@ -18,20 +18,18 @@ import { findUserById } from '../../../services/user';
  *      description: "유저 프로필 생성을 위한 엔드포인트"
  *      parameters:
  *      - in: "path"
- *        name: "studyid"
+ *        name: "userId"
  *        description: "사용자 프로필을 생성할 사용자 id"
  *        required: true
  *        type: string
  *        format: uuid
+ *        example: "05293d46-3a40-4942-acb3-22fa055065bc"
  *      - in: "body"
  *        description: "유저 프로필 객체"
  *        required: true
  *        schema:
  *          type: object
  *          properties:
- *            userId:
- *              type: string
- *              example: "sampleId"
  *            userName:
  *              type: string
  *              example: "홍길동"
@@ -44,18 +42,69 @@ import { findUserById } from '../../../services/user';
  *            bio:
  *              type: string
  *              example: "남"
+ *            userAbout:
+ *              type: string
+ *              example: "긴 소개글입니다"
+ *            shortUserAbout:
+ *              type: string
+ *              example: "짧은 소개글입니다"
+ *            showGrade:
+ *              type: boolean
+ *              example: true
+ *            showDept:
+ *              type: boolean
+ *              example: true
+ *            onBreak:
+ *              type: boolean
+ *              example: true
+ *            categories:
+ *              type: array
+ *              items:
+ *                type: string
+ *              example: ["101", "102"]
+ *            link1:
+ *              type: string
+ *              example: "www.naver.com"
+ *            link2:
+ *              type: string
+ *              example: "www.daum.net"
+ *      responses:
+ *        201:
+ *          description: "유저 프로필 생성 성공"
+ *          schema:
+ *        401:
+ *          description: "로그인이 되어있지 않은 경우"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "로그인 필요"
  *    get:
  *      tags:
  *      - "user/profile"
  *      summary: "유저 프로필 조회"
- *      paramters:
+ *      parameters:
  *      - in: "path"
- *        name: "studyid"
- *        description: "사용자 프로필을 생성할 사용자 id"
+ *        name: "userId"
+ *        description: "사용자 프로필을 조회할 사용자 id"
  *        required: true
  *        type: string
  *        format: uuid
+ *        example: "05293d46-3a40-4942-acb3-22fa055065bc"
  *      description: "유저 프로필 조회를 위한 엔드포인트입니다."
+ *      responses:
+ *        200:
+ *          description: "유저 프로필 생성 성공"
+ *          schema:
+ *        401:
+ *          description: "로그인이 되어있지 않은 경우"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "로그인 필요"
  *    patch:
  *      summary: "유저 프로필 업데이트"
  *      tags:
@@ -63,20 +112,18 @@ import { findUserById } from '../../../services/user';
  *      description: "유저 프로필 업데이트를 위한 엔드포인트"
  *      parameters:
  *      - in: "path"
- *        name: "studyid"
- *        description: "사용자 프로필을 생성할 사용자 id"
+ *        name: "userId"
+ *        description: "사용자 프로필을 업데이트할 사용자 id"
  *        required: true
  *        type: string
  *        format: uuid
+ *        example: "05293d46-3a40-4942-acb3-22fa055065bc"
  *      - in: "body"
  *        description: "유저 프로필 객체"
  *        required: true
  *        schema:
  *          type: object
  *          properties:
- *            userId:
- *              type: string
- *              example: "sampleId"
  *            userName:
  *              type: string
  *              example: "홍길동"
@@ -89,6 +136,44 @@ import { findUserById } from '../../../services/user';
  *            bio:
  *              type: string
  *              example: "남"
+ *            userAbout:
+ *              type: string
+ *              example: "긴 소개글입니다"
+ *            shortUserAbout:
+ *              type: string
+ *              example: "짧은 소개글입니다"
+ *            showGrade:
+ *              type: boolean
+ *              example: true
+ *            showDept:
+ *              type: boolean
+ *              example: true
+ *            onBreak:
+ *              type: boolean
+ *              example: true
+ *            categories:
+ *              type: array
+ *              items:
+ *                type: string
+ *              example: ["101", "102"]
+ *            link1:
+ *              type: string
+ *              example: "www.naver.com"
+ *            link2:
+ *              type: string
+ *              example: "www.daum.net"
+ *      responses:
+ *        201:
+ *          description: "유저 프로필 생성 성공"
+ *          schema:
+ *        401:
+ *          description: "로그인이 되어있지 않은 경우"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "로그인 필요"
  */
 export const createProfile = async (req: Request, res: Response) => {
   const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
@@ -183,7 +268,7 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
     });
 
     if (result.affected === 0) throw new Error('유저 프로필 업데이트 실패');
-    else return res.json({ message: '회원 프로필 수정 성공' });
+    else return res.status(201).json({ message: '회원 프로필 수정 성공' });
   } catch (err) {
     console.error(err);
     res.json({ error: (err as Error).message || (err as Error).toString() });
