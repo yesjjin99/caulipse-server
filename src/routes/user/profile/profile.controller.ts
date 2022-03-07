@@ -12,9 +12,9 @@ import { findUserById } from '../../../services/user';
  * @swagger
  *  /api/user/profile/{userId}:
  *    post:
- *      summary: "유저 프로필 생성"
  *      tags:
  *      - "user/profile"
+ *      summary: "유저 프로필 생성"
  *      description: "유저 프로필 생성을 위한 엔드포인트"
  *      parameters:
  *      - in: "path"
@@ -25,6 +25,7 @@ import { findUserById } from '../../../services/user';
  *        format: uuid
  *        example: "05293d46-3a40-4942-acb3-22fa055065bc"
  *      - in: "body"
+ *        name: "body"
  *        description: "유저 프로필 객체"
  *        required: true
  *        schema:
@@ -119,6 +120,7 @@ import { findUserById } from '../../../services/user';
  *        format: uuid
  *        example: "05293d46-3a40-4942-acb3-22fa055065bc"
  *      - in: "body"
+ *        name: "body"
  *        description: "유저 프로필 객체"
  *        required: true
  *        schema:
