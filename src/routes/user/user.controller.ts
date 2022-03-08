@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { Request, Response } from 'express';
+import { sendMail } from '../../services/mail';
 import { deleteUserById, saveUser, updateUserById } from '../../services/user';
 
 export default {
@@ -11,8 +12,8 @@ export default {
         throw new Error('no email or password in request body');
 
       await saveUser({ id, email, password });
-      // TODO: 이메일 전송 로직 추가
-      res.status(201).json({ message: '회원가입 성공', id });
+      const message = await sendMail(email);
+      res.status(201).json({ message, id });
     } catch (e) {
       res
         .status(400)
@@ -84,7 +85,7 @@ export default {
  *            properties:
  *              message:
  *                type: string
- *                example: "회원가입 성공"
+ *                example: "메일을 전송했습니다. 메일함을 확인해주세요"
  *        "400":
  *          description: "요청 body에 이메일 또는 비밀번호 값이 없는 경우입니다"
  *          schema:
