@@ -204,3 +204,27 @@ export default {
  *               type: string
  *               example: "일치하는 userid값이 없음"
  */
+
+/**
+ * @swagger
+ * /api/user/{userid}:
+ *   get:
+ *     tags:
+ *     - user
+ *     summary: "회원정보 조회"
+ *     description: "회원 정보를 조회하는 api입니다."
+ *     parameters:
+ *     - in: "path"
+ *       name: "userid"
+ *       type: string
+ *       format: uuid
+ *       description: "회원정보를 수정할 사용자의 id"
+ *       required: true
+ *     responses:
+ *       200:
+ *         description: "올바른 요청"
+ *       404:
+ *         description: "요청값을 찾을 수 없는 경우"
+ *       500:
+ *         description: "사바 에러"
+ */
