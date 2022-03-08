@@ -21,5 +21,6 @@ router.post('/', controller.saveUser);
 router.delete('/', checkToken, controller.deleteUser);
 router.use('/:id/role', roleRouter);
 router.patch('/:id', controller.updateUserInfo);
+router.get('/:id', controller.getUser);
 
 export default router;

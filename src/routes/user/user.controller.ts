@@ -1,6 +1,11 @@
 import { randomUUID } from 'crypto';
 import { Request, Response } from 'express';
-import { deleteUserById, saveUser, updateUserById } from '../../services/user';
+import {
+  deleteUserById,
+  saveUser,
+  updateUserById,
+  findUserById,
+} from '../../services/user';
 
 export default {
   async saveUser(req: Request, res: Response) {
@@ -47,6 +52,30 @@ export default {
         res.status(404).json({ message: NOT_FOUND });
       } else {
         res.status(400).json({ message: '회원 탈퇴 실패' });
+      }
+    }
+  },
+  async getUser(req: Request, res: Response) {
+    const NOT_FOUND = 'id 에 해당하는 사용자 없음';
+
+    try {
+      const result = await findUserById(req.params.id);
+      if (!result) throw new Error(NOT_FOUND);
+      else
+        return res.status(200).json({
+          message: '회원정보 조회 성공',
+          data: {
+            id: result.id,
+            email: result.email,
+            isLogout: result.isLogout,
+            role: result.role,
+          },
+        });
+    } catch (e) {
+      if ((e as Error).message === NOT_FOUND) {
+        res.status(404).json({ message: NOT_FOUND });
+      } else {
+        res.status(500).json({ message: '회원 탈퇴 실패' });
       }
     }
   },
