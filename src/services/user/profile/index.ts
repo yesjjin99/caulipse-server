@@ -1,38 +1,6 @@
 import { getRepository } from 'typeorm';
 import UserProfile from '../../../entity/UserProfileEntity';
 
-/**
- * @swagger
- * paths:
- *  /api/user/profile:
- *    post:
- *      summary: "유저 프로필 생성"
- *      tags:
- *      - "user"
- *      description: "유저 프로필 생성을 위한 엔드포인트"
- *      parameters:
- *      - in: "body"
- *        description: "유저 프로필 객체"
- *        required: true
- *        schema:
- *          type: object
- *          properties:
- *            userId:
- *              type: string
- *              example: "sampleId"
- *            userName:
- *              type: string
- *              example: "홍길동"
- *            dept:
- *              type: string
- *              example: "경영학과"
- *            grade:
- *              type: number
- *              example: 3
- *            bio:
- *              type: string
- *              example: "남"
- */
 interface UserProfileInterface {
   userId: string;
   userName: string;
@@ -45,13 +13,15 @@ interface UserProfileInterface {
   onBreak?: boolean;
   link1?: string;
   link2?: string;
+  categories?: string[];
+  shortUserAbout?: string;
 }
 
 export const postUserProfile = async ({
   userId,
   userName,
   dept,
-  grade = 0,
+  grade = 1,
   bio,
   userAbout = '',
   showGrade = true,
@@ -59,6 +29,8 @@ export const postUserProfile = async ({
   onBreak = false,
   link1 = '',
   link2 = '',
+  categories = [],
+  shortUserAbout = '',
 }: UserProfileInterface) => {
   const userProfileRepo = getRepository(UserProfile);
   const userProfile = new UserProfile();
@@ -73,6 +45,8 @@ export const postUserProfile = async ({
   userProfile.onBreak = onBreak;
   userProfile.link1 = link1;
   userProfile.link2 = link2;
+  userProfile.categories = categories;
+  userProfile.shortUserAbout = shortUserAbout;
 
   await userProfileRepo.save(userProfile);
 };
@@ -101,6 +75,8 @@ export const updateUserProfile = async ({
   onBreak,
   link1,
   link2,
+  categories,
+  shortUserAbout,
 }: UserProfileInterface) => {
   const result = await getRepository(UserProfile)
     .createQueryBuilder()
@@ -115,6 +91,8 @@ export const updateUserProfile = async ({
       onBreak,
       link1,
       link2,
+      categories,
+      shortUserAbout,
     })
     .where('user_id = :id', { id: userId })
     .execute();
