@@ -57,10 +57,14 @@ export default {
   },
   async getUser(req: Request, res: Response) {
     const NOT_FOUND = 'id 에 해당하는 사용자 없음';
+    const IS_LOGOUT = '로그아웃 혹은 인증되지 않은 상태';
 
     try {
-      const result = await findUserById(req.params.id);
+      const { id } = req.user as { id: string };
+
+      const result = await findUserById(id);
       if (!result) throw new Error(NOT_FOUND);
+      else if (result.isLogout) throw new Error(IS_LOGOUT);
       else
         return res.status(200).json({
           message: '회원정보 조회 성공',
@@ -72,7 +76,9 @@ export default {
           },
         });
     } catch (e) {
-      if ((e as Error).message === NOT_FOUND) {
+      if ((e as Error).message === IS_LOGOUT) {
+        res.status(401).json({ message: IS_LOGOUT });
+      } else if ((e as Error).message === NOT_FOUND) {
         res.status(404).json({ message: NOT_FOUND });
       } else {
         res.status(500).json({ message: '회원 탈퇴 실패' });
