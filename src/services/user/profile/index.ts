@@ -77,6 +77,7 @@ export const updateUserProfile = async ({
   link2,
   categories,
   shortUserAbout,
+  userAbout,
 }: UserProfileInterface) => {
   const result = await getRepository(UserProfile)
     .createQueryBuilder()
@@ -93,6 +94,7 @@ export const updateUserProfile = async ({
       link2,
       categories,
       shortUserAbout,
+      userAbout,
     })
     .where('user_id = :id', { id: userId })
     .execute();

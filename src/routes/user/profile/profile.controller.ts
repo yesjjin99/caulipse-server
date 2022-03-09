@@ -251,7 +251,8 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
         userProfile[0].userProfile_LINK2,
       ],
       categories = userProfile[0].categories,
-      shortUserAbout = userProfile.shortUserAbout,
+      shortUserAbout = userProfile[0].shortUserAbout,
+      userAbout = userProfile[0].userAbout,
     } = req.body;
 
     const result = await updateUserProfile({
@@ -267,6 +268,7 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
       link2: links?.[1],
       categories,
       shortUserAbout,
+      userAbout,
     });
 
     if (result.affected === 0) throw new Error('유저 프로필 업데이트 실패');
