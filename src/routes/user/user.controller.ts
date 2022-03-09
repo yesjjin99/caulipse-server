@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { sendMail } from '../../services/mail';
 import { deleteUserById, saveUser, updateUserById } from '../../services/user';
 import { makeSignUpToken } from '../../utils/auth';
+import { validateCAU } from '../../utils/mail';
 
 export default {
   async saveUser(req: Request, res: Response) {
@@ -11,6 +12,9 @@ export default {
       const { email, password } = req.body;
       if (!email || !password)
         throw new Error('no email or password in request body');
+      const isValidEmail = validateCAU(email);
+      if (!isValidEmail)
+        throw new Error('중앙대 이메일로만 가입할 수 있습니다');
 
       const token = makeSignUpToken(id);
       // TODO: await의 나열보다 Promise.all 의 사용이 성능적인 이점이 있을까?
