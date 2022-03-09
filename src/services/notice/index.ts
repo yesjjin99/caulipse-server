@@ -47,6 +47,11 @@ export const findNoticeById = async (noticeid: string) => {
     .getOne();
 };
 
+export const updateNoticeViews = async (notice: Notice) => {
+  notice.views += 1;
+  return await getRepository(Notice).save(notice);
+};
+
 export const createNotice = async (
   title: string,
   about: string,

@@ -122,6 +122,7 @@ const getStudybyId = async (req: Request, res: Response) => {
     if (!study) {
       throw new Error(NOT_FOUND);
     }
+    await studyService.updateStudyViews(study);
     return res.status(200).json({
       message: '각 스터디별 상세 정보 조회 성공',
       study,

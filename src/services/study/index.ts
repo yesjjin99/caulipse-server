@@ -76,6 +76,11 @@ const findStudyById = async (id: string) => {
     .getOne();
 };
 
+const updateStudyViews = async (study: Study) => {
+  study.views += 1;
+  return await getRepository(Study).save(study);
+};
+
 const createStudy = async (studyDTO: studyDTO, user: User) => {
   const {
     title,
@@ -191,6 +196,7 @@ export default {
   countAllStudy,
   getAllStudy,
   findStudyById,
+  updateStudyViews,
   createStudy,
   updateStudy,
   deleteStudy,

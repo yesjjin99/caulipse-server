@@ -6,6 +6,7 @@ import {
   findAllNotice,
   findNoticeById,
   updateNoticeById,
+  updateNoticeViews,
 } from '../../services/notice';
 import { UserRoleEnum } from '../../entity/UserEntity';
 
@@ -41,6 +42,7 @@ export default {
       const notice = await findNoticeById(noticeid);
       if (!notice) throw new Error(NOT_FOUND);
 
+      await updateNoticeViews(notice);
       return res
         .status(200)
         .json({ notice, message: '각 공지사항별 상세 정보 조회 성공' });
