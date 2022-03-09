@@ -1,15 +1,15 @@
 import bcrypt from 'bcrypt';
 import { getRepository } from 'typeorm';
 import User, { UserRoleEnum } from '../../entity/UserEntity';
-import { makeSignUpToken } from '../../utils/auth';
 
 interface SaveUserDTO {
   id: string;
   email: string;
   password: string;
+  token: string;
 }
 
-export const saveUser = async ({ id, email, password }: SaveUserDTO) => {
+export const saveUser = async ({ id, email, password, token }: SaveUserDTO) => {
   return await getRepository(User)
     .createQueryBuilder()
     .insert()
@@ -19,7 +19,7 @@ export const saveUser = async ({ id, email, password }: SaveUserDTO) => {
       password: bcrypt.hashSync(password, 10),
       isLogout: false,
       role: UserRoleEnum.GUEST,
-      token: makeSignUpToken(id),
+      token,
     })
     .execute();
 };
