@@ -146,43 +146,13 @@ const checkStudyById = async (id: string) => {
     .getCount();
 };
 
-const countSearched = async (keyword: string, paginationDTO: paginationDTO) => {
-  const { frequencyFilter, weekdayFilter, locationFilter } = paginationDTO;
-
-  const query = await getRepository(Study)
-    .createQueryBuilder('study')
-    .where(
-      new Brackets((qb) => {
-        qb.where('study.title LIKE :keyword', { keyword: `%${keyword}%` });
-        qb.orWhere('study.studyAbout LIKE :keyword', {
-          keyword: `%${keyword}%`,
-        });
-      })
-    );
-
-  if (frequencyFilter) {
-    query.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
-  }
-  if (weekdayFilter) {
-    query.andWhere('study.weekday = :weekdayFilter', { weekdayFilter });
-  }
-  if (locationFilter) {
-    query.andWhere('study.location = :locationFilter', { locationFilter });
-  }
-  return await query.getCount();
-};
-
-const searchStudy = async (keyword: string, paginationDTO: paginationDTO) => {
-  const {
-    frequencyFilter,
-    weekdayFilter,
-    locationFilter,
-    orderBy,
-    pageNo,
-    limit,
-  } = paginationDTO;
-  const offset = (pageNo - 1) * limit;
-
+const searchStudy = async (
+  keyword: string,
+  frequencyFilter: string,
+  weekdayFilter: string,
+  locationFilter: string,
+  orderBy: string
+) => {
   const query = await getRepository(Study)
     .createQueryBuilder('study')
     .leftJoinAndSelect('study.hostId', 'user')
@@ -214,7 +184,7 @@ const searchStudy = async (keyword: string, paginationDTO: paginationDTO) => {
   } else if (orderBy === orderByEnum.LARGE_VACANCY) {
     query.orderBy('study.vacancy', 'DESC');
   }
-  return await query.limit(limit).offset(offset).getMany();
+  return await query.getMany();
 };
 
 export default {
@@ -225,6 +195,5 @@ export default {
   updateStudy,
   deleteStudy,
   checkStudyById,
-  countSearched,
   searchStudy,
 };
