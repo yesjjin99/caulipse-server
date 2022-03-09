@@ -24,7 +24,7 @@ afterAll(async () => {
 describe('회원가입 api', () => {
   test('email, password 정보를 포함한 회원가입 요청을 보낼 시 정상적으로 데이터베이스에 유저 정보가 생성된다', async () => {
     // given
-    const email = 'example@test.com';
+    const email = 'example@cau.ac.kr';
     const password = 'testpassword';
 
     // when
@@ -40,7 +40,7 @@ describe('회원가입 api', () => {
 
     expect(user).toBeTruthy();
     expect(user?.id).toEqual(id);
-    expect(user?.email).toEqual('example@test.com');
+    expect(user?.email).toEqual('example@cau.ac.kr');
     /* eslint-disable-next-line */
     expect(bcrypt.compareSync('testpassword', user!.password)).toBeTruthy();
     expect(user?.isLogout).toBe(false);
