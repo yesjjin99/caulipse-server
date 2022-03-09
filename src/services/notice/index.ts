@@ -39,11 +39,11 @@ export const updateNoticeById = async ({
     .execute();
 };
 
-export const findNoticeById = async (id: string) => {
+export const findNoticeById = async (noticeid: string) => {
   return await getRepository(Notice)
     .createQueryBuilder('notice')
     .leftJoinAndSelect('notice.hostId', 'user')
-    .where('notice.id = :id', { id })
+    .where('notice.id = :noticeid', { noticeid })
     .getOne();
 };
 
