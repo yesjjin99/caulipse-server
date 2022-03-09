@@ -250,9 +250,9 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
         userProfile[0].userProfile_LINK1,
         userProfile[0].userProfile_LINK2,
       ],
-      categories = userProfile[0].categories,
-      shortUserAbout = userProfile[0].shortUserAbout,
-      userAbout = userProfile[0].userAbout,
+      categories = userProfile[0].userProfile_USER_INTEREST_CATEGORY,
+      shortUserAbout = userProfile[0].userProfile_SHORT_USER_ABOUT,
+      userAbout = userProfile[0].userProfile_USER_ABOUT,
     } = req.body;
 
     const result = await updateUserProfile({
