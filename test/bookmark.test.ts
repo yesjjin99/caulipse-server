@@ -15,7 +15,6 @@ import Study, {
   FrequencyEnum,
   LocationEnum,
 } from '../src/entity/StudyEntity';
-import Category from '../src/entity/CategoryEntity';
 
 let conn: Connection;
 let userid: string;
@@ -39,14 +38,6 @@ beforeAll(async () => {
   user.role = UserRoleEnum.USER;
 
   await userRepo.save(user);
-
-  const categoryRepo = getRepository(Category);
-  const category = new Category();
-  category.code = 101;
-  category.main = '프로그래밍';
-  category.sub = '자바스크립트';
-
-  await categoryRepo.save(category);
 
   studyid = randomUUID();
   const studyRepo = getRepository(Study);
@@ -72,7 +63,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await getRepository(Study).createQueryBuilder().delete().execute();
   await getRepository(User).createQueryBuilder().delete().execute();
-  await getRepository(Category).createQueryBuilder().delete().execute();
 
   conn.close();
 });

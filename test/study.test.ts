@@ -15,7 +15,6 @@ import {
   WeekDayEnum,
 } from '../src/entity/StudyEntity';
 import User, { UserRoleEnum } from '../src/entity/UserEntity';
-import Category from '../src/entity/CategoryEntity';
 
 let conn: Connection;
 let userid: string;
@@ -40,19 +39,10 @@ beforeAll(async () => {
   user.role = UserRoleEnum.USER;
 
   await userRepo.save(user);
-
-  const categoryRepo = getRepository(Category);
-  const category = new Category();
-  category.code = 101;
-  category.main = '프로그래밍';
-  category.sub = '자바스크립트';
-
-  await categoryRepo.save(category);
 });
 
 afterAll(async () => {
   await getRepository(User).createQueryBuilder().delete().execute();
-  await getRepository(Category).createQueryBuilder().delete().execute();
 
   conn.close();
 });

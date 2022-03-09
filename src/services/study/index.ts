@@ -1,4 +1,4 @@
-import { Brackets, getRepository, Like } from 'typeorm';
+import { Brackets, getRepository } from 'typeorm';
 import { randomUUID } from 'crypto';
 import Study from '../../entity/StudyEntity';
 import User from '../../entity/UserEntity';
@@ -8,9 +8,11 @@ const countAllStudy = async (paginationDto: paginationDTO) => {
   const { categoryCode, frequencyFilter, weekdayFilter, locationFilter } =
     paginationDto;
 
-  const query = await getRepository(Study)
-    .createQueryBuilder('study')
-    .where('study.categoryCode = :categoryCode', { categoryCode });
+  const query = await getRepository(Study).createQueryBuilder('study');
+
+  if (categoryCode) {
+    query.andWhere('study.categoryCode = :categoryCode', { categoryCode });
+  }
 
   if (frequencyFilter) {
     query.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
@@ -38,8 +40,11 @@ const getAllStudy = async (paginationDTO: paginationDTO) => {
 
   const sq = getRepository(Study)
     .createQueryBuilder('study')
-    .leftJoinAndSelect('study.hostId', 'user')
-    .where('study.categoryCode = :categoryCode', { categoryCode });
+    .leftJoinAndSelect('study.hostId', 'user');
+
+  if (categoryCode) {
+    sq.andWhere('study.categoryCode = :categoryCode', { categoryCode });
+  }
 
   if (frequencyFilter) {
     sq.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });

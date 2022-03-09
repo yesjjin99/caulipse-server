@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt';
 import { Connection, ConnectionOptions, createConnection } from 'typeorm';
 import app from '../src';
 import { db } from '../src/config/db';
-import Category from '../src/entity/CategoryEntity';
 import User from '../src/entity/UserEntity';
 import Notification from '../src/entity/NotificationEntity';
 import Study, {
