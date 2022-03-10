@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { findUserByEmail } from '../../../services/user';
+import { findUserByEmail, loginUserById } from '../../../services/user';
 
 export default {
   async login(req: Request, res: Response) {
@@ -18,6 +18,7 @@ export default {
 
       const isUser = bcrypt.compareSync(password, user?.password);
       if (!isUser) throw new Error(UNAUTHORIZED);
+      await loginUserById(user.id);
 
       const accessToken = jwt.sign(
         { id: user.id },
@@ -36,18 +37,17 @@ export default {
         }
       );
 
-      const hour = 3600 * 1000;
-      const day = 24 * hour;
+      const HOUR = 3600 * 1000;
+      const DAY = 24 * HOUR;
       res.cookie('accessToken', accessToken, {
-        httpOnly: true,
-        expires: new Date(Date.now() + 3 * hour),
+        expires: new Date(Date.now() + 3 * HOUR),
         domain: 'cau.rudy3091.com',
         sameSite: 'none',
         secure: true,
       });
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        expires: new Date(Date.now() + 14 * day),
+        expires: new Date(Date.now() + 14 * DAY),
         domain: 'cau.rudy3091.com',
         sameSite: 'none',
         secure: true,

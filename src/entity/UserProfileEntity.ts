@@ -42,12 +42,15 @@ export default class UserProfile {
   @Column({ name: 'ON_BREAK' })
   onBreak!: boolean;
 
-  @Column('int', { name: 'USER_INTEREST_CATEGORY' })
-  categories!: number[];
+  @Column('simple-array', { name: 'USER_INTEREST_CATEGORY' })
+  categories!: string[];
 
   @Column({ name: 'LINK1' })
   link1!: string;
 
   @Column({ name: 'LINK2' })
   link2!: string;
+
+  @Column({ name: 'SHORT_USER_ABOUT' })
+  shortUserAbout!: string;
 }

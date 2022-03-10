@@ -6,6 +6,9 @@ import {
   updateUserById,
   findUserById,
 } from '../../services/user';
+import { sendMail } from '../../services/mail';
+import { makeSignUpToken } from '../../utils/auth';
+import { validateCAU } from '../../utils/mail';
 
 export default {
   async saveUser(req: Request, res: Response) {
@@ -14,10 +17,16 @@ export default {
       const { email, password } = req.body;
       if (!email || !password)
         throw new Error('no email or password in request body');
+      const isValidEmail = validateCAU(email);
+      if (!isValidEmail)
+        throw new Error('중앙대 이메일로만 가입할 수 있습니다');
 
-      await saveUser({ id, email, password });
-      // TODO: 이메일 전송 로직 추가
-      res.status(201).json({ message: '회원가입 성공', id });
+      const token = makeSignUpToken(id);
+      // TODO: await의 나열보다 Promise.all 의 사용이 성능적인 이점이 있을까?
+      await saveUser({ id, email, password, token });
+      const message = await sendMail(email, id, token);
+
+      res.status(201).json({ message, id });
     } catch (e) {
       res
         .status(400)
@@ -119,7 +128,7 @@ export default {
  *            properties:
  *              message:
  *                type: string
- *                example: "회원가입 성공"
+ *                example: "메일을 전송했습니다. 메일함을 확인해주세요"
  *        "400":
  *          description: "요청 body에 이메일 또는 비밀번호 값이 없는 경우입니다"
  *          schema:

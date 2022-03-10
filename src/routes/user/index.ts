@@ -4,14 +4,12 @@ import loginRouter from './login';
 import logoutRouter from './logout';
 import roleRouter from './role';
 import notificationRouter from './notification';
-import categoryRouter from './category';
 import bookmarkRouter from './bookmark';
 import controller from './user.controller';
 import { checkToken } from '../../middlewares/auth';
 
 const router = Router();
 router.use('/notification', checkToken, notificationRouter);
-router.use('/category', categoryRouter);
 router.use('/profile', profileRouter);
 router.use('/login', loginRouter);
 router.use('/logout', logoutRouter);

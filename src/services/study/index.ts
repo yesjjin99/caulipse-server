@@ -104,10 +104,7 @@ const createStudy = async (studyDTO: studyDTO, user: User) => {
 };
 
 // eslint-disable-next-line prettier/prettier
-const updateStudy = async (
-  studyDTO: studyDTO,
-  study: Study
-) => {
+const updateStudy = async (studyDTO: studyDTO, study: Study) => {
   const {
     title,
     studyAbout,
