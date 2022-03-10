@@ -40,7 +40,6 @@ export default {
       const HOUR = 3600 * 1000;
       const DAY = 24 * HOUR;
       res.cookie('accessToken', accessToken, {
-        httpOnly: true,
         expires: new Date(Date.now() + 3 * HOUR),
         domain: 'cau.rudy3091.com',
         sameSite: 'none',
