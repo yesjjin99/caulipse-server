@@ -12,7 +12,7 @@ const router = Router();
 router.use('/notification', checkToken, notificationRouter);
 router.use('/profile', profileRouter);
 router.use('/login', loginRouter);
-router.use('/logout', logoutRouter);
+router.use('/logout', checkToken, logoutRouter);
 router.use('/bookmark', checkToken, bookmarkRouter);
 
 router.post('/', controller.saveUser);

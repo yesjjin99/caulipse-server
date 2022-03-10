@@ -20,7 +20,7 @@ export default {
       if ((e as Error).message === UNAUTHORIZED) {
         res.status(401).json({ message: '먼저 로그인하세요' });
       } else {
-        res.status(500).json({ message: 'error' });
+        res.status(500).json({ message: (e as Error).message });
       }
     }
   },
