@@ -31,8 +31,8 @@ export const changeUserRoleById = async (id: string) => {
     .set({
       role: UserRoleEnum.USER,
     })
-    .where('id = :id', { id })
-    .andWhere(`role = 'GUEST'`)
+    .where('ID = :id', { id })
+    .andWhere(`ROLE = 'GUEST'`)
     .execute();
 };
 
@@ -40,14 +40,14 @@ export const findUserByEmail = async (email: string) => {
   return await getRepository(User)
     .createQueryBuilder()
     .select()
-    .where('email = :email', { email })
+    .where('EMAIL = :email', { email })
     .getOne();
 };
 
 export const findUserById = async (id: string) => {
   return await getRepository(User)
     .createQueryBuilder('user')
-    .where('user.id = :id', { id })
+    .where('user.ID = :id', { id })
     .getOne();
 };
 
@@ -65,7 +65,7 @@ export const updateUserById = async (id: string, data: UpdateUserDTO) => {
     .createQueryBuilder()
     .update()
     .set({ email, password, isLogout, token, role })
-    .where('id = :id', { id })
+    .where('ID = :id', { id })
     .execute();
 };
 
@@ -73,15 +73,19 @@ export const deleteUserById = async (id: string) => {
   return await getRepository(User)
     .createQueryBuilder()
     .delete()
-    .where('id = :id', { id })
-    .execute();
-};
-
-export const logoutUserById = async (id: string) => {
-  return await getRepository(User)
-    .createQueryBuilder()
-    .update()
-    .set({ isLogout: true })
     .where('ID = :id', { id })
     .execute();
 };
+
+const _setLogoutStatusById = (logoutStatus: boolean) => async (id: string) => {
+  return await getRepository(User)
+    .createQueryBuilder()
+    .update()
+    .set({ isLogout: logoutStatus })
+    .where('ID = :id', { id })
+    .execute();
+};
+
+export const logoutUserById = _setLogoutStatusById(true);
+
+export const loginUserById = _setLogoutStatusById(false);
