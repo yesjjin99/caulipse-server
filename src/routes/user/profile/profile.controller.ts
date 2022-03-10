@@ -42,13 +42,10 @@ import { findUserById } from '../../../services/user';
  *              example: 3
  *            bio:
  *              type: string
- *              example: "남"
+ *              example: "짧은 소개글입니다"
  *            userAbout:
  *              type: string
  *              example: "긴 소개글입니다"
- *            shortUserAbout:
- *              type: string
- *              example: "짧은 소개글입니다"
  *            showGrade:
  *              type: boolean
  *              example: true
@@ -137,13 +134,10 @@ import { findUserById } from '../../../services/user';
  *              example: 3
  *            bio:
  *              type: string
- *              example: "남"
+ *              example: "짧은 소개글입니다"
  *            userAbout:
  *              type: string
  *              example: "긴 소개글입니다"
- *            shortUserAbout:
- *              type: string
- *              example: "짧은 소개글입니다"
  *            showGrade:
  *              type: boolean
  *              example: true
@@ -224,7 +218,6 @@ export const getUserProfileById = async (req: Request, res: Response) => {
         categories:
           userProfile[0].userProfile_USER_INTEREST_CATEGORY.split(','),
         userAbout: userProfile[0].userProfile_USER_ABOUT,
-        shortUserAbout: userProfile[0].userProfile_SHORT_USER_ABOUT,
       },
     });
   } catch (err) {
@@ -251,7 +244,6 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
         userProfile[0].userProfile_LINK2,
       ],
       categories = userProfile[0].categories,
-      shortUserAbout = userProfile.shortUserAbout,
     } = req.body;
 
     const result = await updateUserProfile({
@@ -266,7 +258,6 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
       link1: links?.[0],
       link2: links?.[1],
       categories,
-      shortUserAbout,
     });
 
     if (result.affected === 0) throw new Error('유저 프로필 업데이트 실패');
