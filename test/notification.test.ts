@@ -63,6 +63,8 @@ beforeAll(async () => {
   mockNoti1.read = false;
   mockNoti1.study = mockStudy;
   mockNoti1.type = 0;
+  mockNoti1.title = 'test title1';
+  mockNoti1.notiAbout = 'test about1';
   mockNoti1.read = false;
   await conn.getRepository(Notification).save(mockNoti1);
 });

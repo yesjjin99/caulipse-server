@@ -16,6 +16,8 @@ import Study, {
   LocationEnum,
 } from '../src/entity/StudyEntity';
 import commentService from '../src/services/comment';
+import Notification from '../src/entity/NotificationEntity';
+import Comment from '../src/entity/CommentEntity';
 
 let conn: Connection;
 let userid: string;
@@ -64,6 +66,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await getRepository(Notification).createQueryBuilder().delete().execute();
+  await getRepository(Comment).createQueryBuilder().delete().execute();
   await getRepository(Study).createQueryBuilder().delete().execute();
   await getRepository(User).createQueryBuilder().delete().execute();
 

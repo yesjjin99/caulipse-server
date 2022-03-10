@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto';
 import Notice from '../src/entity/NoticeEntity';
 import User, { UserRoleEnum } from '../src/entity/UserEntity';
 import bcrypt from 'bcrypt';
+import Notification from '../src/entity/NotificationEntity';
 
 let conn: Connection;
 const noticeId = randomUUID();
@@ -45,6 +46,11 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await conn
+    .getRepository(Notification)
+    .createQueryBuilder()
+    .delete()
+    .execute();
   await conn.getRepository(Notice).createQueryBuilder().delete().execute();
   await conn.getRepository(User).createQueryBuilder().delete().execute();
   conn.close();

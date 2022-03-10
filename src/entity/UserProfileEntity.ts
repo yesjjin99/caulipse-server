@@ -54,3 +54,48 @@ export default class UserProfile {
   @Column({ name: 'SHORT_USER_ABOUT' })
   shortUserAbout!: string;
 }
+
+/**
+ * @swagger
+ * definitions:
+ *  Study:
+ *    type: object
+ *    properties:
+ *      id:
+ *        type: string
+ *        format: uuid
+ *        description: "사용자의 id"
+ *      userName:
+ *        type: string
+ *        description: "사용자의 닉네임"
+ *      dept:
+ *        type: string
+ *        description: "사용자의 학과 정보"
+ *      grade:
+ *        type: string
+ *        description: "사용자의 학년 정보"
+ *      bio:
+ *        type: string
+ *        description: "사용자의 프로필 소개 문구"
+ *      userAbout:
+ *        type: string
+ *        description: "사용자의 자기소개 글"
+ *      showDept:
+ *        type: boolean
+ *        description: "스터디 신청 시 학과 정보 공개 여부"
+ *      showGrade:
+ *        type: boolean
+ *        description: "스터디 신청 시 학년 정보 공개 여부"
+ *      onBreak:
+ *        type: boolean
+ *        description: "사용자의 재학 상태 정보"
+ *      categories:
+ *        type: [string]
+ *        description: "사용자 관심 카테고리"
+ *      link1:
+ *        type: string
+ *        description: "프로필에 등록할 링크1"
+ *      link2:
+ *        type: string
+ *        description: "프로필에 등록할 링크2"
+ */

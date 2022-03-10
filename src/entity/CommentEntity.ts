@@ -26,9 +26,12 @@ export default class Comment {
   @Column({ name: 'CONTENT' })
   content!: string;
 
+  @Column('uuid', { nullable: true })
+  USER_ID!: string | null;
+
   @ManyToOne(() => User, (user) => user.comments, { nullable: true })
   @JoinColumn({ name: 'USER_ID' })
-  user?: User | null;
+  user!: User | null;
 
   @OneToMany(() => Comment, (comment) => comment.parentComment)
   nestedComments!: Comment[];
@@ -39,8 +42,8 @@ export default class Comment {
   @JoinColumn({ name: 'NESTED_COMMENT_ID' })
   parentComment?: Comment | null;
 
-  @Column('uuid')
-  NESTED_COMMENT_ID!: string;
+  @Column('uuid', { nullable: true })
+  NESTED_COMMENT_ID!: string | null;
 
   @ManyToOne(() => Study, (study) => study.id)
   @JoinColumn({ name: 'STUDY_ID' })

@@ -15,6 +15,7 @@ import {
   WeekDayEnum,
 } from '../src/entity/StudyEntity';
 import User, { UserRoleEnum } from '../src/entity/UserEntity';
+import Notification from '../src/entity/NotificationEntity';
 
 let conn: Connection;
 let userid: string;
@@ -42,6 +43,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await getRepository(Notification).createQueryBuilder().delete().execute();
   await getRepository(User).createQueryBuilder().delete().execute();
 
   conn.close();
