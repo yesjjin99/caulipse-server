@@ -3,6 +3,10 @@ import { getRepository } from 'typeorm';
 import Notice from '../../entity/NoticeEntity';
 import User from '../../entity/UserEntity';
 
+export const findAllUser = async () => {
+  return await getRepository(User).createQueryBuilder().select('id').getMany();
+};
+
 export const findAllNotice = async ({
   amount,
   offset,

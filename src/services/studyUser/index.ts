@@ -1,4 +1,5 @@
 import { getRepository } from 'typeorm';
+import Study from '../../entity/StudyEntity';
 import StudyUser from '../../entity/StudyUserEntity';
 
 interface SaveStudyUserRecordDTO {
@@ -22,6 +23,13 @@ export const saveStudyUserRecord = async ({
       tempBio,
     })
     .execute();
+};
+
+export const findStudyById = async (studyId: string) => {
+  return await getRepository(Study)
+    .createQueryBuilder('study')
+    .where('study.id = :studyId', { studyId })
+    .getOne();
 };
 
 export const findAllByStudyId = async (studyId: string) => {
