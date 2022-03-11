@@ -17,6 +17,7 @@ router.use('/bookmark', checkToken, bookmarkRouter);
 
 router.post('/', controller.saveUser);
 router.delete('/', checkToken, controller.deleteUser);
+router.get('/', checkToken, controller.getUser);
 router.use('/:id/role', roleRouter);
 router.patch('/:id', controller.updateUserInfo);
 

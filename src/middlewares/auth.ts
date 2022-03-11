@@ -24,12 +24,16 @@ export const refresh = async (req: Request, res: Response) => {
 
     const user = await getRepository(User).findOne({ id: decoded.id });
     if (user?.id !== decoded.id) throw new Error('id 값 오류');
+    if (user?.isLogout) throw new Error('이미 로그아웃 한 유저');
 
     const newAccessToken = generateToken({ id: decoded.id });
 
+    const hour = 3600 * 1000;
     res.cookie('accessToken', newAccessToken, {
-      httpOnly: true,
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 3),
+      expires: new Date(Date.now() + 3 * hour),
+      domain: 'cau.rudy3091.com',
+      sameSite: 'none',
+      secure: true,
     });
   } catch (e) {
     res.status(403).json({ message: (e as Error).message });

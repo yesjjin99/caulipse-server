@@ -1,6 +1,14 @@
 import { randomUUID } from 'crypto';
 import { Request, Response } from 'express';
-import { deleteUserById, saveUser, updateUserById } from '../../services/user';
+import {
+  deleteUserById,
+  saveUser,
+  updateUserById,
+  findUserById,
+} from '../../services/user';
+import { sendMail } from '../../services/mail';
+import { makeSignUpToken } from '../../utils/auth';
+import { validateCAU } from '../../utils/mail';
 
 export default {
   async saveUser(req: Request, res: Response) {
@@ -9,10 +17,16 @@ export default {
       const { email, password } = req.body;
       if (!email || !password)
         throw new Error('no email or password in request body');
+      const isValidEmail = validateCAU(email);
+      if (!isValidEmail)
+        throw new Error('중앙대 이메일로만 가입할 수 있습니다');
 
-      await saveUser({ id, email, password });
-      // TODO: 이메일 전송 로직 추가
-      res.status(201).json({ message: '회원가입 성공', id });
+      const token = makeSignUpToken(id);
+      // TODO: await의 나열보다 Promise.all 의 사용이 성능적인 이점이 있을까?
+      await saveUser({ id, email, password, token });
+      const message = await sendMail(email, id, token);
+
+      res.status(201).json({ message, id });
     } catch (e) {
       res
         .status(400)
@@ -50,6 +64,36 @@ export default {
       }
     }
   },
+  async getUser(req: Request, res: Response) {
+    const NOT_FOUND = 'id 에 해당하는 사용자 없음';
+    const IS_LOGOUT = '로그아웃 혹은 인증되지 않은 상태';
+
+    try {
+      const { id } = req.user as { id: string };
+
+      const result = await findUserById(id);
+      if (!result) throw new Error(NOT_FOUND);
+      else if (result.isLogout) throw new Error(IS_LOGOUT);
+      else
+        return res.status(200).json({
+          message: '회원정보 조회 성공',
+          data: {
+            id: result.id,
+            email: result.email,
+            isLogout: result.isLogout,
+            role: result.role,
+          },
+        });
+    } catch (e) {
+      if ((e as Error).message === IS_LOGOUT) {
+        res.status(401).json({ message: IS_LOGOUT });
+      } else if ((e as Error).message === NOT_FOUND) {
+        res.status(404).json({ message: NOT_FOUND });
+      } else {
+        res.status(500).json({ message: '회원 탈퇴 실패' });
+      }
+    }
+  },
 };
 
 /**
@@ -84,7 +128,7 @@ export default {
  *            properties:
  *              message:
  *                type: string
- *                example: "회원가입 성공"
+ *                example: "메일을 전송했습니다. 메일함을 확인해주세요"
  *        "400":
  *          description: "요청 body에 이메일 또는 비밀번호 값이 없는 경우입니다"
  *          schema:
@@ -174,4 +218,28 @@ export default {
  *             message:
  *               type: string
  *               example: "일치하는 userid값이 없음"
+ */
+
+/**
+ * @swagger
+ * /api/user/{userid}:
+ *   get:
+ *     tags:
+ *     - user
+ *     summary: "회원정보 조회"
+ *     description: "회원 정보를 조회하는 api입니다."
+ *     parameters:
+ *     - in: "path"
+ *       name: "userid"
+ *       type: string
+ *       format: uuid
+ *       description: "회원정보를 수정할 사용자의 id"
+ *       required: true
+ *     responses:
+ *       200:
+ *         description: "올바른 요청"
+ *       404:
+ *         description: "요청값을 찾을 수 없는 경우"
+ *       500:
+ *         description: "사바 에러"
  */
