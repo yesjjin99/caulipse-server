@@ -291,7 +291,7 @@ export default {
  *        description: "정렬 조건 기본값: 최근 등록순 (enum: latest, small_vacancy, large_vacancy)"
  *        required: false
  *        type: string
- *      - name: "pageNo"
+ *      - name: "offset"
  *        in: "query"
  *        description: "조회할 페이지"
  *        required: false
