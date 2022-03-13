@@ -220,32 +220,15 @@ const searchStudy = async (req: Request, res: Response) => {
   const weekdayFilter: string = req.query.weekday as string;
   const locationFilter: string = req.query.location as string;
   const orderBy: string = req.query.order_by as string | orderByEnum.LATEST;
-  // offset
-  const pageNo = Number(req.query.offset) || 1;
-  const limit = Number(req.query.limit) || 12;
 
   try {
-    const studies = await studyService.searchStudy(keyword, {
-      categoryCode: 0,
+    const studies = await studyService.searchStudy(
+      keyword,
       frequencyFilter,
       weekdayFilter,
       locationFilter,
-      orderBy,
-      pageNo,
-      limit,
-    });
-    const total = await studyService.countSearched(keyword, {
-      categoryCode: 0,
-      frequencyFilter,
-      weekdayFilter,
-      locationFilter,
-      orderBy,
-      pageNo,
-      limit,
-    });
-    const lastpage = total % limit;
-    const pages =
-      lastpage === 0 ? total / limit : Math.trunc(total / limit) + 1;
+      orderBy
+    );
 
     if (!studies) {
       return res
@@ -253,11 +236,8 @@ const searchStudy = async (req: Request, res: Response) => {
         .json({ message: '요청에 해당하는 스터디가 존재하지 않습니다' });
     } else {
       return res.status(200).json({
-        message: '스터디 검색 성공',
         studies,
-        pageNo,
-        pages,
-        total,
+        message: '스터디 검색 성공',
       });
     }
   } catch (e) {
@@ -597,19 +577,9 @@ export default {
  *        description: "정렬 조건 기본값: 최근 등록순 (enum: latest, small_vacancy, large_vacancy)"
  *        required: false
  *        type: string
- *      - name: "pageNo"
- *        in: "query"
- *        description: "조회할 페이지"
- *        required: false
- *        type: integer
- *      - name: "limit"
- *        in: "query"
- *        description: "한 페이지를 조회할 때 들어갈 스터디의 개수 (기본값: 12개)"
- *        required: false
- *        type: integer
  *      responses:
  *        200:
- *          description: "올바른 요청. 스터디 객체 배열, 현재 페이지, 전체 페이지 수, 전체 스터디 개수를 반환합니다."
+ *          description: "올바른 요청."
  *          schema:
  *            allOf:
  *            - type: array

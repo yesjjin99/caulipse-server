@@ -1,4 +1,4 @@
-import { Brackets, getRepository, Like } from 'typeorm';
+import { Brackets, getRepository } from 'typeorm';
 import { randomUUID } from 'crypto';
 import Study from '../../entity/StudyEntity';
 import User from '../../entity/UserEntity';
@@ -8,9 +8,11 @@ const countAllStudy = async (paginationDto: paginationDTO) => {
   const { categoryCode, frequencyFilter, weekdayFilter, locationFilter } =
     paginationDto;
 
-  const query = await getRepository(Study)
-    .createQueryBuilder('study')
-    .where('study.categoryCode = :categoryCode', { categoryCode });
+  const query = await getRepository(Study).createQueryBuilder('study');
+
+  if (categoryCode) {
+    query.andWhere('study.categoryCode = :categoryCode', { categoryCode });
+  }
 
   if (frequencyFilter) {
     query.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
@@ -38,8 +40,11 @@ const getAllStudy = async (paginationDTO: paginationDTO) => {
 
   const sq = getRepository(Study)
     .createQueryBuilder('study')
-    .leftJoinAndSelect('study.hostId', 'user')
-    .where('study.categoryCode = :categoryCode', { categoryCode });
+    .leftJoinAndSelect('study.hostId', 'user');
+
+  if (categoryCode) {
+    sq.andWhere('study.categoryCode = :categoryCode', { categoryCode });
+  }
 
   if (frequencyFilter) {
     sq.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
@@ -138,43 +143,13 @@ const checkStudyById = async (id: string) => {
     .getCount();
 };
 
-const countSearched = async (keyword: string, paginationDTO: paginationDTO) => {
-  const { frequencyFilter, weekdayFilter, locationFilter } = paginationDTO;
-
-  const query = await getRepository(Study)
-    .createQueryBuilder('study')
-    .where(
-      new Brackets((qb) => {
-        qb.where('study.title LIKE :keyword', { keyword: `%${keyword}%` });
-        qb.orWhere('study.studyAbout LIKE :keyword', {
-          keyword: `%${keyword}%`,
-        });
-      })
-    );
-
-  if (frequencyFilter) {
-    query.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
-  }
-  if (weekdayFilter) {
-    query.andWhere('study.weekday = :weekdayFilter', { weekdayFilter });
-  }
-  if (locationFilter) {
-    query.andWhere('study.location = :locationFilter', { locationFilter });
-  }
-  return await query.getCount();
-};
-
-const searchStudy = async (keyword: string, paginationDTO: paginationDTO) => {
-  const {
-    frequencyFilter,
-    weekdayFilter,
-    locationFilter,
-    orderBy,
-    pageNo,
-    limit,
-  } = paginationDTO;
-  const offset = (pageNo - 1) * limit;
-
+const searchStudy = async (
+  keyword: string,
+  frequencyFilter: string,
+  weekdayFilter: string,
+  locationFilter: string,
+  orderBy: string
+) => {
   const query = await getRepository(Study)
     .createQueryBuilder('study')
     .leftJoinAndSelect('study.hostId', 'user')
@@ -206,7 +181,7 @@ const searchStudy = async (keyword: string, paginationDTO: paginationDTO) => {
   } else if (orderBy === orderByEnum.LARGE_VACANCY) {
     query.orderBy('study.vacancy', 'DESC');
   }
-  return await query.limit(limit).offset(offset).getMany();
+  return await query.getMany();
 };
 
 export default {
@@ -217,6 +192,5 @@ export default {
   updateStudy,
   deleteStudy,
   checkStudyById,
-  countSearched,
   searchStudy,
 };
