@@ -17,6 +17,7 @@ export default {
     let study;
     try {
       study = await studyService.findStudyById(req.params.studyid);
+      if (!study) throw new Error(NOT_FOUND);
     } catch (e) {
       res.status(404).json({ message: NOT_FOUND });
       return;
@@ -110,10 +111,7 @@ export default {
         res.status(400).json({ message: BAD_REQUEST });
       } else if (err.message === FORBIDDEN) {
         res.status(403).json({ message: FORBIDDEN });
-      } else if (
-        err.message === NOT_FOUND ||
-        err.message === '데이터베이스에 일치하는 요청값이 없습니다' // FIXME
-      ) {
+      } else if (err.message === NOT_FOUND) {
         res.status(404).json({ message: NOT_FOUND });
       } else {
         res.status(500).json({ message: 'error' });
@@ -146,7 +144,6 @@ export default {
     }
   },
   async deleteStudyJoin(req: Request, res: Response) {
-    const BAD_REQUEST = 'request is not valid';
     const NOT_FOUND = '일치하는 참가신청이 없음';
 
     try {
