@@ -12,6 +12,7 @@ import Study, {
 import StudyUser from '../src/entity/StudyUserEntity';
 import User, { UserRoleEnum } from '../src/entity/UserEntity';
 import { saveStudyUserRecord } from '../src/services/studyUser';
+import Notification from '../src/entity/NotificationEntity';
 
 let conn: Connection;
 let mockHost: User;
@@ -68,6 +69,11 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await conn
+    .getRepository(Notification)
+    .createQueryBuilder()
+    .delete()
+    .execute();
   await conn.getRepository(StudyUser).createQueryBuilder().delete().execute();
   await conn.getRepository(Study).createQueryBuilder().delete().execute();
   await conn.getRepository(User).createQueryBuilder().delete().execute();

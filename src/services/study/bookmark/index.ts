@@ -22,7 +22,6 @@ const getBookmarksByUser = async (id: string) => {
   return await getRepository(Study)
     .createQueryBuilder('study')
     .leftJoin('study.bookmarks', 'user')
-    .leftJoinAndSelect('study.categoryCode', 'category')
     .where('user.id = :id', { id })
     .orderBy('study.createdAt', 'DESC')
     .getMany();

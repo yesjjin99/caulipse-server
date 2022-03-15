@@ -3,11 +3,14 @@ import {
   deleteByStudyAndUserId,
   findAcceptedByStudyId,
   findAllByStudyId,
+  findStudyById,
   saveStudyUserRecord,
   updateAcceptStatus,
   updateUserTempBio,
 } from '../../../services/studyUser';
 import studyService from '../../../services/study';
+import { findUserProfileById } from '../../../services/user/profile';
+import { createStudyNoti } from '../../../services/notification';
 
 export default {
   async getStudyUserList(req: Request, res: Response) {
@@ -63,13 +66,25 @@ export default {
 
     try {
       const { tempBio } = req.body;
+      const { studyid } = req.params;
+      const userId = (req.user as { id: string }).id;
       if (!tempBio) throw new Error(BAD_REQUEST);
 
       await saveStudyUserRecord({
-        userId: (req.user as { id: string }).id,
-        studyId: req.params.studyid,
+        userId,
+        studyId: studyid,
         tempBio,
       });
+
+      const profile = await findUserProfileById(userId);
+      const study = await findStudyById(studyid);
+      if (!study) {
+        throw new Error(NOT_FOUND);
+      }
+      const notiTitle = '새로운 신청자';
+      const notiAbout = `[${profile?.userName}]님이 신청 수락을 기다리고 있어요!`;
+      await createStudyNoti(studyid, study.HOST_ID, notiTitle, notiAbout, 101);
+
       res.status(201).json({ message: OK });
     } catch (e) {
       if ((e as Error).message === BAD_REQUEST) {
@@ -102,6 +117,10 @@ export default {
         accept
       );
       if (updateResult.affected === 0) throw new Error(NOT_FOUND);
+
+      const notiTitle = '참가완료';
+      const notiAbout = '참가신청이 수락되었어요';
+      await createStudyNoti(studyId, targetUserId, notiTitle, notiAbout, 105);
 
       res.json({ message: OK });
     } catch (e) {
@@ -155,6 +174,13 @@ export default {
 
       const result = await deleteByStudyAndUserId(studyid, userId);
       if (result.affected === 0) throw new Error(NOT_FOUND);
+
+      // 호스트가 참가신청 취소해버린 경우
+      /*
+      const notiTitle = '참가 취소';
+      const notiAbout = '스터디의 참가가 취소되었습니다';
+      await createStudyNoti(studyid, userId, notiTitle, notiAbout, 106);
+      */
 
       res.json({ message: '참가신청 취소 성공' });
     } catch (e) {

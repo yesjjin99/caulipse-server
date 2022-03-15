@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+import { createStudyNoti } from '../../services/notification';
 import studyService from '../../services/study';
+import { findAllByStudyId } from '../../services/studyUser';
 import { findUserById } from '../../services/user';
 import { orderByEnum } from '../../types/study.dto';
 
@@ -122,6 +124,7 @@ const getStudybyId = async (req: Request, res: Response) => {
     if (!study) {
       throw new Error(NOT_FOUND);
     }
+    await studyService.updateStudyViews(study);
     return res.status(200).json({
       message: '각 스터디별 상세 정보 조회 성공',
       study,
@@ -171,6 +174,16 @@ const updateStudy = async (req: Request, res: Response) => {
       throw new Error(NOT_FOUND);
     }
     await studyService.updateStudy(req.body, study);
+
+    const users = await findAllByStudyId(studyid);
+    if (users.length !== 0) {
+      const notiTitle = '모집정보 수정';
+      const notiAbout = '신청한 스터디의 모집 정보가 수정되었어요';
+      for (const user of users) {
+        await createStudyNoti(studyid, user?.id, notiTitle, notiAbout, 103);
+      }
+    }
+
     return res.status(200).json({ message: '스터디 정보 업데이트 성공' });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {

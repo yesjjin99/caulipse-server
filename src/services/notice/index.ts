@@ -3,6 +3,10 @@ import { getRepository } from 'typeorm';
 import Notice from '../../entity/NoticeEntity';
 import User from '../../entity/UserEntity';
 
+export const findAllUser = async () => {
+  return await getRepository(User).createQueryBuilder().select('id').getMany();
+};
+
 export const findAllNotice = async ({
   amount,
   offset,
@@ -45,6 +49,11 @@ export const findNoticeById = async (noticeid: string) => {
     .leftJoinAndSelect('notice.hostId', 'user')
     .where('notice.id = :noticeid', { noticeid })
     .getOne();
+};
+
+export const updateNoticeViews = async (notice: Notice) => {
+  notice.views += 1;
+  return await getRepository(Notice).save(notice);
 };
 
 export const createNotice = async (

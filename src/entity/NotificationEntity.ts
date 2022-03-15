@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import User from './UserEntity';
 import Study from './StudyEntity';
+import Notice from './NoticeEntity';
 
 @Entity({ name: 'NOTIFICATION' })
 export default class Notification {
@@ -22,15 +23,28 @@ export default class Notification {
   @JoinColumn({ name: 'USER_ID' })
   user!: User;
 
-  @PrimaryColumn('uuid')
-  STUDY_ID!: string;
+  @Column('uuid', { nullable: true })
+  STUDY_ID!: string | null;
 
-  @ManyToOne(() => Study, (study) => study.id)
+  @ManyToOne(() => Study, (study) => study.id, { nullable: true })
   @JoinColumn({ name: 'STUDY_ID' })
-  study!: Study;
+  study!: Study | null;
+
+  @Column('uuid', { nullable: true })
+  NOTICE_ID!: string | null;
+
+  @ManyToOne(() => Notice, (notice) => notice.id, { nullable: true })
+  @JoinColumn({ name: 'NOTICE_ID' })
+  notice!: Notice | null;
 
   @Column({ name: 'TYPE' })
   type!: number;
+
+  @Column({ name: 'TITLE' })
+  title!: string;
+
+  @Column({ name: 'NOTI_ABOUT' })
+  notiAbout!: string;
 
   @Column({ name: 'READ' })
   read!: boolean;
@@ -49,10 +63,18 @@ export default class Notification {
  *         type: string
  *         format: uuid
  *         description: "해당 알림을 받을 사용자 id"
+ *       userId:
+ *         type: string
+ *         format: uuid
+ *         description: "해당 알림이 발생할 사용자의 id"
  *       studyId:
  *         type: string
  *         format: uuid
  *         description: "해당 알림이 발생한 스터디의 id"
+ *       noticeId:
+ *         type: string
+ *         format: uuid
+ *         description: "해당 알림이 발생한 공지사항의 id"
  *       type:
  *         type: number
  *         description: "해당 알림이 어떠한 동작에 의해 발생했는지 표시"

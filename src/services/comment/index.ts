@@ -39,7 +39,6 @@ const createComment = async (
   if (reply === null) {
     // 댓글인 경우
     comment.isNested = false;
-    comment.parentComment = comment;
   } else {
     // 대댓글인 경우
     comment.isNested = true;
@@ -64,12 +63,8 @@ const deleteComment = async (comment: Comment) => {
       .select('comment.nestedComments')
       .getCount();
 
-    if (reply === 1) {
-      // 자기 자신 포함 : reply = 1
+    if (reply === 0) {
       // 대댓글이 아예 존재하지 않는 경우
-      comment.parentComment = null;
-      await repo.save(comment);
-
       await repo.remove(comment);
     } else if (reply > 1) {
       // 대댓글이 남아있는 경우

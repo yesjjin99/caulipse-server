@@ -4,10 +4,13 @@ import {
   createNotice,
   deleteNotice,
   findAllNotice,
+  findAllUser,
   findNoticeById,
   updateNoticeById,
+  updateNoticeViews,
 } from '../../services/notice';
 import { UserRoleEnum } from '../../entity/UserEntity';
+import { createNoticeNoti } from '../../services/notification';
 
 export default {
   async findAllNotice(req: Request, res: Response) {
@@ -41,6 +44,7 @@ export default {
       const notice = await findNoticeById(noticeid);
       if (!notice) throw new Error(NOT_FOUND);
 
+      await updateNoticeViews(notice);
       return res
         .status(200)
         .json({ notice, message: '각 공지사항별 상세 정보 조회 성공' });
@@ -68,6 +72,16 @@ export default {
       if (user.role !== UserRoleEnum.ADMIN) throw new Error(FORBIDDEN);
 
       const noticeId = await createNotice(title, about, user);
+
+      const users = await findAllUser();
+      if (users.length !== 0) {
+        const notiTitle = '새로운 공지';
+        const notiAbout = '새 공지사항이 등록되었어요';
+        for (const u of users) {
+          await createNoticeNoti(noticeId, u.id, notiTitle, notiAbout, 201);
+        }
+      }
+
       return res.status(201).json({
         noticeId,
         message: '공지사항 생성 성공',
