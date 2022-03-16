@@ -65,7 +65,7 @@ describe('공지사항 조회 api', () => {
   test('데이터를 조회한다', async () => {
     const res = await request(app).get('/api/notice');
     expect(res.statusCode).toBe(200);
-    expect(res.body.length).toBeGreaterThanOrEqual(1);
+    expect(res.body.data.length).toBeGreaterThanOrEqual(1);
   });
 });
 
@@ -109,7 +109,7 @@ describe('공지사항 페이지네이션', () => {
     const res = await request(app).get(`/api/notice?amount=${amount}`);
 
     // then
-    expect(res.body.length).toBe(5);
+    expect(res.body.data.length).toBe(5);
   });
 
   test('쿼리스트링 정보를 아무것도 주지 않으면 12개의 항목을 반환한다', async () => {
@@ -118,7 +118,7 @@ describe('공지사항 페이지네이션', () => {
     const res = await request(app).get('/api/notice');
 
     // then
-    expect(res.body.length).toBe(12);
+    expect(res.body.data.length).toBe(12);
   });
 });
 
