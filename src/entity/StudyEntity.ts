@@ -149,8 +149,7 @@ export default class Study {
  *        - "기타"
  *        description: "스터디 장소"
  *      hostId:
- *        type: string
- *        format: uuid
+ *        $ref: "#/definitions/User"
  *        description: "스터디 host의 id"
  *      capacity:
  *        type: integer
@@ -165,7 +164,7 @@ export default class Study {
  *        type: boolean
  *        description: "모집중 여부"
  *      categoryCode:
- *        $ref: "#/definitions/Category"
+ *        type: integer
  *        description: "스터디의 카테고리 코드"
  *      views:
  *        type: integer
