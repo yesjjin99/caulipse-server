@@ -40,8 +40,8 @@ export default {
     const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
 
     try {
-      const { noticeid } = req.params;
-      const notice = await findNoticeById(noticeid);
+      const { notiid } = req.params;
+      const notice = await findNoticeById(notiid);
       if (!notice) throw new Error(NOT_FOUND);
 
       await updateNoticeViews(notice);
