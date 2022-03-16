@@ -187,9 +187,15 @@ export default {
  *        200:
  *          description: "올바른 요청"
  *          schema:
- *            type: array
- *            items:
- *              $ref: "#/definitions/Notice"
+ *            type: object
+ *            properties:
+ *              pages:
+ *                type: number
+ *                description: "총 페이지의 갯수를 의미하는 숫자값입니다"
+ *              data:
+ *                type: array
+ *                items:
+ *                  $ref: "#/definitions/Notice"
  *    post:
  *      summary: "새로운 공지사항 생성"
  *      description: "ADMIN 권한을 가진 사용자가 공지사항을 생성할 때 사용되는 엔드포인트입니다"
