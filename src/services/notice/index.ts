@@ -7,6 +7,10 @@ export const findAllUser = async () => {
   return await getRepository(User).createQueryBuilder().select('id').getMany();
 };
 
+export const findNoticeCount = async () => {
+  return await getRepository(Notice).createQueryBuilder().select().getCount();
+};
+
 export const findAllNotice = async ({
   amount,
   offset,

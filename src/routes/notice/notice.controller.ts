@@ -6,6 +6,7 @@ import {
   findAllNotice,
   findAllUser,
   findNoticeById,
+  findNoticeCount,
   updateNoticeById,
   updateNoticeViews,
 } from '../../services/notice';
@@ -18,6 +19,8 @@ export default {
       const limit = req.query.amount || 12;
       const offset = req.query.offset || 0; // FIXME: cursor 디폴트값 설정
 
+      const totalNoticeCount = await findNoticeCount();
+      const totalPageCount = Math.floor(totalNoticeCount / +limit) + 1;
       const result = await findAllNotice({
         amount: +limit,
         offset: +offset,
@@ -30,7 +33,10 @@ export default {
         views: item.Notice_VIEWS,
         hostId: item.Notice_HOST_ID,
       }));
-      res.json(response);
+      res.json({
+        pages: totalPageCount,
+        data: response,
+      });
     } catch (e) {
       res.status(500).json({ message: '오류 발생' });
     }
