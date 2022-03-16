@@ -120,6 +120,39 @@ describe('공지사항 페이지네이션', () => {
     // then
     expect(res.body.data.length).toBe(12);
   });
+
+  test('5개씩 요청했을 때 총 페이지 갯수 응답은 7이다', async () => {
+    // given
+    const amount = 5;
+
+    // when
+    const res = await request(app).get(`/api/notice?amount=${amount}`);
+
+    // then
+    expect(res.body.pages).toBe(7);
+  });
+
+  test('9개씩 요청했을 때 총 페이지 갯수 응답은 4이다', async () => {
+    // given
+    const amount = 9;
+
+    // when
+    const res = await request(app).get(`/api/notice?amount=${amount}`);
+
+    // then
+    expect(res.body.pages).toBe(4);
+  });
+
+  test('100개씩 요청했을 때 총 페이지 갯수 응답은 1이다', async () => {
+    // given
+    const amount = 100;
+
+    // when
+    const res = await request(app).get(`/api/notice?amount=${amount}`);
+
+    // then
+    expect(res.body.pages).toBe(1);
+  });
 });
 
 describe('공지사항 업데이트 api', () => {
