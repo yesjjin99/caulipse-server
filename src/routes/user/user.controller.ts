@@ -80,7 +80,6 @@ export default {
           data: {
             id: result.id,
             email: result.email,
-            isLogout: result.isLogout,
             role: result.role,
           },
         });
