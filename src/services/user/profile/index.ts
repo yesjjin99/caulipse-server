@@ -14,7 +14,6 @@ interface UserProfileInterface {
   link1?: string;
   link2?: string;
   categories?: string[];
-  shortUserAbout?: string;
 }
 
 export const postUserProfile = async ({
@@ -30,7 +29,6 @@ export const postUserProfile = async ({
   link1 = '',
   link2 = '',
   categories = [],
-  shortUserAbout = '',
 }: UserProfileInterface) => {
   const userProfileRepo = getRepository(UserProfile);
   const userProfile = new UserProfile();
@@ -46,7 +44,6 @@ export const postUserProfile = async ({
   userProfile.link1 = link1;
   userProfile.link2 = link2;
   userProfile.categories = categories;
-  userProfile.shortUserAbout = shortUserAbout;
 
   await userProfileRepo.save(userProfile);
 };
@@ -76,7 +73,6 @@ export const updateUserProfile = async ({
   link1,
   link2,
   categories,
-  shortUserAbout,
   userAbout,
 }: UserProfileInterface) => {
   const result = await getRepository(UserProfile)
@@ -93,7 +89,6 @@ export const updateUserProfile = async ({
       link1,
       link2,
       categories,
-      shortUserAbout,
       userAbout,
     })
     .where('user_id = :id', { id: userId })

@@ -50,9 +50,6 @@ export default class UserProfile {
 
   @Column({ name: 'LINK2' })
   link2!: string;
-
-  @Column({ name: 'SHORT_USER_ABOUT' })
-  shortUserAbout!: string;
 }
 
 /**
