@@ -108,6 +108,7 @@ const createStudy = async (studyDTO: studyDTO, user: User) => {
   study.hostId = user;
   study.views = 0;
   study.categoryCode = categoryCode;
+  study.bookmarkCount = 0;
 
   await getRepository(Study).save(study);
   return studyId;

@@ -12,7 +12,8 @@ const findBookmarksByStudyId = async (id: string) => {
 const registerBookmark = async (bookmarks: Study[], user: User) => {
   bookmarks.forEach((bookmark) => {
     bookmark.bookmarks.push(user);
-    // console.log(bookmark.bookmarks);
+
+    bookmark.bookmarkCount += 1;
   });
 
   await getRepository(Study).save(bookmarks);
@@ -28,7 +29,11 @@ const getBookmarksByUser = async (id: string) => {
 };
 
 const deleteBookmark = async (study: Study, user: User) => {
-  return await getRepository(Study)
+  const repo = getRepository(Study);
+  study.bookmarkCount -= 1;
+  await repo.save(study);
+
+  return await repo
     .createQueryBuilder('study')
     .relation('bookmarks')
     .of(study)

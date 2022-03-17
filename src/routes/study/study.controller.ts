@@ -10,7 +10,7 @@ const getAllStudy = async (req: Request, res: Response) => {
   const frequencyFilter: string = req.query.frequency as string;
   const weekdayFilter: string = req.query.weekday as string;
   const locationFilter: string = req.query.location as string;
-  const orderBy: string = req.query.order_by as string | orderByEnum.LATEST;
+  const orderBy: string = (req.query.order_by as string) || orderByEnum.LATEST;
   // offset
   const pageNo = Number(req.query.pageNo) || 1;
   const limit = Number(req.query.limit) || 12;
@@ -38,7 +38,7 @@ const getAllStudy = async (req: Request, res: Response) => {
     const pages =
       lastpage === 0 ? total / limit : Math.trunc(total / limit) + 1;
 
-    if (!studies) {
+    if (studies.length === 0) {
       return res
         .status(200)
         .json({ message: '요청에 해당하는 스터디가 존재하지 않습니다' });
@@ -232,7 +232,7 @@ const searchStudy = async (req: Request, res: Response) => {
   const frequencyFilter: string = req.query.frequency as string;
   const weekdayFilter: string = req.query.weekday as string;
   const locationFilter: string = req.query.location as string;
-  const orderBy: string = req.query.order_by as string | orderByEnum.LATEST;
+  const orderBy: string = (req.query.order_by as string) || orderByEnum.LATEST;
 
   try {
     const studies = await studyService.searchStudy(
@@ -243,7 +243,7 @@ const searchStudy = async (req: Request, res: Response) => {
       orderBy
     );
 
-    if (!studies) {
+    if (studies.length === 0) {
       return res
         .status(200)
         .json({ message: '요청에 해당하는 스터디가 존재하지 않습니다' });
