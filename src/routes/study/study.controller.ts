@@ -58,6 +58,17 @@ const getAllStudy = async (req: Request, res: Response) => {
   }
 };
 
+const getMyStudy = async (req: Request, res: Response) => {
+  try {
+    const userId = (req.user as { id: string }).id;
+
+    const studies = await studyService.getMyStudy(userId);
+    return res.status(200).json({ message: '모집스터디 조회 성공', studies });
+  } catch (e) {
+    return res.status(500).json({ message: (e as Error).message });
+  }
+};
+
 const createStudy = async (req: Request, res: Response) => {
   const BAD_REQUEST = '요청값이 유효하지 않음';
   const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
@@ -262,6 +273,7 @@ const searchStudy = async (req: Request, res: Response) => {
 
 export default {
   getAllStudy,
+  getMyStudy,
   createStudy,
   getStudybyId,
   updateStudy,
@@ -598,4 +610,28 @@ export default {
  *            - type: array
  *              items:
  *                $ref: "#/definitions/Study"
+ *
+ *  /api/study/my-study:
+ *    get:
+ *      summary: "스터디 검색 목록 조회"
+ *      tags:
+ *      - "study"
+ *      - "my-page"
+ *      description: "사용자가 검색한 스터디의 목록을 조회할 수 있습니다"
+ *      responses:
+ *        200:
+ *          description: "올바른 요청."
+ *          schema:
+ *            allOf:
+ *            - type: array
+ *              items:
+ *                $ref: "#/definitions/Study"
+ *        401:
+ *          description: "로그인이 되어있지 않은 경우"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "로그인 필요"
  */

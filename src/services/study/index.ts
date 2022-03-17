@@ -68,6 +68,14 @@ const getAllStudy = async (paginationDTO: paginationDTO) => {
   return await sq.limit(limit).offset(offset).getMany();
 };
 
+const getMyStudy = async (userId: string) => {
+  return await getRepository(Study)
+    .createQueryBuilder('study')
+    .leftJoinAndSelect('study.hostId', 'user')
+    .where('study.HOST_ID = :userId', { userId })
+    .getMany();
+};
+
 const findStudyById = async (id: string) => {
   return await getRepository(Study)
     .createQueryBuilder('study')
@@ -193,6 +201,7 @@ const searchStudy = async (
 export default {
   countAllStudy,
   getAllStudy,
+  getMyStudy,
   findStudyById,
   updateStudyViews,
   createStudy,
