@@ -73,6 +73,7 @@ const getMyStudy = async (userId: string) => {
     .createQueryBuilder('study')
     .leftJoinAndSelect('study.hostId', 'user')
     .where('study.HOST_ID = :userId', { userId })
+    .orderBy('study.createdAt', 'ASC')
     .getMany();
 };
 
@@ -81,6 +82,7 @@ const findStudyById = async (id: string) => {
     .createQueryBuilder('study')
     .leftJoinAndSelect('study.hostId', 'user')
     .where('study.id = :id', { id })
+    .orderBy('study.createdAt', 'ASC')
     .getOne();
 };
 
