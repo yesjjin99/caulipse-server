@@ -318,10 +318,21 @@ export default {
  *        200:
  *          description: "올바른 요청. 스터디 객체 배열, 현재 페이지, 전체 페이지 수, 전체 스터디 개수를 반환합니다."
  *          schema:
- *            allOf:
- *            - type: array
- *              items:
- *                $ref: "#/definitions/Study"
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "스터디 목록 조회 성공"
+ *              studies:
+ *                type: array
+ *                items:
+ *                  $ref: "#/definitions/Study"
+ *              pageNo:
+ *                type: integer
+ *              pages:
+ *                type: integer
+ *              total:
+ *                type: integer
  *
  *    post:
  *      summary: "새로운 스터디 생성"
