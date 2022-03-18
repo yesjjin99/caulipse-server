@@ -6,6 +6,7 @@ import {
   findAllNotice,
   findAllUser,
   findNoticeById,
+  findNoticeCount,
   updateNoticeById,
   updateNoticeViews,
 } from '../../services/notice';
@@ -18,6 +19,8 @@ export default {
       const limit = req.query.amount || 12;
       const offset = req.query.offset || 0; // FIXME: cursor 디폴트값 설정
 
+      const totalNoticeCount = await findNoticeCount();
+      const totalPageCount = Math.floor(totalNoticeCount / +limit) + 1;
       const result = await findAllNotice({
         amount: +limit,
         offset: +offset,
@@ -30,7 +33,10 @@ export default {
         views: item.Notice_VIEWS,
         hostId: item.Notice_HOST_ID,
       }));
-      res.json(response);
+      res.json({
+        pages: totalPageCount,
+        data: response,
+      });
     } catch (e) {
       res.status(500).json({ message: '오류 발생' });
     }
@@ -181,9 +187,15 @@ export default {
  *        200:
  *          description: "올바른 요청"
  *          schema:
- *            type: array
- *            items:
- *              $ref: "#/definitions/Notice"
+ *            type: object
+ *            properties:
+ *              pages:
+ *                type: number
+ *                description: "총 페이지의 갯수를 의미하는 숫자값입니다"
+ *              data:
+ *                type: array
+ *                items:
+ *                  $ref: "#/definitions/Notice"
  *    post:
  *      summary: "새로운 공지사항 생성"
  *      description: "ADMIN 권한을 가진 사용자가 공지사항을 생성할 때 사용되는 엔드포인트입니다"

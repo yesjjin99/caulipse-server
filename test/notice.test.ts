@@ -65,7 +65,7 @@ describe('공지사항 조회 api', () => {
   test('데이터를 조회한다', async () => {
     const res = await request(app).get('/api/notice');
     expect(res.statusCode).toBe(200);
-    expect(res.body.length).toBeGreaterThanOrEqual(1);
+    expect(res.body.data.length).toBeGreaterThanOrEqual(1);
   });
 });
 
@@ -109,7 +109,7 @@ describe('공지사항 페이지네이션', () => {
     const res = await request(app).get(`/api/notice?amount=${amount}`);
 
     // then
-    expect(res.body.length).toBe(5);
+    expect(res.body.data.length).toBe(5);
   });
 
   test('쿼리스트링 정보를 아무것도 주지 않으면 12개의 항목을 반환한다', async () => {
@@ -118,7 +118,40 @@ describe('공지사항 페이지네이션', () => {
     const res = await request(app).get('/api/notice');
 
     // then
-    expect(res.body.length).toBe(12);
+    expect(res.body.data.length).toBe(12);
+  });
+
+  test('5개씩 요청했을 때 총 페이지 갯수 응답은 7이다', async () => {
+    // given
+    const amount = 5;
+
+    // when
+    const res = await request(app).get(`/api/notice?amount=${amount}`);
+
+    // then
+    expect(res.body.pages).toBe(7);
+  });
+
+  test('9개씩 요청했을 때 총 페이지 갯수 응답은 4이다', async () => {
+    // given
+    const amount = 9;
+
+    // when
+    const res = await request(app).get(`/api/notice?amount=${amount}`);
+
+    // then
+    expect(res.body.pages).toBe(4);
+  });
+
+  test('100개씩 요청했을 때 총 페이지 갯수 응답은 1이다', async () => {
+    // given
+    const amount = 100;
+
+    // when
+    const res = await request(app).get(`/api/notice?amount=${amount}`);
+
+    // then
+    expect(res.body.pages).toBe(1);
   });
 });
 
