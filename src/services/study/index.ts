@@ -68,11 +68,21 @@ const getAllStudy = async (paginationDTO: paginationDTO) => {
   return await sq.limit(limit).offset(offset).getMany();
 };
 
+const getMyStudy = async (userId: string) => {
+  return await getRepository(Study)
+    .createQueryBuilder('study')
+    .leftJoinAndSelect('study.hostId', 'user')
+    .where('study.HOST_ID = :userId', { userId })
+    .orderBy('study.createdAt', 'ASC')
+    .getMany();
+};
+
 const findStudyById = async (id: string) => {
   return await getRepository(Study)
     .createQueryBuilder('study')
     .leftJoinAndSelect('study.hostId', 'user')
     .where('study.id = :id', { id })
+    .orderBy('study.createdAt', 'ASC')
     .getOne();
 };
 
@@ -108,6 +118,7 @@ const createStudy = async (studyDTO: studyDTO, user: User) => {
   study.hostId = user;
   study.views = 0;
   study.categoryCode = categoryCode;
+  study.bookmarkCount = 0;
 
   await getRepository(Study).save(study);
   return studyId;
@@ -192,6 +203,7 @@ const searchStudy = async (
 export default {
   countAllStudy,
   getAllStudy,
+  getMyStudy,
   findStudyById,
   updateStudyViews,
   createStudy,

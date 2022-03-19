@@ -10,7 +10,7 @@ const getAllStudy = async (req: Request, res: Response) => {
   const frequencyFilter: string = req.query.frequency as string;
   const weekdayFilter: string = req.query.weekday as string;
   const locationFilter: string = req.query.location as string;
-  const orderBy: string = req.query.order_by as string | orderByEnum.LATEST;
+  const orderBy: string = (req.query.order_by as string) || orderByEnum.LATEST;
   // offset
   const pageNo = Number(req.query.pageNo) || 1;
   const limit = Number(req.query.limit) || 12;
@@ -38,7 +38,7 @@ const getAllStudy = async (req: Request, res: Response) => {
     const pages =
       lastpage === 0 ? total / limit : Math.trunc(total / limit) + 1;
 
-    if (!studies) {
+    if (studies.length === 0) {
       return res
         .status(200)
         .json({ message: '요청에 해당하는 스터디가 존재하지 않습니다' });
@@ -55,6 +55,17 @@ const getAllStudy = async (req: Request, res: Response) => {
     return res.status(500).json({
       message: (e as Error).message,
     });
+  }
+};
+
+const getMyStudy = async (req: Request, res: Response) => {
+  try {
+    const userId = (req.user as { id: string }).id;
+
+    const studies = await studyService.getMyStudy(userId);
+    return res.status(200).json({ message: '모집스터디 조회 성공', studies });
+  } catch (e) {
+    return res.status(500).json({ message: (e as Error).message });
   }
 };
 
@@ -232,7 +243,7 @@ const searchStudy = async (req: Request, res: Response) => {
   const frequencyFilter: string = req.query.frequency as string;
   const weekdayFilter: string = req.query.weekday as string;
   const locationFilter: string = req.query.location as string;
-  const orderBy: string = req.query.order_by as string | orderByEnum.LATEST;
+  const orderBy: string = (req.query.order_by as string) || orderByEnum.LATEST;
 
   try {
     const studies = await studyService.searchStudy(
@@ -243,7 +254,7 @@ const searchStudy = async (req: Request, res: Response) => {
       orderBy
     );
 
-    if (!studies) {
+    if (studies.length === 0) {
       return res
         .status(200)
         .json({ message: '요청에 해당하는 스터디가 존재하지 않습니다' });
@@ -262,6 +273,7 @@ const searchStudy = async (req: Request, res: Response) => {
 
 export default {
   getAllStudy,
+  getMyStudy,
   createStudy,
   getStudybyId,
   updateStudy,
@@ -609,4 +621,28 @@ export default {
  *            - type: array
  *              items:
  *                $ref: "#/definitions/Study"
+ *
+ *  /api/study/my-study:
+ *    get:
+ *      summary: "스터디 검색 목록 조회"
+ *      tags:
+ *      - "study"
+ *      - "my-page"
+ *      description: "사용자가 검색한 스터디의 목록을 조회할 수 있습니다"
+ *      responses:
+ *        200:
+ *          description: "올바른 요청."
+ *          schema:
+ *            allOf:
+ *            - type: array
+ *              items:
+ *                $ref: "#/definitions/Study"
+ *        401:
+ *          description: "로그인이 되어있지 않은 경우"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "로그인 필요"
  */

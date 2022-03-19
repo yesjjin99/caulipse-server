@@ -83,6 +83,9 @@ export default class Study {
   @Column('int', { name: 'VIEWS' })
   views!: number;
 
+  @Column('int', { name: 'BOOKMARK_COUNT' })
+  bookmarkCount!: number;
+
   @ManyToMany(() => User, { cascade: true })
   @JoinTable({
     name: 'BOOKMARK',
@@ -169,6 +172,9 @@ export default class Study {
  *      views:
  *        type: integer
  *        description: "현재 스터디 조회수"
+ *      bookmarkCount:
+ *        type: integer
+ *        description: "현재 스터디에 등록된 북마크 개수"
  *
  *  Bookmark:
  *    type: object

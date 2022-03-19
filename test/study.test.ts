@@ -108,9 +108,9 @@ describe('GET /api/study', () => {
   it('query를 포함한 요청을 받으면 필터링, 정렬, 페이지네이션을 거친 후 스터디 목록과 페이지 커서 반환(첫번째 페이지)', async () => {
     const res = await request(app).get('/api/study').query({
       categoryCode: 101,
-      frequencyFilter: FrequencyEnum.TWICE,
-      weekdayFilter: WeekDayEnum.MON,
-      locationFilter: LocationEnum.CAFE,
+      frequency: FrequencyEnum.TWICE,
+      weekday: WeekDayEnum.MON,
+      location: LocationEnum.CAFE,
     });
     const { studies, next_cursor } = res.body;
 

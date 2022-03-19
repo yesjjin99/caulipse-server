@@ -96,7 +96,7 @@ export default {
       if ((e as Error).message === BAD_REQUEST) {
         return res.status(400).json({ message: BAD_REQUEST });
       } else if ((e as Error).message === FORBIDDEN) {
-        return res.status(404).json({ message: FORBIDDEN });
+        return res.status(403).json({ message: FORBIDDEN });
       } else if ((e as Error).message === NOT_FOUND) {
         return res.status(404).json({ message: NOT_FOUND });
       } else {
@@ -261,14 +261,14 @@ export default {
  *                type: string
  *                example: "일치하는 userid가 없음"
  *
- *  /api/notice/{noticeid}:
+ *  /api/notice/{notiid}:
  *    get:
  *      summary: "공지사항 아이디에 해당하는 공지사항 상제 정보 조회"
  *      description: "공지사항 상세페이지에서 각 공지사항 아이디에 해당하는 모든 상세 정보들을 조회할 엔드포인트입니다"
  *      tags:
  *      - "notice"
  *      parameters:
- *      - name: "noticeid"
+ *      - name: "notiid"
  *        in: "path"
  *        description: "정보를 조회할 공지사항 id"
  *        required: true
@@ -276,7 +276,7 @@ export default {
  *        format: uuid
  *      responses:
  *        200:
- *          description: "올바른 요청, message와 함께 스터디 정보를 반환합니다"
+ *          description: "올바른 요청, 스터디 정보를 반환합니다"
  *          schema:
  *            $ref: "#/definitions/Notice"
  *        404:
@@ -298,7 +298,7 @@ export default {
  *      produces:
  *      - "application/json"
  *      parameters:
- *      - name: "noticeid"
+ *      - name: "notiid"
  *        in: "path"
  *        description: "수정할 공지사항 id"
  *        required: true
@@ -366,7 +366,7 @@ export default {
  *      tags:
  *      - "notice"
  *      parameters:
- *      - name: "noticeid"
+ *      - name: "notiid"
  *        in: "path"
  *        description: "삭제할 공지사항 id"
  *        required: true
