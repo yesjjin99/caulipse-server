@@ -10,14 +10,14 @@ const router = Router({ mergeParams: true });
 router.get('/', controller.getAllStudy);
 router.post('/', checkToken, controller.createStudy);
 
-router.get('/:studyid', controller.getStudybyId);
-router.patch('/:studyid', checkToken, controller.updateStudy);
-router.delete('/:studyid', checkToken, controller.deleteStudy);
+// 모집 스터디 라우터
+router.get('/my-study', checkToken, controller.getMyStudy);
 
 router.get('/search', controller.searchStudy);
 
-// 모집 스터디 라우터
-router.get('/my-study', checkToken, controller.getMyStudy);
+router.get('/:studyid', controller.getStudybyId);
+router.patch('/:studyid', checkToken, controller.updateStudy);
+router.delete('/:studyid', checkToken, controller.deleteStudy);
 
 // 스터디 참가 신청 라우터
 router.use('/user/:studyid', checkToken, studyUserRouter);
