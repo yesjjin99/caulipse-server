@@ -9,6 +9,7 @@ import {
 import { sendMail } from '../../services/mail';
 import { makeSignUpToken } from '../../utils/auth';
 import { validateCAU } from '../../utils/mail';
+import { findAllIfParticipatedByUserId } from '../../services/studyUser';
 
 export default {
   async saveUser(req: Request, res: Response) {
@@ -91,6 +92,15 @@ export default {
       } else {
         res.status(500).json({ message: '회원 탈퇴 실패' });
       }
+    }
+  },
+  async getAppliedStudies(req: Request, res: Response) {
+    try {
+      const userId = (req.user as { id: string }).id;
+      const result = await findAllIfParticipatedByUserId(userId);
+      res.json(result);
+    } catch (e) {
+      res.status(500).json({ message: '내가 신청한 스터디 목록 조회 실패' });
     }
   },
 };
