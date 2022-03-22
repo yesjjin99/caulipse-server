@@ -98,7 +98,14 @@ export default {
     try {
       const userId = (req.user as { id: string }).id;
       const result = await findAllIfParticipatedByUserId(userId);
-      res.json(result);
+      const response = result.map((item: Record<string, string | number>) => ({
+        id: item.ID,
+        title: item.TITLE,
+        createdAt: item.CREATED_AT,
+        views: item.VIEWS,
+        bookmarkCount: item.BOOKMARK_COUNT,
+      }));
+      res.json(response);
     } catch (e) {
       res.status(500).json({ message: '내가 신청한 스터디 목록 조회 실패' });
     }
