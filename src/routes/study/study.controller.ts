@@ -318,10 +318,10 @@ export default {
  *        type: string
  *      - name: "order_by"
  *        in: "query"
- *        description: "정렬 조건 기본값: 최근 등록순 (enum: latest, small_vacancy, large_vacancy)"
+ *        description: "정렬 조건 기본값: 최근 등록순 (enum: latest, last, small_vacancy, large_vacancy)"
  *        required: false
  *        type: string
- *      - name: "offset"
+ *      - name: "pageNo"
  *        in: "query"
  *        description: "조회할 페이지"
  *        required: false
@@ -629,11 +629,11 @@ export default {
  *
  *  /api/study/my-study:
  *    get:
- *      summary: "스터디 검색 목록 조회"
+ *      summary: "모집 스터디 목록 조회"
  *      tags:
  *      - "study"
  *      - "my-page"
- *      description: "사용자가 검색한 스터디의 목록을 조회할 수 있습니다"
+ *      description: "사용자가 모집한 스터디의 목록을 조회하는 엔드포인트입니다."
  *      responses:
  *        200:
  *          description: "올바른 요청."
