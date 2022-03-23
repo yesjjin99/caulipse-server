@@ -67,7 +67,7 @@ describe('POST /api/study', () => {
       .send({
         title: '스터디 제목',
         studyAbout: '스터디 내용',
-        weekday: WeekDayEnum.MON,
+        weekday: '월',
         frequency: FrequencyEnum.TWICE,
         location: LocationEnum.CAFE,
         capacity: 8,
@@ -109,10 +109,11 @@ describe('GET /api/study', () => {
     const res = await request(app).get('/api/study').query({
       categoryCode: 101,
       frequency: FrequencyEnum.TWICE,
-      weekday: WeekDayEnum.MON,
+      weekday: '월',
       location: LocationEnum.CAFE,
     });
     const { studies, next_cursor } = res.body;
+    console.log(studies);
 
     expect(res.status).toBe(200);
     expect(studies).not.toBeNull();

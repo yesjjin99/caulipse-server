@@ -1,4 +1,9 @@
 import { Request, Response } from 'express';
+import {
+  FrequencyEnum,
+  LocationEnum,
+  WeekDayEnum,
+} from '../../entity/StudyEntity';
 import { createStudyNoti } from '../../services/notification';
 import studyService from '../../services/study';
 import { findAllByStudyId } from '../../services/studyUser';
@@ -7,9 +12,9 @@ import { orderByEnum } from '../../types/study.dto';
 
 const getAllStudy = async (req: Request, res: Response) => {
   const categoryCode = Number(req.query.categoryCode);
-  const frequencyFilter: string = req.query.frequency as string;
-  const weekdayFilter: string = req.query.weekday as string;
-  const locationFilter: string = req.query.location as string;
+  const frequencyFilter = req.query.frequency as FrequencyEnum;
+  const weekdayFilter = req.query.weekday as WeekDayEnum;
+  const locationFilter = req.query.location as LocationEnum;
   const orderBy: string = (req.query.order_by as string) || orderByEnum.LATEST;
   // offset
   const pageNo = Number(req.query.pageNo) || 1;
