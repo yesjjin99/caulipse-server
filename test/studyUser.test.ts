@@ -64,6 +64,7 @@ beforeAll(async () => {
   mockStudy.vacancy = 10;
   mockStudy.isOpen = true;
   mockStudy.views = 0;
+  mockStudy.bookmarkCount = 0;
 
   await conn.getRepository(Study).save(mockStudy);
 });
@@ -310,6 +311,7 @@ describe('참가 신청중인 사용자 목록 조회 api', () => {
         vacancy: 10,
         isOpen: true,
         views: 0,
+        bookmarkCount: 0,
       })
       .execute();
 

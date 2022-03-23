@@ -55,6 +55,7 @@ beforeAll(async () => {
   mockStudy.vacancy = 10;
   mockStudy.isOpen = true;
   mockStudy.views = 0;
+  mockStudy.bookmarkCount = 0;
   await conn.getRepository(Study).save(mockStudy);
 
   mockNoti1 = new Notification();

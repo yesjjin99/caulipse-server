@@ -113,7 +113,6 @@ describe('GET /api/study', () => {
       location: LocationEnum.CAFE,
     });
     const { studies, next_cursor } = res.body;
-    console.log(studies);
 
     expect(res.status).toBe(200);
     expect(studies).not.toBeNull();
