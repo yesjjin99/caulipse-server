@@ -1,4 +1,4 @@
-import { getRepository } from 'typeorm';
+import { getConnection, getRepository } from 'typeorm';
 import Study from '../../entity/StudyEntity';
 import StudyUser from '../../entity/StudyUserEntity';
 
@@ -38,6 +38,19 @@ export const findAllByStudyId = async (studyId: string) => {
     .select()
     .where('STUDY_ID = :id', { id: studyId })
     .execute();
+};
+
+export const findAllIfParticipatedByUserId = async (userId: string) => {
+  return await getConnection()
+    .createQueryRunner()
+    .query(
+      'SELECT STUDY.ID, STUDY.TITLE, STUDY.CREATED_AT, STUDY.VIEWS, STUDY.BOOKMARK_COUNT FROM STUDY \
+        JOIN STUDY_USER ON \
+        STUDY_USER.STUDY_ID = STUDY.ID \
+        WHERE STUDY_USER.USER_ID = ? \
+        ORDER BY STUDY.CREATED_AT',
+      [userId]
+    );
 };
 
 export const findAcceptedByStudyId = async (studyId: string) => {
