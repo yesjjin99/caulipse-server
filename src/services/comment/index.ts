@@ -14,7 +14,6 @@ const findCommentById = async (id: string) => {
 const getAllByStudy = async (id: string) => {
   return await getRepository(Comment)
     .createQueryBuilder('comment')
-    .leftJoinAndSelect('comment.study', 'study')
     .leftJoinAndSelect('comment.user', 'user')
     .where('comment.study.id = :id', { id })
     .orderBy('comment.createdAt', 'ASC')
@@ -35,6 +34,7 @@ const createComment = async (
   comment.content = content;
   comment.user = user;
   comment.study = study;
+  comment.metooCount = 0;
 
   if (reply === null) {
     // 댓글인 경우
