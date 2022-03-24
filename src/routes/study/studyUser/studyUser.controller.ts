@@ -3,7 +3,6 @@ import {
   deleteByStudyAndUserId,
   findAcceptedByStudyId,
   findAllByStudyId,
-  findStudyById,
   saveStudyUserRecord,
   updateAcceptStatus,
   updateUserTempBio,
@@ -78,7 +77,7 @@ export default {
       });
 
       const profile = await findUserProfileById(userId);
-      const study = await findStudyById(studyid);
+      const study = await studyService.findStudyById(studyid);
       if (!study) {
         throw new Error(NOT_FOUND);
       }

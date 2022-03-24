@@ -196,7 +196,13 @@ const updateStudy = async (req: Request, res: Response) => {
       const notiTitle = '모집정보 수정';
       const notiAbout = '신청한 스터디의 모집 정보가 수정되었어요';
       for (const user of users) {
-        await createStudyNoti(studyid, user?.id, notiTitle, notiAbout, 103);
+        await createStudyNoti(
+          studyid,
+          user?.user?.id,
+          notiTitle,
+          notiAbout,
+          103
+        );
       }
     }
 
