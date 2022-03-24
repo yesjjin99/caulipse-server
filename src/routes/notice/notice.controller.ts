@@ -84,7 +84,7 @@ export default {
         const notiTitle = '새로운 공지';
         const notiAbout = '새 공지사항이 등록되었어요';
         for (const u of users) {
-          await createNoticeNoti(noticeId, u.id, notiTitle, notiAbout, 201);
+          await createNoticeNoti(noticeId, u?.id, notiTitle, notiAbout, 201);
         }
       }
 
@@ -110,9 +110,9 @@ export default {
     const FORBIDDEN = '접근할 수 있는 권한이 없습니다';
 
     try {
-      const { noticeid } = req.params;
+      const { notiid } = req.params;
       const { id } = req.user as { id: string };
-      const notice = await findNoticeById(noticeid);
+      const notice = await findNoticeById(notiid);
       const user = await findUserById(id);
       if (!notice || !user) throw new Error(NOT_FOUND);
       if (user.role !== UserRoleEnum.ADMIN) throw new Error(FORBIDDEN);
