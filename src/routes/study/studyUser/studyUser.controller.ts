@@ -71,27 +71,37 @@ export default {
       const userId = (req.user as { id: string }).id;
       if (!tempBio) throw new Error(BAD_REQUEST);
 
+      const study = await findStudyById(studyid);
+      if (!study) throw new Error(NOT_FOUND);
+
       await saveStudyUserRecord({
         userId,
         studyId: studyid,
         tempBio,
       });
 
-      const profile = await findUserProfileById(userId);
-      const study = await findStudyById(studyid);
-      if (!study) {
-        throw new Error(NOT_FOUND);
+      if (process.env.NODE_ENV !== 'test') {
+        const profile = await findUserProfileById(userId);
+        const notiTitle = '새로운 신청자';
+        const notiAbout = `[${profile?.userName}]님이 신청 수락을 기다리고 있어요!`;
+        await createStudyNoti(
+          studyid,
+          study.HOST_ID,
+          notiTitle,
+          notiAbout,
+          101
+        );
       }
-      const notiTitle = '새로운 신청자';
-      const notiAbout = `[${profile?.userName}]님이 신청 수락을 기다리고 있어요!`;
-      await createStudyNoti(studyid, study.HOST_ID, notiTitle, notiAbout, 101);
 
       res.status(201).json({ message: OK });
     } catch (e) {
       if ((e as Error).message === BAD_REQUEST) {
         res.status(400).json({ message: BAD_REQUEST });
-      } else {
+      } else if ((e as Error).message === NOT_FOUND) {
         res.status(404).json({ message: NOT_FOUND });
+      } else {
+        console.log((e as Error).message);
+        res.status(500).json({ message: 'error' });
       }
     }
   },
