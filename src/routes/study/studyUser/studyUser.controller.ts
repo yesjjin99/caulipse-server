@@ -100,7 +100,6 @@ export default {
       } else if ((e as Error).message === NOT_FOUND) {
         res.status(404).json({ message: NOT_FOUND });
       } else {
-        console.log((e as Error).message);
         res.status(500).json({ message: 'error' });
       }
     }
