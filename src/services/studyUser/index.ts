@@ -73,7 +73,7 @@ export const findNotAcceptedApplicantsByStudyId = async (studyId: string) => {
     .createQueryBuilder()
     .select()
     .where('STUDY_ID = :id', { id: studyId })
-    .andWhere('ACCEPTED = 0')
+    .andWhere('IS_ACCEPTED = 0')
     .execute();
 };
 

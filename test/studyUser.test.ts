@@ -64,6 +64,7 @@ beforeAll(async () => {
   mockStudy.vacancy = 10;
   mockStudy.isOpen = true;
   mockStudy.views = 0;
+  mockStudy.bookmarkCount = 0;
 
   await conn.getRepository(Study).save(mockStudy);
 });
@@ -229,7 +230,7 @@ describe('참가신청 api', () => {
   });
 });
 
-describe('참가 신청중인 사용자 목록 조회 api', () => {
+describe('참가신청 수락대기중인 사용자 목록 조회 api', () => {
   const email = 'qwernm@test.com';
   const password = 'testpassword';
   const userId = randomUUID();
@@ -261,7 +262,7 @@ describe('참가 신청중인 사용자 목록 조회 api', () => {
     expect(res.statusCode).toBe(404);
   });
 
-  test('자신이 소유하지 않은 스터디에 대한 신청자 현황을 요청하면 참가가 수락된 인원만 반환한다', async () => {
+  test('자신이 소유하지 않은 스터디에 대한 참가신청 수락대기중 인원 현황을 요청하면 403 코드로 응답한다', async () => {
     // given
     const loginRes = await request(app)
       .post('/api/user/login')
@@ -274,11 +275,10 @@ describe('참가 신청중인 사용자 목록 조회 api', () => {
       .set('Cookie', cookies);
 
     // then
-    expect(res.statusCode).toBe(200);
-    expect(res.body.length).toBe(0);
+    expect(res.statusCode).toBe(403);
   });
 
-  test('자신이 소유한 스터디에 대한 신청자 현황을 요청하면 200 코드로 응답한다', async () => {
+  test('자신이 소유한 스터디에 대한 참가신청 수락대기 현황을 요청하면 200 코드로 응답한다', async () => {
     // given
     const newUserEmail = 'asodfjaod@test.com';
     const newUserPassword = 'testPassword';
@@ -310,6 +310,7 @@ describe('참가 신청중인 사용자 목록 조회 api', () => {
         vacancy: 10,
         isOpen: true,
         views: 0,
+        bookmarkCount: 0,
       })
       .execute();
 
