@@ -359,6 +359,91 @@ describe('참가신청 수락대기중인 사용자 목록 조회 api', () => {
   });
 });
 
+describe('참가인원 조회 api', () => {
+  test('로그인하지 않아도 401 코드로 응답하지 않는다', async () => {
+    const res = await request(app)
+      .get(`/api/study/user/${studyId}/participants`)
+      .send();
+    expect(res.statusCode).not.toBe(401);
+  });
+
+  test('잘못된 스터디 id로 요청할 경우 404 코드로 응답한다', async () => {
+    // given
+    const wrongStudyId = 'asodjfoasjdf';
+
+    // when
+    const res = await request(app)
+      .get(`/api/study/user/${wrongStudyId}/participants`)
+      .send();
+
+    // then
+    expect(res.statusCode).toBe(404);
+  });
+
+  test('스터디 참가가 수락된 인원에 대한 정보를 반환한다', async () => {
+    // given
+    const study = new Study();
+    study.id = randomUUID();
+    study.title = 'STUDY TITLE';
+    study.studyAbout = 'STUDY ABOUT';
+    study.weekday = WeekDayEnum.TUE;
+    study.frequency = FrequencyEnum.MORE;
+    study.location = LocationEnum.LIBRARY;
+    study.capacity = 10;
+    study.hostId = mockHost;
+    study.categoryCode = 100;
+    study.membersCount = 10;
+    study.vacancy = 10;
+    study.isOpen = true;
+    study.views = 0;
+    study.bookmarkCount = 0;
+    await conn.getRepository(Study).save(study);
+
+    // when
+    const res = await request(app)
+      .get(`/api/study/user/${study.id}/participants`)
+      .send();
+
+    // then
+    expect(res.statusCode).toBe(200);
+    expect(res.body.length).toEqual(0);
+  });
+
+  test('스터디 참가가 수락된 인원에 대한 정보를 반환한다', async () => {
+    // given
+    const user = new User();
+    user.id = randomUUID();
+    user.email = '';
+    user.password = '';
+    user.isLogout = false;
+    user.role = UserRoleEnum.USER;
+    user.token = '';
+    await conn.getRepository(User).save(user);
+    await conn
+      .getRepository(StudyUser)
+      .createQueryBuilder()
+      .insert()
+      .values({
+        user,
+        STUDY_ID: studyId,
+        isAccepted: true,
+        tempBio: '',
+      })
+      .execute();
+
+    // when
+    const res = await request(app)
+      .get(`/api/study/user/${studyId}/participants`)
+      .send();
+
+    // then
+    console.log(res.body);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.length).not.toEqual(0);
+    expect(res.body[0].userId).toEqual(user.id);
+  });
+});
+
 describe('참가신청 수락/거절 api', () => {
   test('로그인하지 않았을 경우 401 코드로 응답한다', async () => {
     const res = await request(app)
