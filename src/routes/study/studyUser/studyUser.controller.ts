@@ -230,8 +230,8 @@ export default {
  *     get:
  *       tags:
  *       - study/user
- *       summary: "현재 참가 신청중인 사용자 목록을 읽어옵니다."
- *       description: "해당 스터디에 참가 신청중인 사용자 목록을 읽어오기 위한 엔드포인트입니다."
+ *       summary: "현재 참가신청 수락대기중인 인원의 목록을 조회합니다"
+ *       description: "해당 스터디에 참가신청이 수락대기 상태인 사용자 목록을 읽어오기 위한 엔드포인트입니다. 해당 스터디의 호스트만 조회할 수 있습니다."
  *       produces:
  *       - "application/json"
  *       parameters:
@@ -431,6 +431,38 @@ export default {
  *               message:
  *                 type: string
  *                 example: "일치하는 studyid가 없음"
+ *
+ * /api/study/user/{studyid}/participants:
+ *   get:
+ *     tags:
+ *     - study/user
+ *     summary: "해당 스터디에 참여중인 사용자 목록을 조회합니다"
+ *     description: "해당 스터디에 참여중인(참가신청이 수락된) 사용자 목록을 조회하기 위한 엔드포인트입니다. 로그인하지 않아도 정상적인 데이터를 응답합니다"
+ *     parameters:
+ *     - in: "path"
+ *       name: "studyid"
+ *       description: "참여자 목록을 조회할 스터디 id"
+ *       required: true
+ *       type: string
+ *       format: uuid
+ *
+ *     responses:
+ *       200:
+ *         description: "올바른 요청"
+ *         schema:
+ *           allOf:
+ *           - type: array
+ *             items:
+ *               type: object
+ *               $ref: "#/definitions/StudyUser"
+ *       404:
+ *         description: "전달한 studyid가 데이터베이스에 없는 경우입니다"
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               example: "일치하는 studyid가 없음"
  *
  * /api/study/user/{studyid}/accept:
  *   patch:
