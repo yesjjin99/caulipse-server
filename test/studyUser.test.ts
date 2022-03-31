@@ -64,6 +64,7 @@ beforeAll(async () => {
   mockStudy.vacancy = 10;
   mockStudy.isOpen = true;
   mockStudy.views = 0;
+  mockStudy.bookmarkCount = 0;
 
   await conn.getRepository(Study).save(mockStudy);
 });
@@ -229,7 +230,7 @@ describe('참가신청 api', () => {
   });
 });
 
-describe('참가 신청중인 사용자 목록 조회 api', () => {
+describe('참가신청 수락대기중인 사용자 목록 조회 api', () => {
   const email = 'qwernm@test.com';
   const password = 'testpassword';
   const userId = randomUUID();
@@ -261,7 +262,7 @@ describe('참가 신청중인 사용자 목록 조회 api', () => {
     expect(res.statusCode).toBe(404);
   });
 
-  test('자신이 소유하지 않은 스터디에 대한 신청자 현황을 요청하면 참가가 수락된 인원만 반환한다', async () => {
+  test('자신이 소유하지 않은 스터디에 대한 참가신청 수락대기중 인원 현황을 요청하면 403 코드로 응답한다', async () => {
     // given
     const loginRes = await request(app)
       .post('/api/user/login')
@@ -274,11 +275,10 @@ describe('참가 신청중인 사용자 목록 조회 api', () => {
       .set('Cookie', cookies);
 
     // then
-    expect(res.statusCode).toBe(200);
-    expect(res.body.length).toBe(0);
+    expect(res.statusCode).toBe(403);
   });
 
-  test('자신이 소유한 스터디에 대한 신청자 현황을 요청하면 200 코드로 응답한다', async () => {
+  test('자신이 소유한 스터디에 대한 참가신청 수락대기 현황을 요청하면 200 코드로 응답한다', async () => {
     // given
     const newUserEmail = 'asodfjaod@test.com';
     const newUserPassword = 'testPassword';
@@ -310,6 +310,7 @@ describe('참가 신청중인 사용자 목록 조회 api', () => {
         vacancy: 10,
         isOpen: true,
         views: 0,
+        bookmarkCount: 0,
       })
       .execute();
 
@@ -355,6 +356,91 @@ describe('참가 신청중인 사용자 목록 조회 api', () => {
     expect(res.body.length).toBe(1);
     expect(res.body[0].userId).toBe(mockUser1.id);
     expect(res.body[0].studyId).toBe(studyId);
+  });
+});
+
+describe('참가인원 조회 api', () => {
+  test('로그인하지 않아도 401 코드로 응답하지 않는다', async () => {
+    const res = await request(app)
+      .get(`/api/study/user/${studyId}/participants`)
+      .send();
+    expect(res.statusCode).not.toBe(401);
+  });
+
+  test('잘못된 스터디 id로 요청할 경우 404 코드로 응답한다', async () => {
+    // given
+    const wrongStudyId = 'asodjfoasjdf';
+
+    // when
+    const res = await request(app)
+      .get(`/api/study/user/${wrongStudyId}/participants`)
+      .send();
+
+    // then
+    expect(res.statusCode).toBe(404);
+  });
+
+  test('스터디 참가가 수락된 인원에 대한 정보를 반환한다', async () => {
+    // given
+    const study = new Study();
+    study.id = randomUUID();
+    study.title = 'STUDY TITLE';
+    study.studyAbout = 'STUDY ABOUT';
+    study.weekday = WeekDayEnum.TUE;
+    study.frequency = FrequencyEnum.MORE;
+    study.location = LocationEnum.LIBRARY;
+    study.capacity = 10;
+    study.hostId = mockHost;
+    study.categoryCode = 100;
+    study.membersCount = 10;
+    study.vacancy = 10;
+    study.isOpen = true;
+    study.views = 0;
+    study.bookmarkCount = 0;
+    await conn.getRepository(Study).save(study);
+
+    // when
+    const res = await request(app)
+      .get(`/api/study/user/${study.id}/participants`)
+      .send();
+
+    // then
+    expect(res.statusCode).toBe(200);
+    expect(res.body.length).toEqual(0);
+  });
+
+  test('스터디 참가가 수락된 인원에 대한 정보를 반환한다', async () => {
+    // given
+    const user = new User();
+    user.id = randomUUID();
+    user.email = '';
+    user.password = '';
+    user.isLogout = false;
+    user.role = UserRoleEnum.USER;
+    user.token = '';
+    await conn.getRepository(User).save(user);
+    await conn
+      .getRepository(StudyUser)
+      .createQueryBuilder()
+      .insert()
+      .values({
+        user,
+        STUDY_ID: studyId,
+        isAccepted: true,
+        tempBio: '',
+      })
+      .execute();
+
+    // when
+    const res = await request(app)
+      .get(`/api/study/user/${studyId}/participants`)
+      .send();
+
+    // then
+    console.log(res.body);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.length).not.toEqual(0);
+    expect(res.body[0].userId).toEqual(user.id);
   });
 });
 

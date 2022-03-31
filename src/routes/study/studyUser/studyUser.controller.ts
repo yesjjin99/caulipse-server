@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import {
   deleteByStudyAndUserId,
   findAcceptedByStudyId,
-  findAllByStudyId,
+  findNotAcceptedApplicantsByStudyId,
   findStudyById,
   saveStudyUserRecord,
   updateAcceptStatus,
@@ -13,6 +13,38 @@ import { findUserProfileById } from '../../../services/user/profile';
 import { createStudyNoti } from '../../../services/notification';
 
 export default {
+  /**
+   * 신청이 수락된 인원 조회 (참가자 조회, 인증 로직 X)
+   */
+  async getStudyParticipants(req: Request, res: Response) {
+    const NOT_FOUND = '일치하는 studyid 가 없음';
+
+    let study;
+    try {
+      study = await studyService.findStudyById(req.params.studyid);
+      if (!study) throw new Error(NOT_FOUND);
+    } catch (e) {
+      res.status(404).json({ message: NOT_FOUND });
+      return;
+    }
+
+    try {
+      const result = await findAcceptedByStudyId(req.params.studyid);
+      res.json(
+        result.map((record: Record<string, string | boolean>) => ({
+          studyId: record.StudyUser_STUDY_ID,
+          userId: record.StudyUser_USER_ID,
+          isAccepted: record.StudyUser_IS_ACCEPTED,
+          tempBio: record.StudyUser_TEMP_BIO,
+        }))
+      );
+    } catch (e) {
+      res.status(500).json({ message: 'error' });
+    }
+  },
+  /**
+   * 신청 수락대기중 인원 조회 (인증 로직 O)
+   */
   async getStudyUserList(req: Request, res: Response) {
     const NOT_FOUND = '일치하는 studyid 가 없음';
     const FORBIDDEN = '사용자 권한 부족';
@@ -29,25 +61,12 @@ export default {
     try {
       const userId = (req.user as { id: string }).id;
       const hasAuthority = study?.HOST_ID === userId;
-      if (!hasAuthority) {
-        const result = await findAcceptedByStudyId(req.params.studyid);
-        res.json(
-          result.map((record: Record<string, string | boolean>) => ({
-            studyId: record.StudyUser_STUDY_ID,
-            userId: record.StudyUser_USER_ID,
-            isAccepted: record.StudyUser_IS_ACCEPTED,
-            tempBio: record.StudyUser_TEMP_BIO,
-          }))
-        );
-        return;
-      }
-    } catch (e) {
-      res.status(403).json({ message: FORBIDDEN });
-      return;
-    }
 
-    try {
-      const result = await findAllByStudyId(req.params.studyid);
+      if (!hasAuthority) throw new Error(FORBIDDEN);
+
+      const result = await findNotAcceptedApplicantsByStudyId(
+        req.params.studyid
+      );
       res.json(
         result.map((record: Record<string, string | boolean>) => ({
           studyId: record.StudyUser_STUDY_ID,
@@ -57,7 +76,12 @@ export default {
         }))
       );
     } catch (e) {
-      res.status(500).json({ message: 'error' });
+      const err = e as Error;
+      if (err.message === FORBIDDEN) {
+        res.status(403).json({ message: FORBIDDEN });
+      } else {
+        res.status(500).json({ message: 'error ' });
+      }
     }
   },
   async joinStudy(req: Request, res: Response) {
@@ -206,8 +230,8 @@ export default {
  *     get:
  *       tags:
  *       - study/user
- *       summary: "현재 참가 신청중인 사용자 목록을 읽어옵니다."
- *       description: "해당 스터디에 참가 신청중인 사용자 목록을 읽어오기 위한 엔드포인트입니다."
+ *       summary: "현재 참가신청 수락대기중인 인원의 목록을 조회합니다"
+ *       description: "해당 스터디에 참가신청이 수락대기 상태인 사용자 목록을 읽어오기 위한 엔드포인트입니다. 해당 스터디의 호스트만 조회할 수 있습니다."
  *       produces:
  *       - "application/json"
  *       parameters:
@@ -407,6 +431,38 @@ export default {
  *               message:
  *                 type: string
  *                 example: "일치하는 studyid가 없음"
+ *
+ * /api/study/user/{studyid}/participants:
+ *   get:
+ *     tags:
+ *     - study/user
+ *     summary: "해당 스터디에 참여중인 사용자 목록을 조회합니다"
+ *     description: "해당 스터디에 참여중인(참가신청이 수락된) 사용자 목록을 조회하기 위한 엔드포인트입니다. 로그인하지 않아도 정상적인 데이터를 응답합니다"
+ *     parameters:
+ *     - in: "path"
+ *       name: "studyid"
+ *       description: "참여자 목록을 조회할 스터디 id"
+ *       required: true
+ *       type: string
+ *       format: uuid
+ *
+ *     responses:
+ *       200:
+ *         description: "올바른 요청"
+ *         schema:
+ *           allOf:
+ *           - type: array
+ *             items:
+ *               type: object
+ *               $ref: "#/definitions/StudyUser"
+ *       404:
+ *         description: "전달한 studyid가 데이터베이스에 없는 경우입니다"
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               example: "일치하는 studyid가 없음"
  *
  * /api/study/user/{studyid}/accept:
  *   patch:

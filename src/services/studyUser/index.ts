@@ -53,12 +53,27 @@ export const findAllIfParticipatedByUserId = async (userId: string) => {
     );
 };
 
+/**
+ * 참가신청이 수락된 사용자 목록 조회(참여자 조회)
+ */
 export const findAcceptedByStudyId = async (studyId: string) => {
   return await getRepository(StudyUser)
     .createQueryBuilder()
     .select()
     .where('STUDY_ID = :id', { id: studyId })
     .andWhere('IS_ACCEPTED = 1')
+    .execute();
+};
+
+/**
+ * 참가신청이 수락대기중인 사용자 목록 조회
+ */
+export const findNotAcceptedApplicantsByStudyId = async (studyId: string) => {
+  return await getRepository(StudyUser)
+    .createQueryBuilder()
+    .select()
+    .where('STUDY_ID = :id', { id: studyId })
+    .andWhere('IS_ACCEPTED = 0')
     .execute();
 };
 
