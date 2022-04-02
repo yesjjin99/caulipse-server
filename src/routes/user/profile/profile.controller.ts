@@ -66,6 +66,9 @@ import { findUserById } from '../../../services/user';
  *            link2:
  *              type: string
  *              example: "www.daum.net"
+ *            link3:
+ *              type: string
+ *              example: "www.google.com"
  *      responses:
  *        201:
  *          description: "유저 프로필 생성 성공"
@@ -242,6 +245,7 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
       links = [
         userProfile[0].userProfile_LINK1,
         userProfile[0].userProfile_LINK2,
+        userProfile[0].userProfile_LINK3,
       ],
       categories = userProfile[0].userProfile_USER_INTEREST_CATEGORY,
       userAbout = userProfile[0].userProfile_USER_ABOUT,
@@ -258,6 +262,7 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
       onBreak,
       link1: links?.[0],
       link2: links?.[1],
+      link3: links?.[2],
       categories,
       userAbout,
     });
