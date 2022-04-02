@@ -15,6 +15,7 @@ interface UserProfileInterface {
   link2?: string;
   link3?: string;
   categories?: string[];
+  image?: string;
 }
 
 export const postUserProfile = async ({
@@ -31,6 +32,7 @@ export const postUserProfile = async ({
   link2 = '',
   link3 = '',
   categories = [],
+  image = '',
 }: UserProfileInterface) => {
   const userProfileRepo = getRepository(UserProfile);
   const userProfile = new UserProfile();
@@ -47,6 +49,7 @@ export const postUserProfile = async ({
   userProfile.link2 = link2;
   userProfile.link3 = link3;
   userProfile.categories = categories;
+  userProfile.image = image;
 
   await userProfileRepo.save(userProfile);
 };
@@ -78,6 +81,7 @@ export const updateUserProfile = async ({
   link3,
   categories,
   userAbout,
+  image,
 }: UserProfileInterface) => {
   const result = await getRepository(UserProfile)
     .createQueryBuilder()
@@ -95,6 +99,7 @@ export const updateUserProfile = async ({
       link3,
       categories,
       userAbout,
+      image,
     })
     .where('user_id = :id', { id: userId })
     .execute();
