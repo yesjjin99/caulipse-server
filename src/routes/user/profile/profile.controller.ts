@@ -69,6 +69,9 @@ import { findUserById } from '../../../services/user';
  *            link3:
  *              type: string
  *              example: "www.google.com"
+ *            image:
+ *              type: string
+ *              example: "alien.png"
  *      responses:
  *        201:
  *          description: "유저 프로필 생성 성공"
@@ -161,6 +164,12 @@ import { findUserById } from '../../../services/user';
  *            link2:
  *              type: string
  *              example: "www.daum.net"
+ *            link3:
+ *              type: string
+ *              example: "www.google.com"
+ *            image:
+ *              type: string
+ *              example: "alien.png"
  *      responses:
  *        201:
  *          description: "유저 프로필 생성 성공"
