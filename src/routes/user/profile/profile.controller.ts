@@ -222,6 +222,7 @@ export const getUserProfileById = async (req: Request, res: Response) => {
         categories:
           userProfile[0].userProfile_USER_INTEREST_CATEGORY.split(','),
         userAbout: userProfile[0].userProfile_USER_ABOUT,
+        image: userProfile[0].userProfile_IMAGE,
       },
     });
   } catch (err) {
@@ -250,6 +251,7 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
       ],
       categories = userProfile[0].userProfile_USER_INTEREST_CATEGORY,
       userAbout = userProfile[0].userProfile_USER_ABOUT,
+      image = userProfile[0].userProfile_IMAGE,
     } = req.body;
 
     const result = await updateUserProfile({
@@ -266,6 +268,7 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
       link3: links?.[2],
       categories,
       userAbout,
+      image,
     });
 
     if (result.affected === 0) throw new Error('유저 프로필 업데이트 실패');
