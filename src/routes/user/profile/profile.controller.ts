@@ -217,6 +217,7 @@ export const getUserProfileById = async (req: Request, res: Response) => {
         links: [
           userProfile[0].userProfile_LINK1,
           userProfile[0].userProfile_LINK2,
+          userProfile[0].userProfile_LINK3,
         ],
         categories:
           userProfile[0].userProfile_USER_INTEREST_CATEGORY.split(','),
