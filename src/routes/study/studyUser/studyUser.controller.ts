@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import {
   deleteByStudyAndUserId,
   findAcceptedByStudyId,
+  findAllByStudyId,
   findNotAcceptedApplicantsByStudyId,
-  findStudyById,
   saveStudyUserRecord,
   updateAcceptStatus,
   updateUserTempBio,
@@ -95,15 +95,17 @@ export default {
       const userId = (req.user as { id: string }).id;
       if (!tempBio) throw new Error(BAD_REQUEST);
 
-      const study = await findStudyById(studyid);
-      if (!study) throw new Error(NOT_FOUND);
-
       await saveStudyUserRecord({
         userId,
         studyId: studyid,
         tempBio,
       });
 
+      const profile = await findUserProfileById(userId);
+      const study = await studyService.findStudyById(studyid);
+      if (!study) {
+        throw new Error(NOT_FOUND);
+      }
       if (process.env.NODE_ENV !== 'test') {
         const profile = await findUserProfileById(userId);
         const notiTitle = '새로운 신청자';

@@ -40,14 +40,20 @@ export default class Comment {
     nullable: true,
   })
   @JoinColumn({ name: 'NESTED_COMMENT_ID' })
-  parentComment?: Comment | null;
+  parentComment!: Comment | null;
 
   @Column('uuid', { nullable: true })
   NESTED_COMMENT_ID!: string | null;
 
+  @Column('uuid')
+  STUDY_ID!: string;
+
   @ManyToOne(() => Study, (study) => study.id)
   @JoinColumn({ name: 'STUDY_ID' })
   study!: Study;
+
+  @Column('int', { name: 'METOO_COUNT' })
+  metooCount!: number;
 
   @ManyToMany(() => User, { cascade: true })
   @JoinTable({
@@ -96,6 +102,9 @@ export default class Comment {
  *        type: string
  *        format: uuid
  *        description: "해당 질문글이 어떤 질문글의 답변으로 작성되었을 경우, 그 대상 질문글의 id"
+ *      metooCount:
+ *        type: number
+ *        description: "나도 궁금해요 개수"
  *
  *  UserMetooComment:
  *    type: object

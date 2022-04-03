@@ -9,7 +9,7 @@ import bcrypt from 'bcrypt';
 import Notification from '../src/entity/NotificationEntity';
 
 let conn: Connection;
-const noticeId = randomUUID();
+let noticeId: string;
 const admin = new User();
 
 beforeAll(async () => {
@@ -34,15 +34,6 @@ beforeAll(async () => {
   user.role = UserRoleEnum.USER;
   user.token = '';
   await conn.getRepository(User).save(user);
-
-  const notice = new Notice();
-  notice.id = noticeId;
-  notice.title = 'test notice title';
-  notice.about = 'test notice about';
-  notice.views = 0;
-  notice.createdAt = new Date();
-  notice.hostId = admin;
-  await conn.getRepository(Notice).save(notice);
 });
 
 afterAll(async () => {
@@ -54,6 +45,63 @@ afterAll(async () => {
   await conn.getRepository(Notice).createQueryBuilder().delete().execute();
   await conn.getRepository(User).createQueryBuilder().delete().execute();
   conn.close();
+});
+
+describe('공지사항 생성 api', () => {
+  it('새로운 공지사항을 생성한다', async () => {
+    // login
+    const loginRes = await request(app).post('/api/user/login').send({
+      email: 'testadmin@cau.ac.kr',
+      password: 'testadmin',
+    });
+    const cookies = loginRes.headers['set-cookie'];
+
+    const res = await request(app)
+      .post('/api/notice')
+      .set('Cookie', cookies)
+      .send({
+        title: 'test notice title',
+        about: 'test notice about',
+      });
+    noticeId = res.body.noticeId;
+
+    expect(res.status).toBe(201);
+  });
+
+  it('요청값이 유효하지 않은 경우 400을 반환한다', async () => {
+    // login
+    const loginRes = await request(app).post('/api/user/login').send({
+      email: 'testadmin@cau.ac.kr',
+      password: 'testadmin',
+    });
+    const cookies = loginRes.headers['set-cookie'];
+
+    const res = await request(app)
+      .post('/api/notice')
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(400);
+  });
+
+  it('요청을 보낸 사용자가 ADMIN이 아닌 경우 403을 반환한다', async () => {
+    // login
+    const loginRes = await request(app).post('/api/user/login').send({
+      email: 'testuser@cau.ac.kr',
+      password: 'testuser',
+    });
+    const cookies = loginRes.headers['set-cookie'];
+
+    const res = await request(app)
+      .post('/api/notice')
+      .set('Cookie', cookies)
+      .send({
+        title: 'test notice title',
+        about: 'test notice about',
+      });
+
+    expect(res.status).toBe(403);
+  });
 });
 
 describe('공지사항 조회 api', () => {
@@ -243,5 +291,70 @@ describe('공지사항 업데이트 api', () => {
     expect(before?.about).not.toBe(noticeAbout);
     expect(after?.title).toBe(title);
     expect(after?.about).toBe(noticeAbout);
+  });
+});
+
+describe('공지사항 상세 정보 api', () => {
+  it('공지사항의 상세 정보를 반환한다', async () => {
+    const res = await request(app).get(`/api/notice/${noticeId}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.notice.id).toBe(noticeId);
+  });
+
+  it('요청한 noticeId가 데이터베이스에 존재하지 않으면 404를 반환한다', async () => {
+    const res = await request(app).get(`/api/notice/wrong`);
+
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('공지사항 삭제 api', () => {
+  it('요청을 보낸 사용자가 ADMIN이 아닌 경우 403을 반환한다', async () => {
+    // login
+    const loginRes = await request(app).post('/api/user/login').send({
+      email: 'testuser@cau.ac.kr',
+      password: 'testuser',
+    });
+    const cookies = loginRes.headers['set-cookie'];
+
+    const res = await request(app)
+      .delete(`/api/notice/${noticeId}`)
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(403);
+  });
+
+  it('올바르지 않은 공지사항 id로 요청을 보낼 경우 404 코드로 응답한다', async () => {
+    // login
+    const loginRes = await request(app).post('/api/user/login').send({
+      email: 'testadmin@cau.ac.kr',
+      password: 'testadmin',
+    });
+    const cookies = loginRes.headers['set-cookie'];
+
+    const res = await request(app)
+      .delete(`/api/notice/wrong`)
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(404);
+  });
+
+  it('공지사항을 삭제한다', async () => {
+    // login
+    const loginRes = await request(app).post('/api/user/login').send({
+      email: 'testadmin@cau.ac.kr',
+      password: 'testadmin',
+    });
+    const cookies = loginRes.headers['set-cookie'];
+
+    const res = await request(app)
+      .delete(`/api/notice/${noticeId}`)
+      .set('Cookie', cookies)
+      .send();
+
+    expect(res.status).toBe(200);
   });
 });

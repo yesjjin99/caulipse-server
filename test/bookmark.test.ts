@@ -56,6 +56,7 @@ beforeAll(async () => {
   study.isOpen = true;
   study.categoryCode = 101;
   study.views = 0;
+  study.bookmarkCount = 0;
 
   await studyRepo.save(study);
 });

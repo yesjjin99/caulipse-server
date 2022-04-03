@@ -1,4 +1,9 @@
 import { Request, Response } from 'express';
+import {
+  FrequencyEnum,
+  LocationEnum,
+  WeekDayEnum,
+} from '../../entity/StudyEntity';
 import { createStudyNoti } from '../../services/notification';
 import studyService from '../../services/study';
 import { findAllByStudyId } from '../../services/studyUser';
@@ -7,9 +12,9 @@ import { orderByEnum } from '../../types/study.dto';
 
 const getAllStudy = async (req: Request, res: Response) => {
   const categoryCode = Number(req.query.categoryCode);
-  const frequencyFilter: string = req.query.frequency as string;
-  const weekdayFilter: string = req.query.weekday as string;
-  const locationFilter: string = req.query.location as string;
+  const frequencyFilter = req.query.frequency as FrequencyEnum;
+  const weekdayFilter = req.query.weekday as WeekDayEnum;
+  const locationFilter = req.query.location as LocationEnum;
   const orderBy: string = (req.query.order_by as string) || orderByEnum.LATEST;
   // offset
   const pageNo = Number(req.query.pageNo) || 1;
@@ -191,7 +196,13 @@ const updateStudy = async (req: Request, res: Response) => {
       const notiTitle = '모집정보 수정';
       const notiAbout = '신청한 스터디의 모집 정보가 수정되었어요';
       for (const user of users) {
-        await createStudyNoti(studyid, user?.id, notiTitle, notiAbout, 103);
+        await createStudyNoti(
+          studyid,
+          user?.user?.id,
+          notiTitle,
+          notiAbout,
+          103
+        );
       }
     }
 
@@ -313,10 +324,10 @@ export default {
  *        type: string
  *      - name: "order_by"
  *        in: "query"
- *        description: "정렬 조건 기본값: 최근 등록순 (enum: latest, small_vacancy, large_vacancy)"
+ *        description: "정렬 조건 기본값: 최근 등록순 (enum: latest, last, small_vacancy, large_vacancy)"
  *        required: false
  *        type: string
- *      - name: "offset"
+ *      - name: "pageNo"
  *        in: "query"
  *        description: "조회할 페이지"
  *        required: false
@@ -624,11 +635,11 @@ export default {
  *
  *  /api/study/my-study:
  *    get:
- *      summary: "스터디 검색 목록 조회"
+ *      summary: "모집 스터디 목록 조회"
  *      tags:
  *      - "study"
  *      - "my-page"
- *      description: "사용자가 검색한 스터디의 목록을 조회할 수 있습니다"
+ *      description: "사용자가 모집한 스터디의 목록을 조회하는 엔드포인트입니다."
  *      responses:
  *        200:
  *          description: "올바른 요청."

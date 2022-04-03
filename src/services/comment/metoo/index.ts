@@ -12,11 +12,13 @@ const findMetooByCommentId = async (id: string) => {
 const registerMetoo = async (metoo: Comment[], user: User) => {
   metoo.forEach((metoo) => {
     metoo.metooComment.push(user);
+    metoo.metooCount += 1;
   });
 
   await getRepository(Comment).save(metoo);
 };
 
+/*
 const getMetooCount = async (id: string) => {
   return await getRepository(Comment)
     .createQueryBuilder('comment')
@@ -24,6 +26,7 @@ const getMetooCount = async (id: string) => {
     .leftJoin('comment.metooComment', 'user')
     .getCount();
 };
+*/
 
 const deleteMetoo = async (comment: Comment, user: User) => {
   return await getRepository(Comment)
@@ -36,6 +39,5 @@ const deleteMetoo = async (comment: Comment, user: User) => {
 export default {
   findMetooByCommentId,
   registerMetoo,
-  getMetooCount,
   deleteMetoo,
 };

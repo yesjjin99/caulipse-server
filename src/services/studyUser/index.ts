@@ -25,13 +25,6 @@ export const saveStudyUserRecord = async ({
     .execute();
 };
 
-export const findStudyById = async (studyId: string) => {
-  return await getRepository(Study)
-    .createQueryBuilder('study')
-    .where('study.id = :studyId', { studyId })
-    .getOne();
-};
-
 export const findAllByStudyId = async (studyId: string) => {
   return await getRepository(StudyUser)
     .createQueryBuilder()

@@ -13,9 +13,9 @@ export enum orderByEnum {
 
 export interface paginationDTO {
   categoryCode: number;
-  frequencyFilter: string;
-  weekdayFilter: string;
-  locationFilter: string;
+  frequencyFilter: FrequencyEnum;
+  weekdayFilter: WeekDayEnum;
+  locationFilter: LocationEnum;
   orderBy: string;
   pageNo: number;
   limit: number;

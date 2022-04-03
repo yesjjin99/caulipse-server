@@ -56,6 +56,7 @@ beforeAll(async () => {
   study.isOpen = true;
   study.categoryCode = 101;
   study.views = 0;
+  study.bookmarkCount = 0;
 
   await getRepository(Study).save(study);
 
@@ -67,6 +68,7 @@ beforeAll(async () => {
   comment.content = '댓글';
   comment.user = user;
   comment.study = study;
+  comment.metooCount = 0;
 
   await getRepository(Comment).save(comment);
 });
@@ -121,33 +123,6 @@ describe('POST /api/study/:studyid/comment/:commentid/metoo', () => {
       .post(`/api/study/wrong/comment/wrong/metoo`)
       .set('Cookie', cookies)
       .send();
-
-    expect(res.status).toBe(404);
-  });
-});
-
-describe('GET /api/study/:studyid/comment/:commentid/metoo', () => {
-  it('commentid에 해당하는 문의글의 나도 궁금해요 개수 카운트하여 반환', async () => {
-    const res = await request(app).get(
-      `/api/study/${studyid}/comment/${commentid}/metoo`
-    );
-
-    const { count } = res.body;
-
-    expect(res.status).toBe(200);
-    expect(count).toBeGreaterThanOrEqual(0);
-  });
-
-  it('요청된 commentid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
-    const res = await request(app).get(
-      `/api/study/${studyid}/comment/wrong/metoo`
-    );
-
-    expect(res.status).toBe(404);
-  });
-
-  it('요청된 studyid 또는 commentid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
-    const res = await request(app).get(`/api/study/wrong/comment/wrong/metoo`);
 
     expect(res.status).toBe(404);
   });
