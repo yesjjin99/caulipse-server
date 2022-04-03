@@ -1,13 +1,15 @@
 import { Router } from 'express';
+import { checkToken } from '../../../middlewares/auth';
 import controller from './studyUser.controller';
 
 const router = Router({ mergeParams: true });
 
-router.get('/', controller.getStudyUserList);
-router.post('/', controller.joinStudy);
-router.patch('/', controller.updateStudyJoin);
-router.delete('/', controller.deleteStudyJoin);
+router.get('/', checkToken, controller.getStudyUserList);
+router.post('/', checkToken, controller.joinStudy);
+router.patch('/', checkToken, controller.updateStudyJoin);
+router.delete('/', checkToken, controller.deleteStudyJoin);
 
-router.patch('/accept', controller.acceptUser);
+router.get('/participants', controller.getStudyParticipants);
+router.patch('/accept', checkToken, controller.acceptUser);
 
 export default router;

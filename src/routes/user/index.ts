@@ -14,6 +14,7 @@ router.use('/profile', profileRouter);
 router.use('/login', loginRouter);
 router.use('/logout', checkToken, logoutRouter);
 router.use('/bookmark', checkToken, bookmarkRouter);
+router.use('/study/applied', checkToken, controller.getAppliedStudies);
 
 router.post('/', controller.saveUser);
 router.delete('/', checkToken, controller.deleteUser);

@@ -1,4 +1,4 @@
-import { getRepository } from 'typeorm';
+import { getConnection, getRepository } from 'typeorm';
 import Study from '../../entity/StudyEntity';
 import StudyUser from '../../entity/StudyUserEntity';
 
@@ -33,12 +33,40 @@ export const findAllByStudyId = async (studyId: string) => {
     .execute();
 };
 
+export const findAllIfParticipatedByUserId = async (userId: string) => {
+  return await getConnection()
+    .createQueryRunner()
+    .query(
+      'SELECT STUDY.ID, STUDY.TITLE, STUDY.CREATED_AT, STUDY.VIEWS, STUDY.BOOKMARK_COUNT FROM STUDY \
+        JOIN STUDY_USER ON \
+        STUDY_USER.STUDY_ID = STUDY.ID \
+        WHERE STUDY_USER.USER_ID = ? \
+        ORDER BY STUDY.CREATED_AT',
+      [userId]
+    );
+};
+
+/**
+ * 참가신청이 수락된 사용자 목록 조회(참여자 조회)
+ */
 export const findAcceptedByStudyId = async (studyId: string) => {
   return await getRepository(StudyUser)
     .createQueryBuilder()
     .select()
     .where('STUDY_ID = :id', { id: studyId })
     .andWhere('IS_ACCEPTED = 1')
+    .execute();
+};
+
+/**
+ * 참가신청이 수락대기중인 사용자 목록 조회
+ */
+export const findNotAcceptedApplicantsByStudyId = async (studyId: string) => {
+  return await getRepository(StudyUser)
+    .createQueryBuilder()
+    .select()
+    .where('STUDY_ID = :id', { id: studyId })
+    .andWhere('IS_ACCEPTED = 0')
     .execute();
 };
 

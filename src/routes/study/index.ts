@@ -10,17 +10,17 @@ const router = Router({ mergeParams: true });
 router.get('/', controller.getAllStudy);
 router.post('/', checkToken, controller.createStudy);
 
+// 모집 스터디 라우터
+router.get('/my-study', checkToken, controller.getMyStudy);
+
+router.get('/search', controller.searchStudy);
+
 router.get('/:studyid', controller.getStudybyId);
 router.patch('/:studyid', checkToken, controller.updateStudy);
 router.delete('/:studyid', checkToken, controller.deleteStudy);
 
-router.get('/search', controller.searchStudy);
-
-// 모집 스터디 라우터
-router.get('/my-study', checkToken, controller.getMyStudy);
-
 // 스터디 참가 신청 라우터
-router.use('/user/:studyid', checkToken, studyUserRouter);
+router.use('/user/:studyid', studyUserRouter);
 // 스터디 북마크 라우터
 router.use('/:studyid/bookmark', checkToken, bookmarkRouter);
 // 스터디 문의글 라우터

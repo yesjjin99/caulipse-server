@@ -9,6 +9,7 @@ import {
 import { sendMail } from '../../services/mail';
 import { makeSignUpToken } from '../../utils/auth';
 import { validateCAU } from '../../utils/mail';
+import { findAllIfParticipatedByUserId } from '../../services/studyUser';
 
 export default {
   async saveUser(req: Request, res: Response) {
@@ -93,6 +94,22 @@ export default {
       }
     }
   },
+  async getAppliedStudies(req: Request, res: Response) {
+    try {
+      const userId = (req.user as { id: string }).id;
+      const result = await findAllIfParticipatedByUserId(userId);
+      const response = result.map((item: Record<string, string | number>) => ({
+        id: item.ID,
+        title: item.TITLE,
+        createdAt: item.CREATED_AT,
+        views: item.VIEWS,
+        bookmarkCount: item.BOOKMARK_COUNT,
+      }));
+      res.json(response);
+    } catch (e) {
+      res.status(500).json({ message: '내가 신청한 스터디 목록 조회 실패' });
+    }
+  },
 };
 
 /**
@@ -168,6 +185,43 @@ export default {
  *            message:
  *              type: string
  *              example: "일치하는 userid값이 없음"
+ *
+ * /api/user/study/applied:
+ *  get:
+ *    tags:
+ *    - user
+ *    summary: "내가 신청한 스터디 목록 조회"
+ *    description: "본인이 참가신청을 보낸 스터디 목록의 제목, 생성일자, 조회수, 북마크수를 배열의 형태로 조회합니다"
+ *
+ *    responses:
+ *      200:
+ *        description: "올바른 요청"
+ *        schema:
+ *          type: array
+ *          items:
+ *            type: object
+ *            properties:
+ *              title:
+ *                type: string
+ *                example: 'test study title'
+ *              createdAt:
+ *                type: date-time
+ *                example: '2022-03-21T16:17:13.090Z'
+ *              views:
+ *                type: number
+ *                example: 0
+ *              bookmarkCount:
+ *                type: number
+ *                example: 0
+ *      401:
+ *        description: "로그인이 되어있지 않은 경우"
+ *        schema:
+ *          type: object
+ *          properties:
+ *            message:
+ *              type: string
+ *              example: "로그인 필요"
+ *
  */
 
 /**
