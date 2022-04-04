@@ -18,16 +18,6 @@ const registerMetoo = async (metoo: Comment[], user: User) => {
   await getRepository(Comment).save(metoo);
 };
 
-/*
-const getMetooCount = async (id: string) => {
-  return await getRepository(Comment)
-    .createQueryBuilder('comment')
-    .where('comment.id = :id', { id })
-    .leftJoin('comment.metooComment', 'user')
-    .getCount();
-};
-*/
-
 const deleteMetoo = async (comment: Comment, user: User) => {
   return await getRepository(Comment)
     .createQueryBuilder('comment')
@@ -36,8 +26,19 @@ const deleteMetoo = async (comment: Comment, user: User) => {
     .remove(user);
 };
 
+// 나도 궁금해요 여부
+const checkMetoo = async (userId: string, commentId: string) => {
+  return await getRepository(Comment)
+    .createQueryBuilder('comment')
+    .leftJoin('comment.metooComment', 'user')
+    .where('comment.id = :commentId', { commentId })
+    .where('user.id = :userId', { userId })
+    .getCount();
+};
+
 export default {
   findMetooByCommentId,
   registerMetoo,
   deleteMetoo,
+  checkMetoo,
 };
