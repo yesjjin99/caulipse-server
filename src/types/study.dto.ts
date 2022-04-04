@@ -28,4 +28,5 @@ export interface studyDTO {
   location: LocationEnum;
   capacity: number;
   categoryCode: number;
+  dueDate: Date;
 }

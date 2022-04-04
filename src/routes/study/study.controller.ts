@@ -87,6 +87,7 @@ const createStudy = async (req: Request, res: Response) => {
       location,
       capacity,
       categoryCode,
+      dueDate,
     } = req.body;
 
     const { id } = req.user as { id: string };
@@ -98,7 +99,8 @@ const createStudy = async (req: Request, res: Response) => {
       !frequency ||
       !location ||
       !capacity ||
-      !categoryCode
+      !categoryCode ||
+      !dueDate
     )
       throw new Error(BAD_REQUEST);
 
@@ -172,6 +174,7 @@ const updateStudy = async (req: Request, res: Response) => {
       location,
       capacity,
       categoryCode,
+      dueDate,
     } = req.body;
 
     if (
@@ -181,7 +184,8 @@ const updateStudy = async (req: Request, res: Response) => {
       !frequency &&
       !location &&
       !capacity &&
-      !categoryCode
+      !categoryCode &&
+      !dueDate
     )
       throw new Error(BAD_REQUEST);
 
@@ -407,6 +411,9 @@ export default {
  *                  type: number
  *                categoryCode:
  *                  type: number
+ *                dueDate:
+ *                  type: string
+ *                  format: date-time
  *      responses:
  *        201:
  *          description: "올바른 요청"
@@ -520,6 +527,9 @@ export default {
  *                  type: number
  *                categorycode:
  *                  type: number
+ *                dueDate:
+ *                  type: string
+ *                  format: date-time
  *      responses:
  *        200:
  *          description: "올바른 요청"

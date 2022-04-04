@@ -80,6 +80,9 @@ export default class Study {
   @Column('int', { name: 'CATEGORY_CODE' })
   categoryCode!: number;
 
+  @Column('datetime', { name: 'DUE_DATE' })
+  dueDate!: Date;
+
   @Column('int', { name: 'VIEWS' })
   views!: number;
 
@@ -169,6 +172,10 @@ export default class Study {
  *      categoryCode:
  *        type: integer
  *        description: "스터디의 카테고리 코드"
+ *      dueDate:
+ *        type: string
+ *        format: date-time
+ *        description: "스터디의 마감 날짜"
  *      views:
  *        type: integer
  *        description: "현재 스터디 조회수"

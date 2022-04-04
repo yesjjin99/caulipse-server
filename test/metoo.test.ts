@@ -42,8 +42,9 @@ beforeAll(async () => {
 
   studyid = randomUUID();
   const study = new Study();
+  const date = new Date();
   study.id = studyid;
-  study.createdAt = new Date();
+  study.createdAt = date;
   study.title = '스터디 제목';
   study.studyAbout = '스터디 내용';
   study.weekday = WeekDayEnum.MON;
@@ -57,6 +58,7 @@ beforeAll(async () => {
   study.categoryCode = 101;
   study.views = 0;
   study.bookmarkCount = 0;
+  study.dueDate = new Date(date.getTime() + 60 * 60 * 5);
 
   await getRepository(Study).save(study);
 
