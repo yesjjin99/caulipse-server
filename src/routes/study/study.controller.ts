@@ -255,30 +255,30 @@ const deleteStudy = async (req: Request, res: Response) => {
 
 const searchStudy = async (req: Request, res: Response) => {
   const keyword: string = req.query.keyword as string;
-  const frequencyFilter: string = req.query.frequency as string;
-  const weekdayFilter: string = req.query.weekday as string;
-  const locationFilter: string = req.query.location as string;
+  const frequencyFilter = req.query.frequency as FrequencyEnum;
+  const weekdayFilter = req.query.weekday as WeekDayEnum;
+  const locationFilter = req.query.location as LocationEnum;
   const orderBy: string = (req.query.order_by as string) || orderByEnum.LATEST;
 
   try {
-    const studies = await studyService.searchStudy(
+    const studies = await studyService.searchStudy({
       keyword,
       frequencyFilter,
       weekdayFilter,
       locationFilter,
-      orderBy
-    );
+      orderBy,
+    });
 
+    let message;
     if (studies.length === 0) {
-      return res
-        .status(200)
-        .json({ message: '요청에 해당하는 스터디가 존재하지 않습니다' });
+      message = '요청에 해당하는 스터디가 존재하지 않습니다';
     } else {
-      return res.status(200).json({
-        studies,
-        message: '스터디 검색 성공',
-      });
+      message = '스터디 검색 성공';
     }
+    return res.status(200).json({
+      studies,
+      message: message,
+    });
   } catch (e) {
     return res.status(500).json({
       message: (e as Error).message,

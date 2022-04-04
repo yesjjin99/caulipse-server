@@ -30,3 +30,11 @@ export interface studyDTO {
   categoryCode: number;
   dueDate: Date;
 }
+
+export interface searchStudyDTO {
+  keyword: string;
+  frequencyFilter: FrequencyEnum;
+  weekdayFilter: WeekDayEnum;
+  locationFilter: LocationEnum;
+  orderBy: string;
+}

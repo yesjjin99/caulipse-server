@@ -3,7 +3,12 @@ import { randomUUID } from 'crypto';
 import * as schedule from 'node-schedule';
 import Study from '../../entity/StudyEntity';
 import User from '../../entity/UserEntity';
-import { orderByEnum, paginationDTO, studyDTO } from '../../types/study.dto';
+import {
+  orderByEnum,
+  paginationDTO,
+  searchStudyDTO,
+  studyDTO,
+} from '../../types/study.dto';
 import { findAcceptedByStudyId } from '../studyUser';
 import { createStudyNoti } from '../notification';
 
@@ -201,20 +206,18 @@ const checkStudyById = async (id: string) => {
     .getCount();
 };
 
-const searchStudy = async (
-  keyword: string,
-  frequencyFilter: string,
-  weekdayFilter: string,
-  locationFilter: string,
-  orderBy: string
-) => {
-  const query = await getRepository(Study)
+const searchStudy = async (searchStudyDTO: searchStudyDTO) => {
+  const { keyword, frequencyFilter, weekdayFilter, locationFilter, orderBy } =
+    searchStudyDTO;
+
+  const query = getRepository(Study)
     .createQueryBuilder('study')
     .leftJoinAndSelect('study.hostId', 'user')
     .where(
       new Brackets((qb) => {
-        qb.where('study.title LIKE :keyword', { keyword: `%${keyword}%` });
-        qb.orWhere('study.studyAbout LIKE :keyword', {
+        qb.where('study.title LIKE :keyword', {
+          keyword: `%${keyword}%`,
+        }).orWhere('study.studyAbout LIKE :keyword', {
           keyword: `%${keyword}%`,
         });
       })
