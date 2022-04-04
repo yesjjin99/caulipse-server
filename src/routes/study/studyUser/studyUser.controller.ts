@@ -101,7 +101,6 @@ export default {
         tempBio,
       });
 
-      const profile = await findUserProfileById(userId);
       const study = await studyService.findStudyById(studyid);
       if (!study) {
         throw new Error(NOT_FOUND);
