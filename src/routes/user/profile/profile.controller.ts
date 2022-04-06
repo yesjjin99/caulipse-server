@@ -288,8 +288,18 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
   }
 };
 
+const getUserNameDuplicate = async (req: Request, res: Response) => {
+  try {
+    const { username } = req.params;
+  } catch (err) {
+    console.error(err);
+    res.json({ error: (err as Error).message || (err as Error).toString() });
+  }
+};
+
 export default {
   createProfile,
   getUserProfileById,
   updateUserProfileById,
+  getUserNameDuplicate,
 };
