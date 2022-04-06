@@ -183,6 +183,33 @@ import { findUserById } from '../../../services/user';
  *              message:
  *                type: string
  *                example: "로그인 필요"
+ * /api/user/profile/username-duplicate/{username}:
+ *  get:
+ *    tags:
+ *    - user/profile
+ *    summary: "닉네임 중복 검사"
+ *    description: "닉네임 중복 검사를 합니다."
+ *    parameters:
+ *      - in: "path"
+ *        name: "username"
+ *        description: "닉네임 중복 검사를 할 username"
+ *        required: true
+ *        type: string
+ *        example: "user1"
+ *    responses:
+ *        200:
+ *          description: "닉네임 중복 검사 성공 / data로 true 혹은 false 반환"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "이미 존재하는 닉네임입니다."
+ *              data:
+ *                type: boolean
+ *                example: false
+ *        500:
+ *          description: "서버 오류"
  */
 export const createProfile = async (req: Request, res: Response) => {
   const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
