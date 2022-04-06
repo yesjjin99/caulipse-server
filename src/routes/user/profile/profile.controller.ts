@@ -3,6 +3,7 @@ import UserProfile from '../../../entity/UserProfileEntity';
 import { Request, Response } from 'express';
 import {
   findUserProfileById,
+  findUserProfileByUserName,
   postUserProfile,
   updateUserProfile,
 } from '../../../services/user/profile';
@@ -291,6 +292,16 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
 const getUserNameDuplicate = async (req: Request, res: Response) => {
   try {
     const { username } = req.params;
+    const result = await findUserProfileByUserName(username);
+    if (result?.length) {
+      return res
+        .status(200)
+        .json({ message: '이미 존재하는 닉네임입니다.', data: false });
+    } else {
+      return res
+        .status(200)
+        .json({ message: '사용 가능한 닉네임입니다.', data: true });
+    }
   } catch (err) {
     console.error(err);
     res.json({ error: (err as Error).message || (err as Error).toString() });

@@ -67,6 +67,15 @@ export const findUserProfileById = async (paramId: string) => {
   return userProfile;
 };
 
+export const findUserProfileByUserName = async (paramUserName: string) => {
+  const userProfile = await getRepository(UserProfile)
+    .createQueryBuilder('userProfile')
+    .select()
+    .where('userProfile.user_name = :username', { username: paramUserName })
+    .execute();
+  return userProfile;
+};
+
 export const updateUserProfile = async ({
   userId,
   userName,
