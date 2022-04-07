@@ -71,7 +71,7 @@ export const findUserProfileByUserName = async (paramUserName: string) => {
   const userProfile = await getRepository(UserProfile)
     .createQueryBuilder('userProfile')
     .select()
-    .where('userProfile.user_name = :username', { username: paramUserName })
+    .where('userProfile.USER_NAME = :username', { username: paramUserName })
     .execute();
   return userProfile;
 };
