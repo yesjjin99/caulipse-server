@@ -166,28 +166,21 @@ const updateStudy = async (req: Request, res: Response) => {
 
   try {
     const { studyid } = req.params;
-    const {
-      title,
-      studyAbout,
-      weekday,
-      frequency,
-      location,
-      capacity,
-      categoryCode,
-      dueDate,
-    } = req.body;
-
-    if (
-      !title &&
-      !studyAbout &&
-      !weekday &&
-      !frequency &&
-      !location &&
-      !capacity &&
-      !categoryCode &&
-      !dueDate
-    )
-      throw new Error(BAD_REQUEST);
+  
+    if (!Object.keys(req.body).length) throw new Error(BAD_REQUEST);
+    const allowedFields = [
+      'title',
+      'studyAbout',
+      'weekday',
+      'frequency',
+      'location',
+      'capacity',
+      'isRecruiting',
+      'categoryCode',
+    ];
+    Object.keys(req.body).forEach((key) => {
+      if (!allowedFields.includes(key)) throw new Error(BAD_REQUEST);
+    });
 
     const study = await studyService.findStudyById(studyid);
     if (!study) {
@@ -383,30 +376,30 @@ export default {
  *                weekday:
  *                  type: string
  *                  enum:
- *                  - "월"
- *                  - "화"
- *                  - "수"
- *                  - "목"
- *                  - "금"
- *                  - "토"
- *                  - "일"
+ *                  - "mon"
+ *                  - "tue"
+ *                  - "wed"
+ *                  - "thu"
+ *                  - "fri"
+ *                  - "sat"
+ *                  - "sun"
  *                frequency:
  *                  type: string
  *                  enum:
- *                  - "1회"
- *                  - "주 2-4회"
- *                  - "주 5회 이상"
+ *                  - "once"
+ *                  - "twice"
+ *                  - "more"
  *                location:
  *                  type: string
  *                  enum:
- *                  - "비대면"
- *                  - "학교 스터디룸"
- *                  - "중앙도서관"
- *                  - "스터디카페"
- *                  - "일반카페"
- *                  - "흑석, 상도"
- *                  - "서울대입구, 낙성대"
- *                  - "기타"
+ *                  - "no_contact"
+ *                  - "studyroom"
+ *                  - "library"
+ *                  - "study_cafe"
+ *                  - "cafe"
+ *                  - "loc1"
+ *                  - "loc2"
+ *                  - "else"
  *                capacity:
  *                  type: number
  *                categoryCode:
@@ -499,30 +492,30 @@ export default {
  *                weekday:
  *                  type: string
  *                  enum:
- *                  - "월"
- *                  - "화"
- *                  - "수"
- *                  - "목"
- *                  - "금"
- *                  - "토"
- *                  - "일"
+ *                  - "mon"
+ *                  - "tue"
+ *                  - "wed"
+ *                  - "thu"
+ *                  - "fri"
+ *                  - "sat"
+ *                  - "sun"
  *                frequency:
  *                  type: string
  *                  enum:
- *                  - "1회"
- *                  - "주 2-4회"
- *                  - "주 5회 이상"
+ *                  - "once"
+ *                  - "twice"
+ *                  - "more"
  *                location:
  *                  type: string
  *                  enum:
- *                  - "비대면"
- *                  - "학교 스터디룸"
- *                  - "중앙도서관"
- *                  - "스터디카페"
- *                  - "일반카페"
- *                  - "흑석, 상도"
- *                  - "서울대입구, 낙성대"
- *                  - "기타"
+ *                  - "no_contact"
+ *                  - "studyroom"
+ *                  - "library"
+ *                  - "study_cafe"
+ *                  - "cafe"
+ *                  - "loc1"
+ *                  - "loc2"
+ *                  - "else"
  *                capacity:
  *                  type: number
  *                categorycode:

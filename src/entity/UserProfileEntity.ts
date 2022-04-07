@@ -50,6 +50,12 @@ export default class UserProfile {
 
   @Column({ name: 'LINK2' })
   link2!: string;
+
+  @Column({ name: 'LINK3' })
+  link3!: string;
+
+  @Column({ name: 'IMAGE' })
+  image!: string;
 }
 
 /**
@@ -95,4 +101,10 @@ export default class UserProfile {
  *      link2:
  *        type: string
  *        description: "프로필에 등록할 링크2"
+ *      link3:
+ *        type: string
+ *        description: "프로필에 등록할 링크3"
+ *      image:
+ *        type: string
+ *        description: "프로필 이미지"
  */
