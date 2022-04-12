@@ -15,16 +15,16 @@ comment_ids = [str(uuid.uuid4()) for i in range(comment_number)]
 noti_ids = [str(uuid.uuid4()) for i in range(noti_number)]
 notice_ids = [str(uuid.uuid4()) for i in range(notice_number)]
 
-weekday_enum = ['월', '화', '수', '목', '금', '토', '일']
-frequency_enum = ['1회','주 2-4회','주 5회 이상']
-location_enum = ['비대면','학교 스터디룸','중앙도서관','스터디카페','일반카페','흑석, 상도','서울대입구, 낙성대','기타']
+weekday_enum = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+frequency_enum = ['once','twice','more']
+location_enum = ['no_contact','room','library','study_cafe','cafe','loc1','loc2','else']
 
 def make_user_insert_statement(id, email, password, is_logout, token):
     return f'''INSERT INTO USER(ID, EMAIL, PASSWORD, IS_LOGOUT, TOKEN, ROLE) VALUES ('{id}', '{email}', '{password}', {is_logout}, '{token}', 'GUEST');\n'''
 
-def make_user_profile_insert_statement(user_id, user_name, dept, grade, bio, user_about, show_dept, show_grade, on_break, link1, link2, user_interest_category):
-    return f'''INSERT INTO USER_PROFILE(USER_ID, USER_NAME, DEPT, GRADE, BIO, USER_ABOUT, SHOW_DEPT, SHOW_GRADE, ON_BREAK, LINK1, LINK2, USER_INTEREST_CATEGORY)
-VALUES('{user_id}', '{user_name}', '{dept}', '{grade}', '{bio}', '{user_about}', {show_dept}, {show_grade}, {on_break}, '{link1}', '{link2}', '{user_interest_category}');\n'''
+def make_user_profile_insert_statement(user_id, user_name, dept, grade, bio, user_about, show_dept, show_grade, on_break, link1, link2, link3, user_interest_category, image):
+    return f'''INSERT INTO USER_PROFILE(USER_ID, USER_NAME, DEPT, GRADE, BIO, USER_ABOUT, SHOW_DEPT, SHOW_GRADE, ON_BREAK, LINK1, LINK2, LINK3, USER_INTEREST_CATEGORY, IMAGE)
+VALUES('{user_id}', '{user_name}', '{dept}', '{grade}', '{bio}', '{user_about}', {show_dept}, {show_grade}, {on_break}, '{link1}', '{link2}', '{link3}', '{user_interest_category}', '{image}');\n'''
 
 def make_study_insert_statement(id, title, study_about, weekday, frequency, location, capacity, members_count, vacancy, is_open, category_code, views, host_id):
     return f'''INSERT INTO STUDY(ID, TITLE, STUDY_ABOUT, WEEKDAY, FREQUENCY, LOCATION, CAPACITY, MEMBERS_COUNT, VACANCY, IS_OPEN, CATEGORY_CODE, VIEWS, HOST_ID)
@@ -82,7 +82,7 @@ with open('userdata.sql', 'w') as f:
 with open('userprofiledata.sql', 'w') as f:
     for i in range(user_number):
         stmt = make_user_profile_insert_statement(user_ids[i], f'user{i}', 'dept', 1, 'bio',
-                f'user{i} about', 0, 0, 0, 'link1', 'link2', '101, 102')
+                f'user{i} about', 0, 0, 0, 'link1', 'link2', 'link3', '101, 102', 'alien.png')
         f.write(stmt)
 
 # study table
