@@ -1,8 +1,18 @@
 import { Brackets, getRepository } from 'typeorm';
 import { randomUUID } from 'crypto';
+import * as schedule from 'node-schedule';
 import Study from '../../entity/StudyEntity';
 import User from '../../entity/UserEntity';
-import { orderByEnum, paginationDTO, studyDTO } from '../../types/study.dto';
+import {
+  orderByEnum,
+  paginationDTO,
+  searchStudyDTO,
+  studyDTO,
+} from '../../types/study.dto';
+import { findAcceptedByStudyId } from '../studyUser';
+import { createStudyNoti } from '../notification';
+
+const schedules: { [key: string]: schedule.Job } = {};
 
 const countAllStudy = async (paginationDto: paginationDTO) => {
   const { categoryCode, frequencyFilter, weekdayFilter, locationFilter } =
@@ -100,6 +110,7 @@ const createStudy = async (studyDTO: studyDTO, user: User) => {
     location,
     capacity,
     categoryCode,
+    dueDate,
   } = studyDTO;
 
   const studyId = randomUUID();
@@ -119,12 +130,38 @@ const createStudy = async (studyDTO: studyDTO, user: User) => {
   study.views = 0;
   study.categoryCode = categoryCode;
   study.bookmarkCount = 0;
+  study.dueDate = dueDate;
+
+  if (process.env.NODE_ENV !== 'test') {
+    schedules[`${studyId}`] = schedule.scheduleJob(
+      `0 0 ${dueDate.getDate()} ${dueDate.getMonth()} *`,
+      async function () {
+        study.isOpen = false;
+        const users = await findAcceptedByStudyId(studyId);
+        if (users.length !== 0) {
+          const notiTitle = '모집 종료';
+          const notiAbout = `모집이 마감되었습니다!`;
+          for (const user of users) {
+            await createStudyNoti(
+              studyId,
+              user?.user?.id,
+              notiTitle,
+              notiAbout,
+              107
+            );
+          }
+        }
+        // TEST
+        schedules[`${studyId}`].cancel();
+        delete schedules[`${studyId}`];
+      }
+    );
+  }
 
   await getRepository(Study).save(study);
   return studyId;
 };
 
-// eslint-disable-next-line prettier/prettier
 const updateStudy = async (studyDTO: studyDTO, study: Study) => {
   const {
     title,
@@ -134,6 +171,7 @@ const updateStudy = async (studyDTO: studyDTO, study: Study) => {
     location,
     capacity,
     categoryCode,
+    dueDate,
   } = studyDTO;
 
   if (title) study.title = title;
@@ -143,6 +181,15 @@ const updateStudy = async (studyDTO: studyDTO, study: Study) => {
   if (location) study.location = location;
   if (capacity) study.capacity = capacity;
   if (categoryCode) study.categoryCode = categoryCode;
+  if (dueDate) {
+    study.dueDate = dueDate;
+    if (process.env.NODE_ENV !== 'test') {
+      schedules[`${study.id}`].cancel();
+      schedules[`${study.id}`].reschedule(
+        `0 0 ${dueDate.getDate()} ${dueDate.getMonth()} *`
+      );
+    }
+  }
 
   return await getRepository(Study).save(study);
 };
@@ -159,20 +206,18 @@ const checkStudyById = async (id: string) => {
     .getCount();
 };
 
-const searchStudy = async (
-  keyword: string,
-  frequencyFilter: string,
-  weekdayFilter: string,
-  locationFilter: string,
-  orderBy: string
-) => {
-  const query = await getRepository(Study)
+const searchStudy = async (searchStudyDTO: searchStudyDTO) => {
+  const { keyword, frequencyFilter, weekdayFilter, locationFilter, orderBy } =
+    searchStudyDTO;
+
+  const query = getRepository(Study)
     .createQueryBuilder('study')
     .leftJoinAndSelect('study.hostId', 'user')
     .where(
       new Brackets((qb) => {
-        qb.where('study.title LIKE :keyword', { keyword: `%${keyword}%` });
-        qb.orWhere('study.studyAbout LIKE :keyword', {
+        qb.where('study.title LIKE :keyword', {
+          keyword: `%${keyword}%`,
+        }).orWhere('study.studyAbout LIKE :keyword', {
           keyword: `%${keyword}%`,
         });
       })

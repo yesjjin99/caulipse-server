@@ -61,6 +61,7 @@ describe('POST /api/study', () => {
   });
 
   it('body를 포함한 요청을 받으면 새로운 스터디를 생성하고 생성된 아이디를 반환', async () => {
+    const date = new Date();
     const res = await request(app)
       .post('/api/study')
       .set('Cookie', cookies)
@@ -72,6 +73,7 @@ describe('POST /api/study', () => {
         location: LocationEnum.CAFE,
         capacity: 8,
         categoryCode: 101,
+        dueDate: new Date(date.getTime() + 60 * 60 * 5),
       });
     const { studyId } = res.body;
     studyid = studyId;
@@ -90,15 +92,19 @@ describe('POST /api/study', () => {
   });
 
   it('로그인이 되어있지 않은 경우 401 응답', async () => {
-    const res = await request(app).post('/api/study').send({
-      title: '스터디 제목',
-      studyAbout: '스터디 내용',
-      weekday: WeekDayEnum.MON,
-      frequency: FrequencyEnum.TWICE,
-      location: LocationEnum.CAFE,
-      capacity: 8,
-      categorycode: 101,
-    });
+    const date = new Date();
+    const res = await request(app)
+      .post('/api/study')
+      .send({
+        title: '스터디 제목',
+        studyAbout: '스터디 내용',
+        weekday: WeekDayEnum.MON,
+        frequency: FrequencyEnum.TWICE,
+        location: LocationEnum.CAFE,
+        capacity: 8,
+        categorycode: 101,
+        dueDate: new Date(date.getTime() + 60 * 60 * 5),
+      });
 
     expect(res.status).toBe(401);
   });
@@ -152,6 +158,7 @@ describe('PATCH /api/study/:studyid', () => {
   });
 
   it('body를 포함한 요청을 받으면 studyid에 해당하는 스터디 업데이트', async () => {
+    const date = new Date();
     const res = await request(app)
       .patch(`/api/study/${studyid}`)
       .set('Cookie', cookies)
@@ -163,6 +170,7 @@ describe('PATCH /api/study/:studyid', () => {
         location: LocationEnum.LIBRARY,
         capacity: 10,
         categoryCode: 101,
+        dueDate: new Date(date.getTime() + 60 * 60 * 7),
       });
 
     expect(res.status).toBe(200);
@@ -187,20 +195,25 @@ describe('PATCH /api/study/:studyid', () => {
   });
 
   it('로그인이 되어있지 않은 경우 401 응답', async () => {
-    const res = await request(app).patch(`/api/study/${studyid}`).send({
-      title: 'STUDY TITLE',
-      studyAbout: 'STUDY ABOUT',
-      weekday: WeekDayEnum.TUE,
-      frequency: FrequencyEnum.MORE,
-      location: LocationEnum.LIBRARY,
-      capacity: 10,
-      categoryCode: 101,
-    });
+    const date = new Date();
+    const res = await request(app)
+      .patch(`/api/study/${studyid}`)
+      .send({
+        title: 'STUDY TITLE',
+        studyAbout: 'STUDY ABOUT',
+        weekday: WeekDayEnum.TUE,
+        frequency: FrequencyEnum.MORE,
+        location: LocationEnum.LIBRARY,
+        capacity: 10,
+        categoryCode: 101,
+        dueDate: new Date(date.getTime() + 60 * 60 * 7),
+      });
 
     expect(res.status).toBe(401);
   });
 
   it('요청된 studyid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
+    const date = new Date();
     const res = await request(app)
       .patch('/api/study/wrong')
       .set('Cookie', cookies)
@@ -212,6 +225,7 @@ describe('PATCH /api/study/:studyid', () => {
         location: LocationEnum.LIBRARY,
         capacity: 10,
         categoryCode: 101,
+        dueDate: new Date(date.getTime() + 60 * 60 * 7),
       });
 
     expect(res.status).toBe(404);

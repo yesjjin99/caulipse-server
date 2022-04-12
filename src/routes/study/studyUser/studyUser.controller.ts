@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import {
   deleteByStudyAndUserId,
   findAcceptedByStudyId,
-  findAllByStudyId,
   findNotAcceptedApplicantsByStudyId,
   saveStudyUserRecord,
   updateAcceptStatus,
@@ -101,7 +100,6 @@ export default {
         tempBio,
       });
 
-      const profile = await findUserProfileById(userId);
       const study = await studyService.findStudyById(studyid);
       if (!study) {
         throw new Error(NOT_FOUND);

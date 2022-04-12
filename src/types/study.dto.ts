@@ -28,4 +28,13 @@ export interface studyDTO {
   location: LocationEnum;
   capacity: number;
   categoryCode: number;
+  dueDate: Date;
+}
+
+export interface searchStudyDTO {
+  keyword: string;
+  frequencyFilter: FrequencyEnum;
+  weekdayFilter: WeekDayEnum;
+  locationFilter: LocationEnum;
+  orderBy: string;
 }

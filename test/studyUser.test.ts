@@ -51,6 +51,7 @@ beforeAll(async () => {
   await conn.getRepository(User).save(mockUser2);
 
   const mockStudy = new Study();
+  const date = new Date();
   mockStudy.id = studyId;
   mockStudy.title = 'STUDY TITLE';
   mockStudy.studyAbout = 'STUDY ABOUT';
@@ -65,6 +66,7 @@ beforeAll(async () => {
   mockStudy.isOpen = true;
   mockStudy.views = 0;
   mockStudy.bookmarkCount = 0;
+  mockStudy.dueDate = new Date(date.getTime() + 60 * 60 * 5);
 
   await conn.getRepository(Study).save(mockStudy);
 });
@@ -292,6 +294,7 @@ describe('참가신청 수락대기중인 사용자 목록 조회 api', () => {
     await conn.getRepository(User).save(newUser);
 
     const myStudyId = randomUUID();
+    const date = new Date();
     await conn
       .getRepository(Study)
       .createQueryBuilder()
@@ -311,6 +314,7 @@ describe('참가신청 수락대기중인 사용자 목록 조회 api', () => {
         isOpen: true,
         views: 0,
         bookmarkCount: 0,
+        dueDate: new Date(date.getTime() + 60 * 60 * 5),
       })
       .execute();
 
@@ -383,6 +387,7 @@ describe('참가인원 조회 api', () => {
   test('스터디 참가가 수락된 인원에 대한 정보를 반환한다', async () => {
     // given
     const study = new Study();
+    const date = new Date();
     study.id = randomUUID();
     study.title = 'STUDY TITLE';
     study.studyAbout = 'STUDY ABOUT';
@@ -397,6 +402,7 @@ describe('참가인원 조회 api', () => {
     study.isOpen = true;
     study.views = 0;
     study.bookmarkCount = 0;
+    study.dueDate = new Date(date.getTime() + 60 * 60 * 5);
     await conn.getRepository(Study).save(study);
 
     // when

@@ -49,6 +49,7 @@ beforeAll(async () => {
   mockUser2.token = '';
   await conn.getRepository(User).save(mockUser2);
 
+  const date = new Date();
   mockStudy = new Study();
   mockStudy.id = randomUUID();
   mockStudy.title = 'STUDY TITLE';
@@ -64,6 +65,7 @@ beforeAll(async () => {
   mockStudy.isOpen = true;
   mockStudy.views = 0;
   mockStudy.bookmarkCount = 0;
+  mockStudy.dueDate = new Date(date.getTime() + 60 * 60 * 5);
 
   await conn.getRepository(Study).save(mockStudy);
 });

@@ -1,5 +1,4 @@
 import { getConnection, getRepository } from 'typeorm';
-import Study from '../../entity/StudyEntity';
 import StudyUser from '../../entity/StudyUserEntity';
 
 interface SaveStudyUserRecordDTO {
