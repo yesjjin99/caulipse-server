@@ -53,7 +53,7 @@ export default {
         secure: true,
       });
 
-      res.json({ message: '로그인 성공' });
+      res.json({ message: '로그인 성공', userId: user.id });
     } catch (e) {
       const err = e as Error;
       if (err.message === UNAUTHORIZED) {
