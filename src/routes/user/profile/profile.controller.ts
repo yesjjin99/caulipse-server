@@ -3,6 +3,7 @@ import UserProfile from '../../../entity/UserProfileEntity';
 import { Request, Response } from 'express';
 import {
   findUserProfileById,
+  findUserProfileByUserName,
   postUserProfile,
   updateUserProfile,
 } from '../../../services/user/profile';
@@ -182,6 +183,33 @@ import { findUserById } from '../../../services/user';
  *              message:
  *                type: string
  *                example: "로그인 필요"
+ * /api/user/profile/duplicate:
+ *  get:
+ *    tags:
+ *    - user/profile
+ *    summary: "닉네임 중복 검사"
+ *    description: "닉네임 중복 검사를 합니다."
+ *    parameters:
+ *    - name: "username"
+ *      in: "query"
+ *      description: "유저 닉네임"
+ *      required: true
+ *      type: string
+ *      example: "user1"
+ *    responses:
+ *        200:
+ *          description: "닉네임 중복 검사 성공 / data로 true 혹은 false 반환"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "이미 존재하는 닉네임입니다."
+ *              data:
+ *                type: boolean
+ *                example: false
+ *        500:
+ *          description: "서버 오류"
  */
 export const createProfile = async (req: Request, res: Response) => {
   const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
@@ -288,8 +316,28 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
   }
 };
 
+const getUserNameDuplicate = async (req: Request, res: Response) => {
+  try {
+    const username = req.query.username as string;
+    const result = await findUserProfileByUserName(username);
+    if (result?.length) {
+      return res
+        .status(200)
+        .json({ message: '이미 존재하는 닉네임입니다.', data: false });
+    } else {
+      return res
+        .status(200)
+        .json({ message: '사용 가능한 닉네임입니다.', data: true });
+    }
+  } catch (err) {
+    console.error(err);
+    res.json({ error: (err as Error).message || (err as Error).toString() });
+  }
+};
+
 export default {
   createProfile,
   getUserProfileById,
   updateUserProfileById,
+  getUserNameDuplicate,
 };

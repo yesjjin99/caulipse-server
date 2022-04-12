@@ -4,6 +4,8 @@ import { checkToken } from '../../../middlewares/auth';
 
 const router = Router();
 
+// 사용자 프로필 유저 네임 중복 확인
+router.get('/duplicate', controller.getUserNameDuplicate);
 // 프로필 설정 페이지
 router.post('/:id', checkToken, controller.createProfile);
 // 사용자 프로필 정보 조회
