@@ -183,19 +183,19 @@ import { findUserById } from '../../../services/user';
  *              message:
  *                type: string
  *                example: "로그인 필요"
- * /api/user/profile/username-duplicate/{username}:
+ * /api/user/profile/duplicate:
  *  get:
  *    tags:
  *    - user/profile
  *    summary: "닉네임 중복 검사"
  *    description: "닉네임 중복 검사를 합니다."
  *    parameters:
- *      - in: "path"
- *        name: "username"
- *        description: "닉네임 중복 검사를 할 username"
- *        required: true
- *        type: string
- *        example: "user1"
+ *    - name: "username"
+ *      in: "query"
+ *      description: "유저 닉네임"
+ *      required: true
+ *      type: string
+ *      example: "user1"
  *    responses:
  *        200:
  *          description: "닉네임 중복 검사 성공 / data로 true 혹은 false 반환"
@@ -318,7 +318,7 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
 
 const getUserNameDuplicate = async (req: Request, res: Response) => {
   try {
-    const { username } = req.params;
+    const username = req.query.username as string;
     const result = await findUserProfileByUserName(username);
     if (result?.length) {
       return res
