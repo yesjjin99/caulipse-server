@@ -123,7 +123,7 @@ function makeStudy(idx: number, host: User): Study {
   study.views = rand(0, 200);
   study.bookmarkCount = bookmarkCount;
   study.bookmarks = bookmarks;
-  study.dueDate = new Date(2022, 11, 30);
+  study.dueDate = getRandomDate();
   return study;
 }
 
