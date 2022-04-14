@@ -81,7 +81,7 @@ export default class Study {
   categoryCode!: number;
 
   @Column('datetime', { name: 'DUE_DATE' })
-  dueDate!: Date;
+  dueDate!: string;
 
   @Column('int', { name: 'VIEWS' })
   views!: number;

@@ -28,7 +28,7 @@ export interface studyDTO {
   location: LocationEnum;
   capacity: number;
   categoryCode: number;
-  dueDate: Date;
+  dueDate: string;
 }
 
 export interface searchStudyDTO {
