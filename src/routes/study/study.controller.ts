@@ -79,36 +79,33 @@ const createStudy = async (req: Request, res: Response) => {
   const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
 
   try {
-    const {
-      title,
-      studyAbout,
-      weekday,
-      frequency,
-      location,
-      capacity,
-      categoryCode,
-      dueDate,
-    } = req.body;
-
     const { id } = req.user as { id: string };
 
-    if (
-      !title ||
-      !studyAbout ||
-      !weekday ||
-      !frequency ||
-      !location ||
-      !capacity ||
-      !categoryCode ||
-      !dueDate
-    )
-      throw new Error(BAD_REQUEST);
+    if (!Object.keys(req.body).length) throw new Error(BAD_REQUEST);
+    const allowedFields = [
+      'title',
+      'studyAbout',
+      'weekday',
+      'frequency',
+      'location',
+      'capacity',
+      'categoryCode',
+      'dueDate',
+    ];
+    let count = 0;
+    Object.keys(req.body).forEach((key) => {
+      if (allowedFields.includes(key)) {
+        count += 1;
+      } else {
+        throw new Error(BAD_REQUEST);
+      }
+    });
+    if (count < 8) throw new Error(BAD_REQUEST);
 
     const user = await findUserById(id);
     if (!user) {
       throw new Error(NOT_FOUND);
     }
-
     const studyId = await studyService.createStudy(req.body, user);
 
     return res.status(201).json({
