@@ -1,9 +1,4 @@
 import { Request, Response } from 'express';
-import {
-  FrequencyEnum,
-  LocationEnum,
-  WeekDayEnum,
-} from '../../entity/StudyEntity';
 import { createStudyNoti } from '../../services/notification';
 import studyService from '../../services/study';
 import { findAllByStudyId } from '../../services/studyUser';
@@ -11,10 +6,12 @@ import { findUserById } from '../../services/user';
 import { orderByEnum } from '../../types/study.dto';
 
 const getAllStudy = async (req: Request, res: Response) => {
+  const BAD_REQUEST = '요청값이 유효하지 않음';
+
   const categoryCode = Number(req.query.categoryCode);
-  const frequencyFilter = req.query.frequency as FrequencyEnum;
-  const weekdayFilter = req.query.weekday as WeekDayEnum;
-  const locationFilter = req.query.location as LocationEnum;
+  const frequencyFilter = req.query.frequency as string;
+  const weekdayFilter = req.query.weekday as string;
+  const locationFilter = req.query.location as string;
   const orderBy: string = (req.query.order_by as string) || orderByEnum.LATEST;
   // offset
   const pageNo = Number(req.query.pageNo) || 1;
@@ -49,7 +46,6 @@ const getAllStudy = async (req: Request, res: Response) => {
         .json({ message: '요청에 해당하는 스터디가 존재하지 않습니다' });
     } else {
       return res.status(200).json({
-        message: '스터디 목록 조회 성공',
         studies,
         pageNo,
         pages,
@@ -57,9 +53,15 @@ const getAllStudy = async (req: Request, res: Response) => {
       });
     }
   } catch (e) {
-    return res.status(500).json({
-      message: (e as Error).message,
-    });
+    if ((e as Error).message === BAD_REQUEST) {
+      return res.status(400).json({
+        message: BAD_REQUEST,
+      });
+    } else {
+      return res.status(500).json({
+        message: (e as Error).message,
+      });
+    }
   }
 };
 
@@ -68,7 +70,7 @@ const getMyStudy = async (req: Request, res: Response) => {
     const userId = (req.user as { id: string }).id;
 
     const studies = await studyService.getMyStudy(userId);
-    return res.status(200).json({ message: '모집스터디 조회 성공', studies });
+    return res.status(200).json({ studies });
   } catch (e) {
     return res.status(500).json({ message: (e as Error).message });
   }
@@ -108,10 +110,7 @@ const createStudy = async (req: Request, res: Response) => {
     }
     const studyId = await studyService.createStudy(req.body, user);
 
-    return res.status(201).json({
-      message: '새로운 스터디 생성 성공',
-      studyId,
-    });
+    return res.status(201).json({ studyId });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
       return res.status(400).json({
@@ -140,10 +139,7 @@ const getStudybyId = async (req: Request, res: Response) => {
       throw new Error(NOT_FOUND);
     }
     await studyService.updateStudyViews(study);
-    return res.status(200).json({
-      message: '각 스터디별 상세 정보 조회 성공',
-      study,
-    });
+    return res.status(200).json({ study });
   } catch (e) {
     if ((e as Error).message === NOT_FOUND) {
       return res.status(404).json({
@@ -247,9 +243,9 @@ const deleteStudy = async (req: Request, res: Response) => {
 
 const searchStudy = async (req: Request, res: Response) => {
   const keyword: string = req.query.keyword as string;
-  const frequencyFilter = req.query.frequency as FrequencyEnum;
-  const weekdayFilter = req.query.weekday as WeekDayEnum;
-  const locationFilter = req.query.location as LocationEnum;
+  const frequencyFilter = req.query.frequency as string;
+  const weekdayFilter = req.query.weekday as string;
+  const locationFilter = req.query.location as string;
   const orderBy: string = (req.query.order_by as string) || orderByEnum.LATEST;
 
   try {
@@ -339,9 +335,6 @@ export default {
  *          schema:
  *            type: object
  *            properties:
- *              message:
- *                type: string
- *                example: "스터디 목록 조회 성공"
  *              studies:
  *                type: array
  *                items:
@@ -412,9 +405,6 @@ export default {
  *          schema:
  *            type: object
  *            properties:
- *              message:
- *                type: string
- *                example: "새로운 스터디 생성 성공"
  *              id:
  *                type: string
  *                format: uuid
@@ -451,7 +441,7 @@ export default {
  *        format: uuid
  *      responses:
  *        200:
- *          description: "올바른 요청, message와 함께 스터디 정보를 반환합니다"
+ *          description: "올바른 요청, 스터디 정보를 반환합니다"
  *          schema:
  *            $ref: "#/definitions/Study"
  *        404:
