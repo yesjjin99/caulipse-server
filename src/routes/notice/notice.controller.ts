@@ -87,12 +87,14 @@ export default {
 
       const noticeId = await createNotice(title, about, user);
 
-      const users = await findAllUser();
-      if (users.length !== 0) {
-        const notiTitle = '새로운 공지';
-        const notiAbout = '새 공지사항이 등록되었어요';
-        for (const u of users) {
-          await createNoticeNoti(noticeId, u?.id, notiTitle, notiAbout, 201);
+      if (process.env.NODE_ENV !== 'test') {
+        const users = await findAllUser();
+        if (users.length !== 0) {
+          const notiTitle = '새로운 공지';
+          const notiAbout = '중대본으로부터 새로운 공지글이 등록되었어요.';
+          for (const u of users) {
+            await createNoticeNoti(noticeId, u?.id, notiTitle, notiAbout, 201);
+          }
         }
       }
 
