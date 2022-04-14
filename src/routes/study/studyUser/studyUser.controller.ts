@@ -151,6 +151,7 @@ export default {
         accept
       );
       if (updateResult.affected === 0) throw new Error(NOT_FOUND);
+      await studyService.increaseMemberCount(studyId);
 
       const notiTitle = '참가완료';
       const notiAbout = '참가신청이 수락되었어요';
