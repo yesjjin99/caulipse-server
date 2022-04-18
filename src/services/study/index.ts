@@ -9,7 +9,10 @@ import {
   searchStudyDTO,
   studyDTO,
 } from '../../types/study.dto';
-import { findAcceptedByStudyId } from '../studyUser';
+import {
+  findAcceptedByStudyId,
+  findNotAcceptedApplicantsByStudyId,
+} from '../studyUser';
 import { createStudyNoti } from '../notification';
 
 const schedules: { [key: string]: schedule.Job } = {};
@@ -137,21 +140,35 @@ const createStudy = async (studyDTO: studyDTO, user: User) => {
       `0 0 ${dueDate.getDate()} ${dueDate.getMonth()} *`,
       async function () {
         study.isOpen = false;
-        const users = await findAcceptedByStudyId(studyId);
-        if (users.length !== 0) {
+        const members = await findAcceptedByStudyId(studyId);
+        if (members.length !== 0) {
           const notiTitle = '모집 종료';
-          const notiAbout = `모집이 마감되었습니다!`;
-          for (const user of users) {
+          for (const member of members) {
+            const notiAbout = `모집이 종료되었어요. 스터디를 응원합니다!`;
             await createStudyNoti(
               studyId,
-              user?.user?.id,
+              member?.USER_ID,
               notiTitle,
               notiAbout,
               107
             );
           }
         }
-        // TEST
+        const applicants = await findNotAcceptedApplicantsByStudyId(studyId);
+        if (applicants.length !== 0) {
+          const notiTitle = '모집 종료';
+          for (const user of applicants) {
+            const notiAbout = '스터디의 모집이 마감되었어요.';
+            await createStudyNoti(
+              studyId,
+              user?.USER_ID,
+              notiTitle,
+              notiAbout,
+              107
+            );
+          }
+        }
+
         schedules[`${studyId}`].cancel();
         delete schedules[`${studyId}`];
       }

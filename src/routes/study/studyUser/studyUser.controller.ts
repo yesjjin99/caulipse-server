@@ -107,7 +107,7 @@ export default {
       if (process.env.NODE_ENV !== 'test') {
         const profile = await findUserProfileById(userId);
         const notiTitle = '새로운 신청자';
-        const notiAbout = `[${profile?.userName}]님이 신청 수락을 기다리고 있어요!`;
+        const notiAbout = `[${profile?.userName}]님이 신청수락을 요청했어요.`;
         await createStudyNoti(
           studyid,
           study.HOST_ID,
@@ -153,9 +153,11 @@ export default {
       if (updateResult.affected === 0) throw new Error(NOT_FOUND);
       await studyService.increaseMemberCount(studyId);
 
-      const notiTitle = '참가완료';
-      const notiAbout = '참가신청이 수락되었어요';
-      await createStudyNoti(studyId, targetUserId, notiTitle, notiAbout, 105);
+      if (process.env.NODE_ENV !== 'test') {
+        const notiTitle = '참가완료';
+        const notiAbout = '스터디의 참가신청이 수락되었어요:)';
+        await createStudyNoti(studyId, targetUserId, notiTitle, notiAbout, 105);
+      }
 
       res.json({ message: OK });
     } catch (e) {
@@ -208,9 +210,11 @@ export default {
 
       // 호스트가 참가신청 취소해버린 경우
       /*
-      const notiTitle = '참가 취소';
-      const notiAbout = '스터디의 참가가 취소되었습니다';
-      await createStudyNoti(studyid, userId, notiTitle, notiAbout, 106);
+      if (process.env.NODE_ENV !== 'test') {
+        const notiTitle = '참가 취소';
+        const notiAbout = '스터디의 참가신청이 취소되었어요:(';
+        await createStudyNoti(studyid, userId, notiTitle, notiAbout, 106);
+      }
       */
 
       res.json({ message: '참가신청 취소 성공' });

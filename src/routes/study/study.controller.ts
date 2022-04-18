@@ -166,7 +166,7 @@ const updateStudy = async (req: Request, res: Response) => {
 
   try {
     const { studyid } = req.params;
-  
+
     if (!Object.keys(req.body).length) throw new Error(BAD_REQUEST);
     const allowedFields = [
       'title',
@@ -188,18 +188,20 @@ const updateStudy = async (req: Request, res: Response) => {
     }
     await studyService.updateStudy(req.body, study);
 
-    const users = await findAllByStudyId(studyid);
-    if (users.length !== 0) {
-      const notiTitle = '모집정보 수정';
-      const notiAbout = '신청한 스터디의 모집 정보가 수정되었어요';
-      for (const user of users) {
-        await createStudyNoti(
-          studyid,
-          user?.user?.id,
-          notiTitle,
-          notiAbout,
-          103
-        );
+    if (process.env.NODE_ENV !== 'test') {
+      const users = await findAllByStudyId(studyid);
+      if (users.length !== 0) {
+        const notiTitle = '모집정보 수정';
+        const notiAbout = '신청한 스터디의 모집 정보가 수정되었어요.';
+        for (const user of users) {
+          await createStudyNoti(
+            studyid,
+            user?.USER_ID,
+            notiTitle,
+            notiAbout,
+            103
+          );
+        }
       }
     }
 

@@ -63,14 +63,28 @@ const createComment = async (req: Request, res: Response) => {
       reply
     );
 
-    if (reply && reply.USER_ID) {
-      const notiTitle = '답글';
-      const notiAbout = '작성하신 문의글에 답글이 달렸어요';
-      await createStudyNoti(studyid, reply.USER_ID, notiTitle, notiAbout, 104);
-    } else {
-      const notiTitle = '새로운 문의글';
-      const notiAbout = '새 문의글이 달렸어요';
-      await createStudyNoti(studyid, study.HOST_ID, notiTitle, notiAbout, 102);
+    if (process.env.NODE_ENV !== 'test') {
+      if (reply && reply.USER_ID) {
+        const notiTitle = '답글';
+        const notiAbout = '작성하신 문의글에 답글이 달렸어요.';
+        await createStudyNoti(
+          studyid,
+          reply.USER_ID,
+          notiTitle,
+          notiAbout,
+          104
+        );
+      } else {
+        const notiTitle = '새로운 문의글';
+        const notiAbout = '새 문의글이 달렸어요.';
+        await createStudyNoti(
+          studyid,
+          study.HOST_ID,
+          notiTitle,
+          notiAbout,
+          102
+        );
+      }
     }
 
     return res.status(201).json({
