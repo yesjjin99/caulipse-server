@@ -136,8 +136,9 @@ const createStudy = async (studyDTO: studyDTO, user: User) => {
   study.dueDate = dueDate;
 
   if (process.env.NODE_ENV !== 'test') {
+    const due = new Date(dueDate);
     schedules[`${studyId}`] = schedule.scheduleJob(
-      `0 0 ${dueDate.getDate()} ${dueDate.getMonth()} *`,
+      `0 0 ${due.getDate()} ${due.getMonth()} *`,
       async function () {
         study.isOpen = false;
         const members = await findAcceptedByStudyId(studyId);
@@ -201,9 +202,10 @@ const updateStudy = async (studyDTO: studyDTO, study: Study) => {
   if (dueDate) {
     study.dueDate = dueDate;
     if (process.env.NODE_ENV !== 'test') {
+      const due = new Date(dueDate);
       schedules[`${study.id}`].cancel();
       schedules[`${study.id}`].reschedule(
-        `0 0 ${dueDate.getDate()} ${dueDate.getMonth()} *`
+        `0 0 ${due.getDate()} ${due.getMonth()} *`
       );
     }
   }
