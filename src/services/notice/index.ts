@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import { getRepository } from 'typeorm';
 import Notice from '../../entity/NoticeEntity';
 import User from '../../entity/UserEntity';
+import UserProfile from '../../entity/UserProfileEntity';
 
 export const findAllUser = async () => {
   return await getRepository(User).createQueryBuilder().select('id').getMany();
@@ -50,7 +51,7 @@ export const updateNoticeById = async ({
 export const findNoticeById = async (noticeid: string) => {
   return await getRepository(Notice)
     .createQueryBuilder('notice')
-    .leftJoinAndSelect('notice.hostId', 'user')
+    .leftJoinAndSelect('notice.hostId', 'UserProfile')
     .where('notice.id = :noticeid', { noticeid })
     .getOne();
 };
@@ -63,7 +64,7 @@ export const updateNoticeViews = async (notice: Notice) => {
 export const createNotice = async (
   title: string,
   about: string,
-  user: User
+  user: UserProfile
 ) => {
   const noticeId = randomUUID();
   const notice = new Notice();

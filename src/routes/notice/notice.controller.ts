@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { findUserById } from '../../services/user';
 import {
   createNotice,
   deleteNotice,
@@ -12,6 +11,8 @@ import {
 } from '../../services/notice';
 import { UserRoleEnum } from '../../entity/UserEntity';
 import { createNoticeNoti } from '../../services/notification';
+import { temp_findUserProfileById } from '../../services/user/profile';
+import { findOnlyUserRoleById } from '../../services/user';
 
 export default {
   async findAllNotice(req: Request, res: Response) {
@@ -59,9 +60,7 @@ export default {
       if (!notice) throw new Error(NOT_FOUND);
 
       await updateNoticeViews(notice);
-      return res
-        .status(200)
-        .json({ notice, message: '각 공지사항별 상세 정보 조회 성공' });
+      return res.status(200).json(notice);
     } catch (e) {
       if ((e as Error).message === NOT_FOUND) {
         return res.status(404).json({ message: NOT_FOUND });
@@ -78,14 +77,15 @@ export default {
 
     try {
       const { title, about } = req.body;
-      const { id } = req.user as { id: string };
-      const user = await findUserById(id);
+      const userId = (req.user as { id: string }).id;
+      const user = await temp_findUserProfileById(userId);
+      const role = await findOnlyUserRoleById(userId);
 
       if (!title || !about) throw new Error(BAD_REQUEST);
-      if (!user) throw new Error(NOT_FOUND);
-      if (user.role !== UserRoleEnum.ADMIN) throw new Error(FORBIDDEN);
+      if (!user || !role) throw new Error(NOT_FOUND);
+      if (role !== UserRoleEnum.ADMIN) throw new Error(FORBIDDEN);
 
-      const noticeId = await createNotice(title, about, user);
+      const id = await createNotice(title, about, user);
 
       if (process.env.NODE_ENV !== 'test') {
         const users = await findAllUser();
@@ -93,15 +93,12 @@ export default {
           const notiTitle = '새로운 공지';
           const notiAbout = '중대본으로부터 새로운 공지글이 등록되었어요.';
           for (const u of users) {
-            await createNoticeNoti(noticeId, u?.id, notiTitle, notiAbout, 201);
+            await createNoticeNoti(id, u?.id, notiTitle, notiAbout, 201);
           }
         }
       }
 
-      return res.status(201).json({
-        noticeId,
-        message: '공지사항 생성 성공',
-      });
+      return res.status(201).json({ id });
     } catch (e) {
       if ((e as Error).message === BAD_REQUEST) {
         return res.status(400).json({ message: BAD_REQUEST });
@@ -121,11 +118,12 @@ export default {
 
     try {
       const { notiid } = req.params;
-      const { id } = req.user as { id: string };
+      const userId = (req.user as { id: string }).id;
       const notice = await findNoticeById(notiid);
-      const user = await findUserById(id);
-      if (!notice || !user) throw new Error(NOT_FOUND);
-      if (user.role !== UserRoleEnum.ADMIN) throw new Error(FORBIDDEN);
+      const user = await temp_findUserProfileById(userId);
+      const role = await findOnlyUserRoleById(userId);
+      if (!notice || !user || !role) throw new Error(NOT_FOUND);
+      if (role !== UserRoleEnum.ADMIN) throw new Error(FORBIDDEN);
 
       await deleteNotice(notice);
       return res.status(200).json({ message: '공지사항 삭제 성공' });
@@ -152,8 +150,10 @@ export default {
       if (!noticeId || !title || !noticeAbout) throw new Error(BAD_REQUEST);
 
       const userId = (req.user as { id: string }).id;
-      const user = await findUserById(userId);
-      if (user?.role !== UserRoleEnum.ADMIN) throw new Error(FORBIDDEN);
+      const user = await temp_findUserProfileById(userId);
+      const role = await findOnlyUserRoleById(userId);
+      if (!user || !role) throw new Error(NOT_FOUND);
+      if (role !== UserRoleEnum.ADMIN) throw new Error(FORBIDDEN);
 
       const result = await updateNoticeById({ noticeId, title, noticeAbout });
       if (result.affected === 0) throw new Error(NOT_FOUND);
@@ -231,9 +231,6 @@ export default {
  *          schema:
  *            type: object
  *            properties:
- *              message:
- *                type: string
- *                example: "새로운 공지사항 생성 성공"
  *              id:
  *                type: string
  *                format: uuid

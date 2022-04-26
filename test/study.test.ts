@@ -15,7 +15,7 @@ import {
   WeekDayEnum,
 } from '../src/entity/StudyEntity';
 import User, { UserRoleEnum } from '../src/entity/UserEntity';
-import Notification from '../src/entity/NotificationEntity';
+import UserProfile from '../src/entity/UserProfileEntity';
 
 let conn: Connection;
 let userid: string;
@@ -29,8 +29,6 @@ beforeAll(async () => {
 
   userid = randomUUID();
   const password = bcrypt.hashSync('test', 10);
-
-  const userRepo = getRepository(User);
   const user = new User();
   user.id = userid;
   user.email = 'test@gmail.com';
@@ -38,12 +36,29 @@ beforeAll(async () => {
   user.isLogout = false;
   user.token = '';
   user.role = UserRoleEnum.USER;
+  await getRepository(User).save(user);
 
-  await userRepo.save(user);
+  const profile = new UserProfile();
+  profile.id = user;
+  profile.email = user.email;
+  profile.userName = 'user';
+  profile.dept = 'dept';
+  profile.grade = 1;
+  profile.bio = 'bio';
+  profile.userAbout = 'about';
+  profile.showDept = false;
+  profile.showGrade = false;
+  profile.onBreak = false;
+  profile.categories = ['100'];
+  profile.link1 = 'user_link1';
+  profile.link2 = 'user_link2';
+  profile.link3 = 'user_link3';
+  profile.image = 'image';
+  await getRepository(UserProfile).save(profile);
 });
 
 afterAll(async () => {
-  await getRepository(Notification).createQueryBuilder().delete().execute();
+  await getRepository(UserProfile).createQueryBuilder().delete().execute();
   await getRepository(User).createQueryBuilder().delete().execute();
 
   conn.close();
@@ -78,7 +93,7 @@ describe('POST /api/study', () => {
     studyid = res.body.id;
 
     expect(res.status).toBe(201);
-    expect(studyid).not.toBeNull();
+    expect(res.body.id).not.toBeNull();
   });
 
   it('유효하지 않은 body를 포함하거나 body를 포함하지 않은 요청을 받으면 400 응답', async () => {

@@ -12,12 +12,15 @@ import Study, {
 import StudyUser from '../src/entity/StudyUserEntity';
 import User, { UserRoleEnum } from '../src/entity/UserEntity';
 import { saveStudyUserRecord } from '../src/services/studyUser';
-import Notification from '../src/entity/NotificationEntity';
+import UserProfile from '../src/entity/UserProfileEntity';
 
 let conn: Connection;
 let mockHost: User;
 let mockUser1: User;
 let mockUser2: User;
+let mockHostProfile: UserProfile;
+let mockProfile1: UserProfile;
+let mockProfile2: UserProfile;
 const studyId = randomUUID();
 
 beforeAll(async () => {
@@ -34,6 +37,24 @@ beforeAll(async () => {
   mockHost.token = '';
   await conn.getRepository(User).save(mockHost);
 
+  mockHostProfile = new UserProfile();
+  mockHostProfile.id = mockHost;
+  mockHostProfile.email = mockHost.email;
+  mockHostProfile.userName = 'host';
+  mockHostProfile.dept = 'dept';
+  mockHostProfile.grade = 1;
+  mockHostProfile.bio = 'bio';
+  mockHostProfile.userAbout = 'about';
+  mockHostProfile.showDept = false;
+  mockHostProfile.showGrade = false;
+  mockHostProfile.onBreak = false;
+  mockHostProfile.categories = ['100'];
+  mockHostProfile.link1 = 'user_link1';
+  mockHostProfile.link2 = 'user_link2';
+  mockHostProfile.link3 = 'user_link3';
+  mockHostProfile.image = 'image';
+  await conn.getRepository(UserProfile).save(mockHostProfile);
+
   mockUser1 = new User();
   mockUser1.id = randomUUID();
   mockUser1.email = 'mockuser1@test.com';
@@ -42,6 +63,24 @@ beforeAll(async () => {
   mockUser1.token = '';
   await conn.getRepository(User).save(mockUser1);
 
+  mockProfile1 = new UserProfile();
+  mockProfile1.id = mockUser1;
+  mockProfile1.email = mockUser1.email;
+  mockProfile1.userName = 'user1';
+  mockProfile1.dept = 'dept';
+  mockProfile1.grade = 1;
+  mockProfile1.bio = 'bio';
+  mockProfile1.userAbout = 'about';
+  mockProfile1.showDept = false;
+  mockProfile1.showGrade = false;
+  mockProfile1.onBreak = false;
+  mockProfile1.categories = ['100'];
+  mockProfile1.link1 = 'user_link1';
+  mockProfile1.link2 = 'user_link2';
+  mockProfile1.link3 = 'user_link3';
+  mockProfile1.image = 'image';
+  await conn.getRepository(UserProfile).save(mockProfile1);
+
   mockUser2 = new User();
   mockUser2.id = randomUUID();
   mockUser2.email = 'mockuser2@test.com';
@@ -49,6 +88,24 @@ beforeAll(async () => {
   mockUser2.isLogout = false;
   mockUser2.token = '';
   await conn.getRepository(User).save(mockUser2);
+
+  mockProfile2 = new UserProfile();
+  mockProfile2.id = mockUser2;
+  mockProfile2.email = mockUser2.email;
+  mockProfile2.userName = 'user2';
+  mockProfile2.dept = 'dept';
+  mockProfile2.grade = 1;
+  mockProfile2.bio = 'bio';
+  mockProfile2.userAbout = 'about';
+  mockProfile2.showDept = false;
+  mockProfile2.showGrade = false;
+  mockProfile2.onBreak = false;
+  mockProfile2.categories = ['100'];
+  mockProfile2.link1 = 'user_link1';
+  mockProfile2.link2 = 'user_link2';
+  mockProfile2.link3 = 'user_link3';
+  mockProfile2.image = 'image';
+  await conn.getRepository(UserProfile).save(mockProfile2);
 
   const mockStudy = new Study();
   const date = new Date();
@@ -59,7 +116,7 @@ beforeAll(async () => {
   mockStudy.frequency = FrequencyEnum.MORE;
   mockStudy.location = [LocationEnum.LIBRARY, LocationEnum.NO_CONTACT];
   mockStudy.capacity = 10;
-  mockStudy.hostId = mockHost;
+  mockStudy.hostId = mockHostProfile;
   mockStudy.categoryCode = 100;
   mockStudy.membersCount = 10;
   mockStudy.vacancy = 10;
@@ -72,13 +129,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await conn
-    .getRepository(Notification)
-    .createQueryBuilder()
-    .delete()
-    .execute();
   await conn.getRepository(StudyUser).createQueryBuilder().delete().execute();
   await conn.getRepository(Study).createQueryBuilder().delete().execute();
+  await conn.getRepository(UserProfile).createQueryBuilder().delete().execute();
   await conn.getRepository(User).createQueryBuilder().delete().execute();
   conn.close();
 });
@@ -93,6 +146,23 @@ describe('참가신청 api', () => {
       password: 'testpw',
       isLogout: false,
       token: '',
+    });
+    await conn.getRepository(UserProfile).save({
+      USER_ID: userId,
+      email: 'testtt@example.com',
+      userName: 'test1',
+      dept: 'test1',
+      grade: 2,
+      bio: 'test1',
+      userAbout: 'test1',
+      showDept: false,
+      showGrade: false,
+      onBreak: false,
+      categories: ['100'],
+      link1: 'test1',
+      link2: 'test1',
+      link3: 'test1',
+      image: 'test1',
     });
     const tempBio = 'hi';
 
@@ -118,6 +188,23 @@ describe('참가신청 api', () => {
       password: bcrypt.hashSync(password, 10),
       isLogout: false,
       token: '',
+    });
+    await conn.getRepository(UserProfile).save({
+      USER_ID: userId,
+      email,
+      userName: 'test2',
+      dept: 'test2',
+      grade: 2,
+      bio: 'test2',
+      userAbout: 'test2',
+      showDept: false,
+      showGrade: false,
+      onBreak: false,
+      categories: ['100'],
+      link1: 'test2',
+      link2: 'test2',
+      link3: 'test2',
+      image: 'test2',
     });
     const tempBio = 'adjsfojasdof';
     const loginRes = await request(app)
@@ -152,6 +239,23 @@ describe('참가신청 api', () => {
       isLogout: false,
       token: '',
     });
+    await conn.getRepository(UserProfile).save({
+      USER_ID: userId,
+      email,
+      userName: 'test2',
+      dept: 'test2',
+      grade: 2,
+      bio: 'test2',
+      userAbout: 'test2',
+      showDept: false,
+      showGrade: false,
+      onBreak: false,
+      categories: ['100'],
+      link1: 'test2',
+      link2: 'test2',
+      link3: 'test2',
+      image: 'test2',
+    });
     const loginRes = await request(app)
       .post('/api/user/login')
       .send({ email, password });
@@ -183,6 +287,23 @@ describe('참가신청 api', () => {
       isLogout: false,
       token: '',
     });
+    await conn.getRepository(UserProfile).save({
+      USER_ID: userId,
+      email,
+      userName: 'test2',
+      dept: 'test2',
+      grade: 2,
+      bio: 'test2',
+      userAbout: 'test2',
+      showDept: false,
+      showGrade: false,
+      onBreak: false,
+      categories: ['100'],
+      link1: 'test2',
+      link2: 'test2',
+      link3: 'test2',
+      image: 'test2',
+    });
     const tempBio = 'adjsfojasdofsadf';
 
     // when
@@ -209,6 +330,23 @@ describe('참가신청 api', () => {
       password: bcrypt.hashSync(password, 10),
       isLogout: false,
       token: '',
+    });
+    await conn.getRepository(UserProfile).save({
+      USER_ID: userId,
+      email,
+      userName: 'test2',
+      dept: 'test2',
+      grade: 2,
+      bio: 'test2',
+      userAbout: 'test2',
+      showDept: false,
+      showGrade: false,
+      onBreak: false,
+      categories: ['100'],
+      link1: 'test2',
+      link2: 'test2',
+      link3: 'test2',
+      image: 'test2',
     });
     const tempBio = 'adjsfojasdof';
     const loginRes = await request(app)
@@ -250,6 +388,23 @@ describe('참가신청 수락대기중인 사용자 목록 조회 api', () => {
       password: bcrypt.hashSync(password, 10),
       isLogout: false,
       token: '',
+    });
+    await conn.getRepository(UserProfile).save({
+      USER_ID: userId,
+      email,
+      userName: 'test3',
+      dept: 'test3',
+      grade: 2,
+      bio: 'test3',
+      userAbout: 'test3',
+      showDept: false,
+      showGrade: false,
+      onBreak: false,
+      categories: ['100'],
+      link1: 'test3',
+      link2: 'test3',
+      link3: 'test3',
+      image: 'test3',
     });
     const loginRes = await request(app)
       .post('/api/user/login')
@@ -293,6 +448,24 @@ describe('참가신청 수락대기중인 사용자 목록 조회 api', () => {
     newUser.role = UserRoleEnum.USER;
     await conn.getRepository(User).save(newUser);
 
+    const newProfile = new UserProfile();
+    newProfile.id = newUser;
+    newProfile.email = newUser.email;
+    newProfile.userName = 'test4';
+    newProfile.dept = 'dept';
+    newProfile.grade = 1;
+    newProfile.bio = 'bio';
+    newProfile.userAbout = 'about';
+    newProfile.showDept = false;
+    newProfile.showGrade = false;
+    newProfile.onBreak = false;
+    newProfile.categories = ['100'];
+    newProfile.link1 = 'user_link1';
+    newProfile.link2 = 'user_link2';
+    newProfile.link3 = 'user_link3';
+    newProfile.image = 'image';
+    await conn.getRepository(UserProfile).save(newProfile);
+
     const myStudyId = randomUUID();
     const date = new Date();
     await conn
@@ -307,7 +480,7 @@ describe('참가신청 수락대기중인 사용자 목록 조회 api', () => {
         frequency: FrequencyEnum.MORE,
         location: [LocationEnum.LIBRARY, LocationEnum.NO_CONTACT],
         capacity: 10,
-        hostId: newUser,
+        hostId: newProfile,
         categoryCode: 100,
         membersCount: 10,
         vacancy: 10,
@@ -395,7 +568,7 @@ describe('참가인원 조회 api', () => {
     study.frequency = FrequencyEnum.MORE;
     study.location = [LocationEnum.LIBRARY, LocationEnum.NO_CONTACT];
     study.capacity = 10;
-    study.hostId = mockHost;
+    study.hostId = mockHostProfile;
     study.categoryCode = 100;
     study.membersCount = 10;
     study.vacancy = 10;
@@ -425,12 +598,29 @@ describe('참가인원 조회 api', () => {
     user.role = UserRoleEnum.USER;
     user.token = '';
     await conn.getRepository(User).save(user);
+    const profile = new UserProfile();
+    profile.id = user;
+    profile.email = user.email;
+    profile.userName = 'user';
+    profile.dept = 'dept';
+    profile.grade = 1;
+    profile.bio = 'bio';
+    profile.userAbout = 'about';
+    profile.showDept = false;
+    profile.showGrade = false;
+    profile.onBreak = false;
+    profile.categories = ['100'];
+    profile.link1 = 'user_link1';
+    profile.link2 = 'user_link2';
+    profile.link3 = 'user_link3';
+    profile.image = 'image';
+    await conn.getRepository(UserProfile).save(profile);
     await conn
       .getRepository(StudyUser)
       .createQueryBuilder()
       .insert()
       .values({
-        user,
+        user: profile,
         STUDY_ID: studyId,
         isAccepted: true,
         tempBio: '',

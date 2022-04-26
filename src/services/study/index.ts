@@ -2,7 +2,6 @@ import { Brackets, getRepository } from 'typeorm';
 import { randomUUID } from 'crypto';
 import * as schedule from 'node-schedule';
 import Study from '../../entity/StudyEntity';
-import User from '../../entity/UserEntity';
 import {
   orderByEnum,
   paginationDTO,
@@ -14,6 +13,7 @@ import {
   findNotAcceptedApplicantsByStudyId,
 } from '../studyUser';
 import { createStudyNoti } from '../notification';
+import UserProfile from '../../entity/UserProfileEntity';
 
 export const schedules: { [key: string]: schedule.Job } = {};
 
@@ -69,7 +69,7 @@ const getAllStudy = async (paginationDTO: paginationDTO) => {
 
   const sq = getRepository(Study)
     .createQueryBuilder('study')
-    .leftJoinAndSelect('study.hostId', 'user');
+    .leftJoinAndSelect('study.hostId', 'UserProfile');
   if (!hideCloseTag) {
     // off
     sq.addSelect('study.dueDate');
@@ -119,7 +119,7 @@ const getMyStudy = async (userId: string) => {
   return await getRepository(Study)
     .createQueryBuilder('study')
     .addSelect('study.dueDate')
-    .leftJoinAndSelect('study.hostId', 'user')
+    .leftJoinAndSelect('study.hostId', 'UserProfile')
     .where('study.HOST_ID = :userId', { userId })
     .orderBy('study.createdAt', 'ASC')
     .getMany();
@@ -129,9 +129,8 @@ const findStudyById = async (id: string) => {
   return await getRepository(Study)
     .createQueryBuilder('study')
     .addSelect('study.dueDate')
-    .leftJoinAndSelect('study.hostId', 'user')
+    .leftJoinAndSelect('study.hostId', 'UserProfile')
     .where('study.id = :id', { id })
-    .orderBy('study.createdAt', 'ASC')
     .getOne();
 };
 
@@ -140,7 +139,7 @@ const updateStudyViews = async (study: Study) => {
   return await getRepository(Study).save(study);
 };
 
-const createStudy = async (studyDTO: studyDTO, user: User) => {
+const createStudy = async (studyDTO: studyDTO, user: UserProfile) => {
   const {
     title,
     studyAbout,
@@ -186,7 +185,7 @@ const createStudy = async (studyDTO: studyDTO, user: User) => {
               const notiAbout = `모집이 종료되었어요. 스터디를 응원합니다!`;
               await createStudyNoti(
                 studyId,
-                member?.USER_ID,
+                member?.user.id,
                 notiTitle,
                 notiAbout,
                 107
@@ -200,14 +199,13 @@ const createStudy = async (studyDTO: studyDTO, user: User) => {
               const notiAbout = '스터디의 모집이 마감되었어요.';
               await createStudyNoti(
                 studyId,
-                user?.USER_ID,
+                user?.user.id,
                 notiTitle,
                 notiAbout,
                 107
               );
             }
           }
-
           schedules[`${studyId}`].cancel();
           delete schedules[`${studyId}`];
         }
@@ -269,7 +267,7 @@ const searchStudy = async (searchStudyDTO: searchStudyDTO) => {
   const query = getRepository(Study)
     .createQueryBuilder('study')
     .addSelect('study.dueDate')
-    .leftJoinAndSelect('study.hostId', 'user')
+    .leftJoinAndSelect('study.hostId', 'UserProfile')
     .where(
       new Brackets((qb) => {
         qb.where('study.title LIKE :keyword', {

@@ -6,11 +6,12 @@ import { randomUUID } from 'crypto';
 import Notice from '../src/entity/NoticeEntity';
 import User, { UserRoleEnum } from '../src/entity/UserEntity';
 import bcrypt from 'bcrypt';
-import Notification from '../src/entity/NotificationEntity';
+import UserProfile from '../src/entity/UserProfileEntity';
 
 let conn: Connection;
 let noticeId: string;
 const admin = new User();
+const adminProfile = new UserProfile();
 
 beforeAll(async () => {
   conn = await createConnection({
@@ -26,6 +27,23 @@ beforeAll(async () => {
   admin.token = '';
   await conn.getRepository(User).save(admin);
 
+  adminProfile.id = admin;
+  adminProfile.email = admin.email;
+  adminProfile.userName = 'admin';
+  adminProfile.dept = 'dept';
+  adminProfile.grade = 1;
+  adminProfile.bio = 'bio';
+  adminProfile.userAbout = 'about';
+  adminProfile.showDept = false;
+  adminProfile.showGrade = false;
+  adminProfile.onBreak = false;
+  adminProfile.categories = ['100'];
+  adminProfile.link1 = 'user_link1';
+  adminProfile.link2 = 'user_link2';
+  adminProfile.link3 = 'user_link3';
+  adminProfile.image = 'image';
+  await conn.getRepository(UserProfile).save(adminProfile);
+
   const user = new User();
   user.id = randomUUID();
   user.email = 'testuser@cau.ac.kr';
@@ -34,15 +52,29 @@ beforeAll(async () => {
   user.role = UserRoleEnum.USER;
   user.token = '';
   await conn.getRepository(User).save(user);
+
+  const profile = new UserProfile();
+  profile.id = user;
+  profile.email = user.email;
+  profile.userName = 'user';
+  profile.dept = 'dept';
+  profile.grade = 1;
+  profile.bio = 'bio';
+  profile.userAbout = 'about';
+  profile.showDept = false;
+  profile.showGrade = false;
+  profile.onBreak = false;
+  profile.categories = ['100'];
+  profile.link1 = 'user_link1';
+  profile.link2 = 'user_link2';
+  profile.link3 = 'user_link3';
+  profile.image = 'image';
+  await conn.getRepository(UserProfile).save(profile);
 });
 
 afterAll(async () => {
-  await conn
-    .getRepository(Notification)
-    .createQueryBuilder()
-    .delete()
-    .execute();
   await conn.getRepository(Notice).createQueryBuilder().delete().execute();
+  await conn.getRepository(UserProfile).createQueryBuilder().delete().execute();
   await conn.getRepository(User).createQueryBuilder().delete().execute();
   conn.close();
 });
@@ -63,9 +95,10 @@ describe('공지사항 생성 api', () => {
         title: 'test notice title',
         about: 'test notice about',
       });
-    noticeId = res.body.noticeId;
 
+    noticeId = res.body.id;
     expect(res.status).toBe(201);
+    expect(res.body.id).not.toBeNull();
   });
 
   it('요청값이 유효하지 않은 경우 400을 반환한다', async () => {
@@ -128,7 +161,7 @@ describe('공지사항 페이지네이션', () => {
       notice.about = `${idx}`;
       notice.views = 0;
       notice.createdAt = new Date();
-      notice.hostId = admin;
+      notice.hostId = adminProfile;
       return notice;
     };
     for (let i = 0; i < itemNumber; i++) notices.push(makeNoticeRecord(i));
@@ -299,7 +332,8 @@ describe('공지사항 상세 정보 api', () => {
     const res = await request(app).get(`/api/notice/${noticeId}`);
 
     expect(res.status).toBe(200);
-    expect(res.body.notice.id).toBe(noticeId);
+    expect(res.body).not.toBeNull();
+    expect(res.body.id).toBe(noticeId);
   });
 
   it('요청한 noticeId가 데이터베이스에 존재하지 않으면 404를 반환한다', async () => {

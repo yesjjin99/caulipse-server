@@ -1,5 +1,3 @@
-import { getRepository } from 'typeorm';
-import UserProfile from '../../../entity/UserProfileEntity';
 import { Request, Response } from 'express';
 import {
   findUserProfileById,
@@ -224,6 +222,7 @@ export const createProfile = async (req: Request, res: Response) => {
 
     await postUserProfile({
       userId: id,
+      email: user.email,
       ...req.body,
     });
 
@@ -244,6 +243,7 @@ export const getUserProfileById = async (req: Request, res: Response) => {
       message: '해당 아이디의 유저 프로필 조회 성공',
       userProfile: {
         userId: userProfile[0].userProfile_USER_ID,
+        email: userProfile[0].userProfile_EMAIL,
         userName: userProfile[0].userProfile_USER_NAME,
         dept: userProfile[0].userProfile_DEPT,
         grade: userProfile[0].userProfile_GRADE,
@@ -293,6 +293,7 @@ export const updateUserProfileById = async (req: Request, res: Response) => {
 
     const result = await updateUserProfile({
       userId: id,
+      email: userProfile[0].userProfile_EMAIL,
       userName,
       dept,
       grade,

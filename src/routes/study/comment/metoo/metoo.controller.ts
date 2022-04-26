@@ -1,17 +1,17 @@
 import { Request, Response } from 'express';
 import studyService from '../../../../services/study';
-import { findUserById } from '../../../../services/user';
 import metooService from '../../../../services/comment/metoo';
 import commentService from '../../../../services/comment';
+import { temp_findUserProfileById } from '../../../../services/user/profile';
 
 const registerMetoo = async (req: Request, res: Response) => {
   const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
 
   try {
     const { studyid, commentid } = req.params;
-    const { id } = req.user as { id: string };
+    const userId = (req.user as { id: string }).id;
     const study = await studyService.checkStudyById(studyid);
-    const user = await findUserById(id);
+    const user = await temp_findUserProfileById(userId);
 
     if (study === 0 || !user) {
       throw new Error(NOT_FOUND);
@@ -22,9 +22,7 @@ const registerMetoo = async (req: Request, res: Response) => {
     }
 
     await metooService.registerMetoo(metoo, user);
-    return res.status(201).json({
-      message: '나도 궁금해요 생성 성공',
-    });
+    return res.status(201).json({ message: '나도 궁금해요 생성 성공' });
   } catch (e) {
     if ((e as Error).message === NOT_FOUND) {
       return res.status(404).json({
@@ -43,19 +41,17 @@ const deleteMetoo = async (req: Request, res: Response) => {
 
   try {
     const { studyid, commentid } = req.params;
-    const { id } = req.user as { id: string };
+    const userId = (req.user as { id: string }).id;
     const study = await studyService.checkStudyById(studyid);
     const comment = await commentService.findCommentById(commentid);
-    const user = await findUserById(id);
+    const user = await temp_findUserProfileById(userId);
 
     if (study === 0 || !comment || !user) {
       throw new Error(NOT_FOUND);
     }
     await metooService.deleteMetoo(comment, user);
 
-    return res.status(200).json({
-      message: '나도 궁금해요 해제 성공',
-    });
+    return res.status(200).json({ message: '나도 궁금해요 해제 성공' });
   } catch (e) {
     if ((e as Error).message === NOT_FOUND) {
       return res.status(404).json({

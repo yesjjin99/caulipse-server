@@ -2,7 +2,7 @@ import { getRepository } from 'typeorm';
 import { randomUUID } from 'crypto';
 import Comment from '../../entity/CommentEntity';
 import Study from '../../entity/StudyEntity';
-import User from '../../entity/UserEntity';
+import UserProfile from '../../entity/UserProfileEntity';
 
 const findCommentById = async (id: string) => {
   return await getRepository(Comment)
@@ -14,7 +14,7 @@ const findCommentById = async (id: string) => {
 const getAllByStudy = async (id: string) => {
   return await getRepository(Comment)
     .createQueryBuilder('comment')
-    .leftJoinAndSelect('comment.user', 'user')
+    .leftJoinAndSelect('comment.user', 'UserProfile')
     .where('comment.study.id = :id', { id })
     .orderBy('comment.createdAt', 'ASC')
     .getMany();
@@ -23,7 +23,7 @@ const getAllByStudy = async (id: string) => {
 const createComment = async (
   content: string,
   study: Study,
-  user: User,
+  user: UserProfile,
   reply: Comment | null
 ) => {
   const commentId = randomUUID();

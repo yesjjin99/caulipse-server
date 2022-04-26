@@ -1,18 +1,17 @@
 import { getRepository } from 'typeorm';
 import Study from '../../../entity/StudyEntity';
-import User from '../../../entity/UserEntity';
+import UserProfile from '../../../entity/UserProfileEntity';
 
 const findBookmarksByStudyId = async (id: string) => {
   return await getRepository(Study).find({
-    where: { id },
     relations: ['bookmarks'],
+    where: { id },
   });
 };
 
-const registerBookmark = async (bookmarks: Study[], user: User) => {
+const registerBookmark = async (bookmarks: Study[], user: UserProfile) => {
   bookmarks.forEach((bookmark) => {
     bookmark.bookmarks.push(user);
-
     bookmark.bookmarkCount += 1;
   });
 
@@ -23,28 +22,28 @@ const registerBookmark = async (bookmarks: Study[], user: User) => {
 const checkBookmarked = async (userId: string, studyId: string) => {
   return await getRepository(Study)
     .createQueryBuilder('study')
-    .leftJoin('study.bookmarks', 'user')
+    .leftJoin('study.bookmarks', 'UserProfile')
     .where('study.id = :studyId', { studyId })
-    .where('user.id = :userId', { userId })
+    .where('UserProfile.id = :userId', { userId })
     .getCount();
 };
 
-const getBookmarksByUser = async (id: string) => {
+const getBookmarksByUser = async (userId: string) => {
   return await getRepository(Study)
     .createQueryBuilder('study')
-    .leftJoin('study.bookmarks', 'user')
-    .where('user.id = :id', { id })
+    .leftJoin('study.bookmarks', 'UserProfile')
+    .where('UserProfile.id = :userId', { userId })
     .orderBy('study.createdAt', 'DESC')
     .getMany();
 };
 
-const deleteBookmark = async (study: Study, user: User) => {
+const deleteBookmark = async (study: Study, user: UserProfile) => {
   const repo = getRepository(Study);
   study.bookmarkCount -= 1;
   await repo.save(study);
 
   return await repo
-    .createQueryBuilder('study')
+    .createQueryBuilder()
     .relation('bookmarks')
     .of(study)
     .remove(user);
