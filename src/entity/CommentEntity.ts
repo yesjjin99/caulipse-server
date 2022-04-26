@@ -9,8 +9,8 @@ import {
   JoinTable,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import User from './UserEntity';
 import Study from './StudyEntity';
+import UserProfile from './UserProfileEntity';
 
 @Entity({ name: 'COMMENT' })
 export default class Comment {
@@ -29,9 +29,9 @@ export default class Comment {
   @Column('uuid', { nullable: true })
   USER_ID!: string | null;
 
-  @ManyToOne(() => User, (user) => user.comments, { nullable: true })
+  @ManyToOne(() => UserProfile, (user) => user.comments, { nullable: true })
   @JoinColumn({ name: 'USER_ID' })
-  user!: User | null;
+  user!: UserProfile | null;
 
   @OneToMany(() => Comment, (comment) => comment.parentComment)
   nestedComments!: Comment[];
@@ -55,7 +55,7 @@ export default class Comment {
   @Column('int', { name: 'METOO_COUNT' })
   metooCount!: number;
 
-  @ManyToMany(() => User, { cascade: true })
+  @ManyToMany(() => UserProfile, { cascade: true })
   @JoinTable({
     name: 'USER_METOO_COMMENT',
     joinColumn: {
@@ -64,10 +64,10 @@ export default class Comment {
     },
     inverseJoinColumn: {
       name: 'USER_ID',
-      referencedColumnName: 'id',
+      referencedColumnName: 'USER_ID',
     },
   })
-  metooComment!: User[];
+  metooComment!: UserProfile[];
 }
 
 /**
