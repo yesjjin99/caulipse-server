@@ -4,7 +4,6 @@ import {
   LocationEnum,
   WeekDayEnum,
 } from '../../entity/StudyEntity';
-import UserProfile from '../../entity/UserProfileEntity';
 import { createStudyNoti } from '../../services/notification';
 import studyService from '../../services/study';
 import { findAllByStudyId } from '../../services/studyUser';
