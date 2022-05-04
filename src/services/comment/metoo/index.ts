@@ -1,15 +1,15 @@
 import { getRepository } from 'typeorm';
 import Comment from '../../../entity/CommentEntity';
-import User from '../../../entity/UserEntity';
+import UserProfile from '../../../entity/UserProfileEntity';
 
 const findMetooByCommentId = async (id: string) => {
   return await getRepository(Comment).find({
-    where: { id },
     relations: ['metooComment'],
+    where: { id },
   });
 };
 
-const registerMetoo = async (metoo: Comment[], user: User) => {
+const registerMetoo = async (metoo: Comment[], user: UserProfile) => {
   metoo.forEach((metoo) => {
     metoo.metooComment.push(user);
     metoo.metooCount += 1;
@@ -18,9 +18,9 @@ const registerMetoo = async (metoo: Comment[], user: User) => {
   await getRepository(Comment).save(metoo);
 };
 
-const deleteMetoo = async (comment: Comment, user: User) => {
+const deleteMetoo = async (comment: Comment, user: UserProfile) => {
   return await getRepository(Comment)
-    .createQueryBuilder('comment')
+    .createQueryBuilder()
     .relation('metooComment')
     .of(comment)
     .remove(user);
@@ -30,9 +30,9 @@ const deleteMetoo = async (comment: Comment, user: User) => {
 const checkMetoo = async (userId: string, commentId: string) => {
   return await getRepository(Comment)
     .createQueryBuilder('comment')
-    .leftJoin('comment.metooComment', 'user')
+    .leftJoin('comment.metooComment', 'UserProfile')
     .where('comment.id = :commentId', { commentId })
-    .where('user.id = :userId', { userId })
+    .where('UserProfile.id = :userId', { userId })
     .getCount();
 };
 

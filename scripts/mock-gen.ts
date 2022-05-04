@@ -77,6 +77,7 @@ const users = Array(50)
 function makeUserProfile(idx: number, user: User): UserProfile {
   const userProfile = new UserProfile();
   userProfile.id = user;
+  userProfile.email = user.email;
   userProfile.userName = `username#${idx}`;
   userProfile.dept = `user#${idx}'s dept`;
   userProfile.grade = pickRandomArrayValue([1, 2, 3, 4, 5]);
@@ -98,11 +99,11 @@ const userProfiles = users.map((user, i) => makeUserProfile(i, user));
 /******************************************************************************
  * Study table
  ******************************************************************************/
-function makeStudy(idx: number, host: User): Study {
-  const bookmarks = Array<User>();
+function makeStudy(idx: number, host: UserProfile): Study {
+  const bookmarks = Array<UserProfile>();
   const bookmarkCount = rand(2, 30);
   for (let i = 0; bookmarks.length < bookmarkCount; i++) {
-    const user = pickRandomArrayValue(users);
+    const user = pickRandomArrayValue(userProfiles);
     if (bookmarks.includes(user) || host === user) continue;
     bookmarks.push(user);
   }
@@ -129,12 +130,16 @@ function makeStudy(idx: number, host: User): Study {
 
 const studies = Array(50)
   .fill(0)
-  .map((_, i) => makeStudy(i, pickRandomArrayValue(users)));
+  .map((_, i) => makeStudy(i, pickRandomArrayValue(userProfiles)));
 
 /******************************************************************************
  * StudyUser table
  ******************************************************************************/
-function makeStudyUser(idx: number, study: Study, user: User): StudyUser {
+function makeStudyUser(
+  idx: number,
+  study: Study,
+  user: UserProfile
+): StudyUser {
   const studyUser = new StudyUser();
   studyUser.user = user;
   studyUser.study = study;
@@ -145,7 +150,7 @@ function makeStudyUser(idx: number, study: Study, user: User): StudyUser {
 
 const studyUsers = Array<StudyUser>();
 for (let i = 0; studyUsers.length < 75; i++) {
-  const user = pickRandomArrayValue(users);
+  const user = pickRandomArrayValue(userProfiles);
   const study = pickRandomArrayValue(studies);
   const duplicate = (item: StudyUser) =>
     item.user.id === user.id && item.study.id === study.id;
@@ -157,7 +162,7 @@ for (let i = 0; studyUsers.length < 75; i++) {
 /******************************************************************************
  * Notice table
  ******************************************************************************/
-function makeNotice(idx: number, user: User): Notice {
+function makeNotice(idx: number, user: UserProfile): Notice {
   const notice = new Notice();
   notice.id = randomUUID();
   notice.title = `notice #${idx}`;
@@ -168,7 +173,9 @@ function makeNotice(idx: number, user: User): Notice {
   return notice;
 }
 
-const admins = users.filter((user) => user.role === UserRoleEnum.ADMIN);
+const admins = userProfiles.filter(
+  (user) => user.id.role === UserRoleEnum.ADMIN
+);
 const notices = Array(30)
   .fill(0)
   .map((_, i) => makeNotice(i, pickRandomArrayValue(admins)));
@@ -176,7 +183,7 @@ const notices = Array(30)
 /******************************************************************************
  * Comment table
  ******************************************************************************/
-function makeComment(idx: number, study: Study, user: User): Comment {
+function makeComment(idx: number, study: Study, user: UserProfile): Comment {
   const comment = new Comment();
   comment.id = randomUUID();
   comment.createdAt = getRandomDate();
@@ -190,7 +197,7 @@ function makeComment(idx: number, study: Study, user: User): Comment {
 
 const comments = Array<Comment>();
 for (let i = 0; comments.length < 100; i++) {
-  const user = pickRandomArrayValue(users);
+  const user = pickRandomArrayValue(userProfiles);
   const study = pickRandomArrayValue(studies);
   const duplicate = (item: Comment) =>
     item.user?.id === user.id && item.study.id === study.id;

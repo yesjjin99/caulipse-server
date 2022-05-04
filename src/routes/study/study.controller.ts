@@ -7,7 +7,10 @@ import {
 import { createStudyNoti } from '../../services/notification';
 import studyService from '../../services/study';
 import { findAllByStudyId } from '../../services/studyUser';
-import { findUserById } from '../../services/user';
+import {
+  findUserProfileById,
+  temp_findUserProfileById,
+} from '../../services/user/profile';
 import { orderByEnum } from '../../types/study.dto';
 
 const getAllStudy = async (req: Request, res: Response) => {
@@ -129,7 +132,7 @@ const createStudy = async (req: Request, res: Response) => {
         throw new Error(BAD_REQUEST);
     });
 
-    const user = await findUserById(userId);
+    const user = await temp_findUserProfileById(userId);
     if (!user) {
       throw new Error(NOT_FOUND);
     }

@@ -4,13 +4,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
-import User from './UserEntity';
+import UserProfile from './UserProfileEntity';
 
 @Entity({ name: 'NOTICE' })
 export default class Notice {
-  @PrimaryColumn('uuid', { name: 'ID' })
+  @PrimaryGeneratedColumn('uuid', { name: 'ID' })
   id!: string;
 
   @Column({ name: 'TITLE' })
@@ -25,9 +25,12 @@ export default class Notice {
   @Column({ name: 'VIEWS' })
   views!: number;
 
-  @ManyToOne(() => User, (user) => user.notices)
+  @Column('uuid')
+  HOST_ID!: string;
+
+  @ManyToOne(() => UserProfile, (user) => user.notices)
   @JoinColumn({ name: 'HOST_ID' })
-  hostId!: User;
+  hostId!: UserProfile;
 }
 
 /**

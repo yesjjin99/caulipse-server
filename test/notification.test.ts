@@ -11,6 +11,7 @@ import Study, {
   LocationEnum,
   WeekDayEnum,
 } from '../src/entity/StudyEntity';
+import UserProfile from '../src/entity/UserProfileEntity';
 
 let conn: Connection;
 // host:  mockUser2
@@ -41,6 +42,24 @@ beforeAll(async () => {
   mockUser2.token = '';
   await conn.getRepository(User).save(mockUser2);
 
+  const mockProfile2 = new UserProfile();
+  mockProfile2.id = mockUser2;
+  mockProfile2.email = mockUser2.email;
+  mockProfile2.userName = 'user';
+  mockProfile2.dept = 'dept';
+  mockProfile2.grade = 1;
+  mockProfile2.bio = 'bio';
+  mockProfile2.userAbout = 'about';
+  mockProfile2.showDept = false;
+  mockProfile2.showGrade = false;
+  mockProfile2.onBreak = false;
+  mockProfile2.categories = ['100'];
+  mockProfile2.link1 = 'user_link1';
+  mockProfile2.link2 = 'user_link2';
+  mockProfile2.link3 = 'user_link3';
+  mockProfile2.image = 'image';
+  await conn.getRepository(UserProfile).save(mockProfile2);
+
   const date = new Date();
   mockStudy = new Study();
   mockStudy.id = randomUUID();
@@ -50,7 +69,7 @@ beforeAll(async () => {
   mockStudy.frequency = FrequencyEnum.MORE;
   mockStudy.location = [LocationEnum.CAFE, LocationEnum.ELSE];
   mockStudy.capacity = 10;
-  mockStudy.hostId = mockUser2;
+  mockStudy.hostId = mockProfile2;
   mockStudy.categoryCode = 100;
   mockStudy.membersCount = 10;
   mockStudy.vacancy = 10;
@@ -79,6 +98,7 @@ afterAll(async () => {
     .delete()
     .execute();
   await conn.getRepository(Study).createQueryBuilder().delete().execute();
+  await conn.getRepository(UserProfile).createQueryBuilder().delete().execute();
   await conn.getRepository(User).createQueryBuilder().delete().execute();
   conn.close();
 });

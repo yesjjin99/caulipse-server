@@ -8,7 +8,7 @@ import {
   JoinColumn,
   JoinTable,
 } from 'typeorm';
-import User from './UserEntity';
+import UserProfile from './UserProfileEntity';
 
 export enum WeekDayEnum {
   MON = 'mon',
@@ -58,12 +58,12 @@ export default class Study {
   @Column('set', { enum: LocationEnum, name: 'LOCATION' })
   location!: LocationEnum[];
 
-  @ManyToOne(() => User, (user) => user.id)
-  @JoinColumn({ name: 'HOST_ID' })
-  hostId!: User;
-
   @Column('uuid')
   HOST_ID!: string;
+
+  @ManyToOne(() => UserProfile, (user) => user.id)
+  @JoinColumn({ name: 'HOST_ID' })
+  hostId!: UserProfile;
 
   @Column('int', { name: 'CAPACITY' })
   capacity!: number;
@@ -89,7 +89,7 @@ export default class Study {
   @Column('int', { name: 'BOOKMARK_COUNT' })
   bookmarkCount!: number;
 
-  @ManyToMany(() => User, { cascade: true })
+  @ManyToMany(() => UserProfile, { cascade: true })
   @JoinTable({
     name: 'BOOKMARK',
     joinColumn: {
@@ -98,10 +98,10 @@ export default class Study {
     },
     inverseJoinColumn: {
       name: 'USER_ID',
-      referencedColumnName: 'id',
+      referencedColumnName: 'USER_ID',
     },
   })
-  bookmarks!: User[];
+  bookmarks!: UserProfile[];
 }
 
 /**

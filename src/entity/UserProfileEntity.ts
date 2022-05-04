@@ -1,4 +1,13 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
+import Comment from './CommentEntity';
+import Notice from './NoticeEntity';
 import User from './UserEntity';
 
 export enum GradeEnum {
@@ -13,9 +22,12 @@ export default class UserProfile {
   @PrimaryColumn('uuid')
   USER_ID!: string;
 
-  @OneToOne(() => User, (user) => user.id)
+  @OneToOne(() => User, (user) => user.id, { cascade: true })
   @JoinColumn({ name: 'USER_ID' })
   id!: User;
+
+  @Column({ name: 'EMAIL' })
+  email!: string;
 
   @Column({ name: 'USER_NAME' })
   userName!: string;
@@ -56,6 +68,12 @@ export default class UserProfile {
 
   @Column({ name: 'IMAGE' })
   image!: string;
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments!: Comment[];
+
+  @OneToMany(() => Notice, (notice) => notice.hostId)
+  notices!: Notice[];
 }
 
 /**
@@ -68,6 +86,9 @@ export default class UserProfile {
  *        type: string
  *        format: uuid
  *        description: "사용자의 id"
+ *      email:
+ *        type: string
+ *        description: "로그인 시 사용되는 email"
  *      userName:
  *        type: string
  *        description: "사용자의 닉네임"

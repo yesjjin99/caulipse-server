@@ -15,6 +15,7 @@ import Study, {
   FrequencyEnum,
   LocationEnum,
 } from '../src/entity/StudyEntity';
+import UserProfile from '../src/entity/UserProfileEntity';
 
 let conn: Connection;
 let userid: string;
@@ -28,7 +29,6 @@ beforeAll(async () => {
 
   userid = randomUUID();
   const password = bcrypt.hashSync('test', 10);
-  const userRepo = getRepository(User);
   const user = new User();
   user.id = userid;
   user.email = 'test@gmail.com';
@@ -36,11 +36,27 @@ beforeAll(async () => {
   user.isLogout = false;
   user.token = '';
   user.role = UserRoleEnum.USER;
+  await getRepository(User).save(user);
 
-  await userRepo.save(user);
+  const profile = new UserProfile();
+  profile.id = user;
+  profile.email = user.email;
+  profile.userName = 'user';
+  profile.dept = 'dept';
+  profile.grade = 1;
+  profile.bio = 'bio';
+  profile.userAbout = 'about';
+  profile.showDept = false;
+  profile.showGrade = false;
+  profile.onBreak = false;
+  profile.categories = ['100'];
+  profile.link1 = 'user_link1';
+  profile.link2 = 'user_link2';
+  profile.link3 = 'user_link3';
+  profile.image = 'image';
+  await getRepository(UserProfile).save(profile);
 
   studyid = randomUUID();
-  const studyRepo = getRepository(Study);
   const study = new Study();
   const date = new Date();
   study.id = studyid;
@@ -50,7 +66,7 @@ beforeAll(async () => {
   study.weekday = [WeekDayEnum.MON, WeekDayEnum.TUE];
   study.frequency = FrequencyEnum.ONCE;
   study.location = [LocationEnum.CAFE, LocationEnum.ELSE];
-  study.hostId = user;
+  study.hostId = profile;
   study.capacity = 10;
   study.membersCount = 0;
   study.vacancy = 10;
@@ -60,11 +76,12 @@ beforeAll(async () => {
   study.bookmarkCount = 0;
   study.dueDate = new Date(date.getTime() + 60 * 60 * 5);
 
-  await studyRepo.save(study);
+  await getRepository(Study).save(study);
 });
 
 afterAll(async () => {
   await getRepository(Study).createQueryBuilder().delete().execute();
+  await getRepository(UserProfile).createQueryBuilder().delete().execute();
   await getRepository(User).createQueryBuilder().delete().execute();
 
   conn.close();
@@ -125,6 +142,7 @@ describe('GET /api/user/bookmark', () => {
       .set('Cookie', cookies);
 
     expect(res.status).toBe(200);
+    expect(res.body.length).not.toEqual(0);
   });
 
   it('로그인이 되어있지 않은 경우 401 응답', async () => {

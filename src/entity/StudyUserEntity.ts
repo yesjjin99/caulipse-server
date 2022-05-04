@@ -1,15 +1,15 @@
 import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import Study from './StudyEntity';
-import User from './UserEntity';
+import UserProfile from './UserProfileEntity';
 
 @Entity({ name: 'STUDY_USER' })
 export default class StudyUser {
   @PrimaryColumn('uuid')
   USER_ID!: string;
 
-  @ManyToOne(() => User, (user) => user.id)
+  @ManyToOne(() => UserProfile, (user) => user.id)
   @JoinColumn({ name: 'USER_ID' })
-  user!: User;
+  user!: UserProfile;
 
   @PrimaryColumn('uuid')
   STUDY_ID!: string;

@@ -1,27 +1,25 @@
 import { Request, Response } from 'express';
 import bookmarkService from '../../../services/study/bookmark';
-import { findUserById } from '../../../services/user';
 import studyService from '../../../services/study';
+import { temp_findUserProfileById } from '../../../services/user/profile';
 
 const registerBookmark = async (req: Request, res: Response) => {
   const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
 
   try {
     const { studyid } = req.params;
-    const { id } = req.user as { id: string };
-    const user = await findUserById(id);
+    const userId = (req.user as { id: string }).id;
+    const user = await temp_findUserProfileById(userId);
     if (!user) {
       throw new Error(NOT_FOUND);
     }
     const bookmarks = await bookmarkService.findBookmarksByStudyId(studyid);
-    if (bookmarks.length === 0) {
+    if (bookmarks?.length === 0) {
       throw new Error(NOT_FOUND);
     }
 
     await bookmarkService.registerBookmark(bookmarks, user);
-    return res.status(201).json({
-      message: '북마크 생성 성공',
-    });
+    return res.status(201).json({ message: '북마크 생성 성공' });
   } catch (e) {
     if ((e as Error).message === NOT_FOUND) {
       return res.status(404).json({
@@ -40,17 +38,15 @@ const deleteBookmark = async (req: Request, res: Response) => {
 
   try {
     const { studyid } = req.params;
-    const { id } = req.user as { id: string };
+    const userId = (req.user as { id: string }).id;
     const study = await studyService.findStudyById(studyid);
-    const user = await findUserById(id);
+    const user = await temp_findUserProfileById(userId);
 
     if (!study || !user) {
       throw new Error(NOT_FOUND);
     }
     await bookmarkService.deleteBookmark(study, user);
-    return res.status(200).json({
-      message: '북마크 취소 성공',
-    });
+    return res.status(200).json({ message: '북마크 취소 성공' });
   } catch (e) {
     if ((e as Error).message === NOT_FOUND) {
       return res.status(404).json({

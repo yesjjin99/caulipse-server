@@ -58,6 +58,17 @@ export const findUserByToken = async (token: string) => {
     .where('TOKEN = :token', { token })
     .getOne();
 };
+
+export const findOnlyUserRoleById = async (id: string) => {
+  const user = await getRepository(User)
+    .createQueryBuilder('user')
+    .select('user.role')
+    .where('user.id = :id', { id })
+    .getOne();
+
+  return user?.role;
+};
+
 interface UpdateUserDTO {
   email: string;
   password: string;

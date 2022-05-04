@@ -3,6 +3,7 @@ import UserProfile from '../../../entity/UserProfileEntity';
 
 interface UserProfileInterface {
   userId: string;
+  email: string;
   userName: string;
   dept: string;
   grade: number;
@@ -20,6 +21,7 @@ interface UserProfileInterface {
 
 export const postUserProfile = async ({
   userId,
+  email,
   userName,
   dept,
   grade = 1,
@@ -37,6 +39,7 @@ export const postUserProfile = async ({
   const userProfileRepo = getRepository(UserProfile);
   const userProfile = new UserProfile();
   userProfile.USER_ID = userId;
+  userProfile.email = email;
   userProfile.userName = userName;
   userProfile.dept = dept;
   userProfile.grade = grade;
@@ -58,13 +61,21 @@ export const findUserProfileById = async (paramId: string) => {
   const userProfile = await getRepository(UserProfile)
     .createQueryBuilder('userProfile')
     .select()
-    .where('userProfile.user_id = :id', { id: paramId })
+    .where('userProfile.USER_ID = :id', { id: paramId })
     .execute();
 
   if (!userProfile?.length)
     throw new Error('데이터베이스에 일치하는 요청값이 없습니다');
 
   return userProfile;
+};
+
+// TEMP
+export const temp_findUserProfileById = async (userId: string) => {
+  return await getRepository(UserProfile)
+    .createQueryBuilder('userProfile')
+    .where('userProfile.USER_ID = :userId', { userId })
+    .getOne();
 };
 
 export const findUserProfileByUserName = async (paramUserName: string) => {
@@ -78,6 +89,7 @@ export const findUserProfileByUserName = async (paramUserName: string) => {
 
 export const updateUserProfile = async ({
   userId,
+  email,
   userName,
   dept,
   grade,

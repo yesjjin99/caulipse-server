@@ -16,6 +16,7 @@ import Study, {
   LocationEnum,
 } from '../src/entity/StudyEntity';
 import Comment from '../src/entity/CommentEntity';
+import UserProfile from '../src/entity/UserProfileEntity';
 
 let conn: Connection;
 let userid: string;
@@ -37,8 +38,25 @@ beforeAll(async () => {
   user.isLogout = false;
   user.token = '';
   user.role = UserRoleEnum.USER;
-
   await getRepository(User).save(user);
+
+  const profile = new UserProfile();
+  profile.id = user;
+  profile.email = user.email;
+  profile.userName = 'user';
+  profile.dept = 'dept';
+  profile.grade = 1;
+  profile.bio = 'bio';
+  profile.userAbout = 'about';
+  profile.showDept = false;
+  profile.showGrade = false;
+  profile.onBreak = false;
+  profile.categories = ['100'];
+  profile.link1 = 'user_link1';
+  profile.link2 = 'user_link2';
+  profile.link3 = 'user_link3';
+  profile.image = 'image';
+  await getRepository(UserProfile).save(profile);
 
   studyid = randomUUID();
   const study = new Study();
@@ -50,7 +68,7 @@ beforeAll(async () => {
   study.weekday = [WeekDayEnum.MON, WeekDayEnum.TUE];
   study.frequency = FrequencyEnum.ONCE;
   study.location = [LocationEnum.CAFE, LocationEnum.ELSE];
-  study.hostId = user;
+  study.hostId = profile;
   study.capacity = 10;
   study.membersCount = 0;
   study.vacancy = 10;
@@ -59,7 +77,6 @@ beforeAll(async () => {
   study.views = 0;
   study.bookmarkCount = 0;
   study.dueDate = new Date(date.getTime() + 60 * 60 * 5);
-
   await getRepository(Study).save(study);
 
   commentid = randomUUID();
@@ -68,16 +85,16 @@ beforeAll(async () => {
   comment.createdAt = new Date();
   comment.isNested = false;
   comment.content = '댓글';
-  comment.user = user;
+  comment.user = profile;
   comment.study = study;
   comment.metooCount = 0;
-
   await getRepository(Comment).save(comment);
 });
 
 afterAll(async () => {
   await getRepository(Comment).createQueryBuilder().delete().execute();
   await getRepository(Study).createQueryBuilder().delete().execute();
+  await getRepository(UserProfile).createQueryBuilder().delete().execute();
   await getRepository(User).createQueryBuilder().delete().execute();
 
   conn.close();

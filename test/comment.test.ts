@@ -16,8 +16,8 @@ import Study, {
   LocationEnum,
 } from '../src/entity/StudyEntity';
 import commentService from '../src/services/comment';
-import Notification from '../src/entity/NotificationEntity';
 import Comment from '../src/entity/CommentEntity';
+import UserProfile from '../src/entity/UserProfileEntity';
 
 let conn: Connection;
 let userid: string;
@@ -33,7 +33,6 @@ beforeAll(async () => {
 
   userid = randomUUID();
   const password = bcrypt.hashSync('test', 10);
-  const userRepo = getRepository(User);
   const user = new User();
   user.id = userid;
   user.email = 'test@gmail.com';
@@ -41,11 +40,27 @@ beforeAll(async () => {
   user.isLogout = false;
   user.token = '';
   user.role = UserRoleEnum.USER;
+  await getRepository(User).save(user);
 
-  await userRepo.save(user);
+  const profile = new UserProfile();
+  profile.id = user;
+  profile.email = user.email;
+  profile.userName = 'user';
+  profile.dept = 'dept';
+  profile.grade = 1;
+  profile.bio = 'bio';
+  profile.userAbout = 'about';
+  profile.showDept = false;
+  profile.showGrade = false;
+  profile.onBreak = false;
+  profile.categories = ['100'];
+  profile.link1 = 'user_link1';
+  profile.link2 = 'user_link2';
+  profile.link3 = 'user_link3';
+  profile.image = 'image';
+  await getRepository(UserProfile).save(profile);
 
   studyid = randomUUID();
-  const studyRepo = getRepository(Study);
   const study = new Study();
   const date = new Date();
   study.id = studyid;
@@ -55,7 +70,7 @@ beforeAll(async () => {
   study.weekday = [WeekDayEnum.MON, WeekDayEnum.TUE];
   study.frequency = FrequencyEnum.ONCE;
   study.location = [LocationEnum.CAFE, LocationEnum.ELSE];
-  study.hostId = user;
+  study.hostId = profile;
   study.capacity = 10;
   study.membersCount = 0;
   study.vacancy = 10;
@@ -64,14 +79,13 @@ beforeAll(async () => {
   study.views = 0;
   study.bookmarkCount = 0;
   study.dueDate = new Date(date.getTime() + 60 * 60 * 5);
-
-  await studyRepo.save(study);
+  await getRepository(Study).save(study);
 });
 
 afterAll(async () => {
-  await getRepository(Notification).createQueryBuilder().delete().execute();
   await getRepository(Comment).createQueryBuilder().delete().execute();
   await getRepository(Study).createQueryBuilder().delete().execute();
+  await getRepository(UserProfile).createQueryBuilder().delete().execute();
   await getRepository(User).createQueryBuilder().delete().execute();
 
   conn.close();
@@ -96,11 +110,10 @@ describe('POST /api/study/:studyid/comment', () => {
         content: '댓글 내용',
       });
 
-    const { commentId } = res.body;
-    commentid1 = commentId;
+    commentid1 = res.body.id;
 
     expect(res.status).toBe(201);
-    expect(commentId).not.toBeNull();
+    expect(res.body.id).not.toBeNull();
   });
 
   it('body에 작성내용, 유저id, 댓글을 작성한 문의글 id가 포함된 요청을 받으면 문의글을 등록하고 아이디 반환', async () => {
@@ -112,11 +125,10 @@ describe('POST /api/study/:studyid/comment', () => {
         replyTo: commentid1,
       });
 
-    const { commentId } = res.body;
-    commentid2 = commentId;
+    commentid2 = res.body.id;
 
     expect(res.status).toBe(201);
-    expect(commentId).not.toBeNull();
+    expect(res.body.id).not.toBeNull();
   });
 
   it('로그인이 되어있지 않은 경우 401 응답', async () => {
@@ -152,10 +164,8 @@ describe('GET /api/:studyid/comment', () => {
   it('요청된 studyid에 해당하는 스터디의 모든 문의글 목록 조회', async () => {
     const res = await request(app).get(`/api/study/${studyid}/comment`);
 
-    const { comments } = res.body;
-
     expect(res.status).toBe(200);
-    expect(comments).not.toBeNull();
+    expect(res.body.length).not.toEqual(0);
   });
 
   it('요청된 studyid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
@@ -184,7 +194,10 @@ describe('PATCH /api/study/:studyid/comment/:commentid', () => {
         content: '수정한 내용',
       });
 
+    const comment = await commentService.findCommentById(commentid2);
+
     expect(res.status).toBe(200);
+    expect(comment?.content).toEqual('수정한 내용');
   });
 
   it('유효하지 않은 body를 포함하거나 body를 포함하지 않은 요청을 받으면 400 응답', async () => {

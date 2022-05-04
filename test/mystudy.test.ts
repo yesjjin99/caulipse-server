@@ -11,12 +11,15 @@ import Study, {
 } from '../src/entity/StudyEntity';
 import StudyUser from '../src/entity/StudyUserEntity';
 import User from '../src/entity/UserEntity';
-import Notification from '../src/entity/NotificationEntity';
+import UserProfile from '../src/entity/UserProfileEntity';
 
 let conn: Connection;
 let mockHost: User;
 let mockUser1: User;
 let mockUser2: User;
+let mockHostProfile: UserProfile;
+let mockProfile1: UserProfile;
+let mockProfile2: UserProfile;
 let mockStudy: Study;
 
 beforeAll(async () => {
@@ -33,6 +36,24 @@ beforeAll(async () => {
   mockHost.token = '';
   await conn.getRepository(User).save(mockHost);
 
+  mockHostProfile = new UserProfile();
+  mockHostProfile.id = mockHost;
+  mockHostProfile.email = mockHost.email;
+  mockHostProfile.userName = 'host';
+  mockHostProfile.dept = 'dept';
+  mockHostProfile.grade = 1;
+  mockHostProfile.bio = 'bio';
+  mockHostProfile.userAbout = 'about';
+  mockHostProfile.showDept = false;
+  mockHostProfile.showGrade = false;
+  mockHostProfile.onBreak = false;
+  mockHostProfile.categories = ['100'];
+  mockHostProfile.link1 = 'user_link1';
+  mockHostProfile.link2 = 'user_link2';
+  mockHostProfile.link3 = 'user_link3';
+  mockHostProfile.image = 'image';
+  await conn.getRepository(UserProfile).save(mockHostProfile);
+
   mockUser1 = new User();
   mockUser1.id = randomUUID();
   mockUser1.email = 'mockuser1@test.com';
@@ -41,6 +62,24 @@ beforeAll(async () => {
   mockUser1.token = '';
   await conn.getRepository(User).save(mockUser1);
 
+  mockProfile1 = new UserProfile();
+  mockProfile1.id = mockUser1;
+  mockProfile1.email = mockUser1.email;
+  mockProfile1.userName = 'user1';
+  mockProfile1.dept = 'dept';
+  mockProfile1.grade = 1;
+  mockProfile1.bio = 'bio';
+  mockProfile1.userAbout = 'about';
+  mockProfile1.showDept = false;
+  mockProfile1.showGrade = false;
+  mockProfile1.onBreak = false;
+  mockProfile1.categories = ['100'];
+  mockProfile1.link1 = 'user_link1';
+  mockProfile1.link2 = 'user_link2';
+  mockProfile1.link3 = 'user_link3';
+  mockProfile1.image = 'image';
+  await conn.getRepository(UserProfile).save(mockProfile1);
+
   mockUser2 = new User();
   mockUser2.id = randomUUID();
   mockUser2.email = 'mockuser2@test.com';
@@ -48,6 +87,24 @@ beforeAll(async () => {
   mockUser2.isLogout = false;
   mockUser2.token = '';
   await conn.getRepository(User).save(mockUser2);
+
+  mockProfile2 = new UserProfile();
+  mockProfile2.id = mockUser2;
+  mockProfile2.email = mockUser2.email;
+  mockProfile2.userName = 'user2';
+  mockProfile2.dept = 'dept';
+  mockProfile2.grade = 1;
+  mockProfile2.bio = 'bio';
+  mockProfile2.userAbout = 'about';
+  mockProfile2.showDept = false;
+  mockProfile2.showGrade = false;
+  mockProfile2.onBreak = false;
+  mockProfile2.categories = ['100'];
+  mockProfile2.link1 = 'user_link1';
+  mockProfile2.link2 = 'user_link2';
+  mockProfile2.link3 = 'user_link3';
+  mockProfile2.image = 'image';
+  await conn.getRepository(UserProfile).save(mockProfile2);
 
   const date = new Date();
   mockStudy = new Study();
@@ -58,7 +115,7 @@ beforeAll(async () => {
   mockStudy.frequency = FrequencyEnum.MORE;
   mockStudy.location = [LocationEnum.CAFE, LocationEnum.ELSE];
   mockStudy.capacity = 10;
-  mockStudy.hostId = mockHost;
+  mockStudy.hostId = mockHostProfile;
   mockStudy.categoryCode = 100;
   mockStudy.membersCount = 1;
   mockStudy.vacancy = 10;
@@ -66,18 +123,13 @@ beforeAll(async () => {
   mockStudy.views = 0;
   mockStudy.bookmarkCount = 0;
   mockStudy.dueDate = new Date(date.getTime() + 60 * 60 * 5);
-
   await conn.getRepository(Study).save(mockStudy);
 });
 
 afterAll(async () => {
-  await conn
-    .getRepository(Notification)
-    .createQueryBuilder()
-    .delete()
-    .execute();
   await conn.getRepository(StudyUser).createQueryBuilder().delete().execute();
   await conn.getRepository(Study).createQueryBuilder().delete().execute();
+  await conn.getRepository(UserProfile).createQueryBuilder().delete().execute();
   await conn.getRepository(User).createQueryBuilder().delete().execute();
   conn.close();
 });
@@ -141,7 +193,7 @@ describe('내가 신청한 스터디 조회 api', () => {
       .insert()
       .values([
         {
-          user: mockUser2,
+          user: mockProfile2,
           study: mockStudy,
           isAccepted: false,
           tempBio: '',

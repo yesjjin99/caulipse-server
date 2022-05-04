@@ -7,10 +7,7 @@ export const getBookmarksByUser = async (req: Request, res: Response) => {
 
     const bookmarks = await bookmarkService.getBookmarksByUser(id);
 
-    return res.status(200).json({
-      bookmarks,
-      message: '북마크 목록 조회 성공',
-    });
+    return res.status(200).json(bookmarks);
   } catch (e) {
     return res.status(500).json({
       message: (e as Error).message,

@@ -1,7 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import Comment from './CommentEntity';
 import Notification from './NotificationEntity';
-import Notice from './NoticeEntity';
 
 export enum UserRoleEnum {
   GUEST = 'GUEST',
@@ -31,12 +29,6 @@ export default class User {
 
   @OneToMany(() => Notification, (notification) => notification.user)
   notifications!: Notification[];
-
-  @OneToMany(() => Notice, (notice) => notice.hostId)
-  notices!: Notice[];
-
-  @OneToMany(() => Comment, (comment) => comment.user)
-  comments!: Comment[];
 }
 
 /**

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import commentService from '../../../services/comment';
 import { createStudyNoti } from '../../../services/notification';
 import studyService from '../../../services/study';
-import { findUserById } from '../../../services/user';
+import { temp_findUserProfileById } from '../../../services/user/profile';
 
 const getAllComment = async (req: Request, res: Response) => {
   const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
@@ -15,10 +15,7 @@ const getAllComment = async (req: Request, res: Response) => {
     if (study === 0 || !comments) {
       throw new Error(NOT_FOUND);
     }
-    return res.status(200).json({
-      message: '문의글 목록 조회 성공',
-      comments,
-    });
+    return res.status(200).json(comments);
   } catch (e) {
     if ((e as Error).message === NOT_FOUND) {
       return res.status(404).json({
@@ -39,12 +36,12 @@ const createComment = async (req: Request, res: Response) => {
   try {
     const { studyid } = req.params;
     const { content, replyTo } = req.body;
-    const { id } = req.user as { id: string };
+    const userId = (req.user as { id: string }).id;
 
     if (!content) throw new Error(BAD_REQUEST);
 
     const study = await studyService.findStudyById(studyid);
-    const user = await findUserById(id);
+    const user = await temp_findUserProfileById(userId);
     let reply = null;
 
     if (!study || !user) {
@@ -56,12 +53,7 @@ const createComment = async (req: Request, res: Response) => {
         throw new Error(NOT_FOUND);
       }
     }
-    const commentId = await commentService.createComment(
-      content,
-      study,
-      user,
-      reply
-    );
+    const id = await commentService.createComment(content, study, user, reply);
 
     if (process.env.NODE_ENV !== 'test') {
       if (reply && reply.USER_ID) {
@@ -87,10 +79,7 @@ const createComment = async (req: Request, res: Response) => {
       }
     }
 
-    return res.status(201).json({
-      message: '문의글 생성 성공',
-      commentId,
-    });
+    return res.status(201).json({ id });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
       return res.status(400).json({
@@ -236,9 +225,6 @@ export default { getAllComment, createComment, updateComment, deleteComment };
  *          schema:
  *            type: object
  *            properties:
- *              message:
- *                type: string
- *                example: "문의글 생성 성공"
  *              id:
  *                type: string
  *                format: uuid
