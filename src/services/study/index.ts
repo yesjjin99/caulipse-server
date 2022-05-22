@@ -17,40 +17,42 @@ import UserProfile from '../../entity/UserProfileEntity';
 
 export const schedules: { [key: string]: schedule.Job } = {};
 
+const subCategory = 6;
+
 const countAllStudy = async (paginationDto: paginationDTO) => {
   const { categoryCode, weekdayFilter, frequencyFilter, locationFilter } =
     paginationDto;
 
   const query = await getRepository(Study).createQueryBuilder('study');
 
-  if (categoryCode) {
-    if (categoryCode % 100 == 0) {
-      // 상위 카테고리
-      query.andWhere('study.categoryCode BETWEEN :from AND :to', {
-        from: categoryCode,
-        to: categoryCode + 6,
-      });
-    } else {
-      query.andWhere('study.categoryCode = :categoryCode', { categoryCode });
-    }
+  if (categoryCode && categoryCode.length) {
+    categoryCode.forEach((code) => {
+      if (code % 100 == 0) {
+        // 상위 카테고리
+        query.orWhere('study.categoryCode BETWEEN :from AND :to', {
+          from: code,
+          to: code + subCategory,
+        });
+      } else {
+        query.orWhere('study.categoryCode = :categoryCode', { code });
+      }
+    });
   }
-
-  if (frequencyFilter) {
-    query.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
-  }
-  // FIX
-  /*
   if (weekdayFilter && weekdayFilter.length) {
     weekdayFilter.forEach((weekday) => {
-      query.andWhere(':weekday = ANY(study.weekday)', { weekday });
+      query.orWhere('study.weekday like :weekday', { weekday: `%${weekday}%` });
     });
   }
   if (locationFilter && locationFilter.length) {
     locationFilter.forEach((location) => {
-      query.andWhere(':location = ANY(study.location)', { location });
+      query.orWhere('study.location like :location', {
+        location: `%${location}%`,
+      });
     });
   }
-  */
+  if (frequencyFilter) {
+    query.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
+  }
   return await query.getCount();
 };
 
@@ -74,34 +76,34 @@ const getAllStudy = async (paginationDTO: paginationDTO) => {
     // off
     sq.addSelect('study.dueDate');
   }
-  if (categoryCode) {
-    if (categoryCode % 100 == 0) {
-      // 상위 카테고리
-      sq.andWhere('study.categoryCode BETWEEN :from AND :to', {
-        from: categoryCode,
-        to: categoryCode + 6,
-      });
-    } else {
-      sq.andWhere('study.categoryCode = :categoryCode', { categoryCode });
-    }
+  if (categoryCode && categoryCode.length) {
+    categoryCode.forEach((code) => {
+      if (code % 100 == 0) {
+        // 상위 카테고리
+        sq.orWhere('study.categoryCode BETWEEN :from AND :to', {
+          from: code,
+          to: code + subCategory,
+        });
+      } else {
+        sq.orWhere('study.categoryCode = :categoryCode', { code });
+      }
+    });
   }
-
-  if (frequencyFilter) {
-    sq.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
-  }
-  // FIX
-  /*
   if (weekdayFilter && weekdayFilter.length) {
     weekdayFilter.forEach((weekday) => {
-      sq.andWhere(':weekday = ANY(study.weekday)', { weekday });
+      sq.orWhere('study.weekday like :weekday', { weekday: `%${weekday}%` });
     });
   }
   if (locationFilter && locationFilter.length) {
     locationFilter.forEach((location) => {
-      sq.andWhere(':location = ANY(study.location)', { location });
+      sq.orWhere('study.location like :location', {
+        location: `%${location}%`,
+      });
     });
   }
-  */
+  if (frequencyFilter) {
+    sq.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
+  }
 
   if (orderBy === orderByEnum.LATEST) {
     sq.orderBy('study.createdAt', 'DESC');
@@ -111,6 +113,8 @@ const getAllStudy = async (paginationDTO: paginationDTO) => {
     sq.orderBy('study.vacancy', 'ASC');
   } else if (orderBy === orderByEnum.LARGE_VACANCY) {
     sq.orderBy('study.vacancy', 'DESC');
+  } else if (orderBy === orderByEnum.FASTEST_DUEDATE) {
+    sq.orderBy('study.dueDate', 'ASC');
   }
   return await sq.limit(limit).offset(offset).getMany();
 };
@@ -278,22 +282,21 @@ const searchStudy = async (searchStudyDTO: searchStudyDTO) => {
       })
     );
 
-  if (frequencyFilter) {
-    query.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
-  }
-  // FIX
-  /*
   if (weekdayFilter && weekdayFilter.length) {
     weekdayFilter.forEach((weekday) => {
-      query.andWhere(':weekday = ANY(study.weekday)', { weekday });
+      query.orWhere('study.weekday like :weekday', { weekday: `%${weekday}%` });
     });
   }
   if (locationFilter && locationFilter.length) {
     locationFilter.forEach((location) => {
-      query.andWhere(':location = ANY(study.location)', { location });
+      query.orWhere('study.location like :location', {
+        location: `%${location}%`,
+      });
     });
   }
-  */
+  if (frequencyFilter) {
+    query.andWhere('study.frequency = :frequencyFilter', { frequencyFilter });
+  }
 
   if (orderBy === orderByEnum.LATEST) {
     query.orderBy('study.createdAt', 'DESC');
@@ -303,6 +306,8 @@ const searchStudy = async (searchStudyDTO: searchStudyDTO) => {
     query.orderBy('study.vacancy', 'ASC');
   } else if (orderBy === orderByEnum.LARGE_VACANCY) {
     query.orderBy('study.vacancy', 'DESC');
+  } else if (orderBy === orderByEnum.FASTEST_DUEDATE) {
+    query.orderBy('study.dueDate', 'ASC');
   }
   return await query.getMany();
 };
