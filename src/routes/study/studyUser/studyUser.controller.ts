@@ -9,7 +9,7 @@ import {
 } from '../../../services/studyUser';
 import studyService, { findStudyByHostId } from '../../../services/study';
 import { findUserProfileById } from '../../../services/user/profile';
-import { createStudyNoti } from '../../../services/notification';
+import { createStudyNoti, NotiTypeEnum } from '../../../services/notification';
 
 export default {
   /**
@@ -111,15 +111,13 @@ export default {
       }
       if (process.env.NODE_ENV !== 'test') {
         const profile = await findUserProfileById(userId);
-        const notiTitle = '새로운 신청자';
-        const notiAbout = `[${profile?.userName}]님이 신청수락을 요청했어요.`;
-        await createStudyNoti(
-          studyid,
-          study.HOST_ID,
-          notiTitle,
-          notiAbout,
-          101
-        );
+        await createStudyNoti({
+          id: studyid,
+          userId: study.HOST_ID,
+          title: '새로운 신청자',
+          about: `[${profile?.userName}]님이 신청수락을 요청했어요.`,
+          type: NotiTypeEnum.NEW_APPLY,
+        });
       }
 
       res.status(201).json({ message: OK });
@@ -163,9 +161,13 @@ export default {
       await studyService.increaseMemberCount(studyId);
 
       if (process.env.NODE_ENV !== 'test') {
-        const notiTitle = '참가완료';
-        const notiAbout = '스터디의 참가신청이 수락되었어요:)';
-        await createStudyNoti(studyId, targetUserId, notiTitle, notiAbout, 105);
+        await createStudyNoti({
+          id: studyId,
+          userId: targetUserId,
+          title: '참가완료',
+          about: '스터디의 참가신청이 수락되었어요:)',
+          type: NotiTypeEnum.ACCEPT,
+        });
       }
 
       res.json({ message: OK });
@@ -235,14 +237,16 @@ export default {
       await studyService.decreaseMemberCount(studyid);
       res.json({ message: OK });
 
-      // 호스트가 참가신청 취소해버린 경우
-      /*
+      /* 호스트가 참가신청 취소해버린 경우 */
       if (process.env.NODE_ENV !== 'test') {
-        const notiTitle = '참가 취소';
-        const notiAbout = '스터디의 참가신청이 취소되었어요:(';
-        await createStudyNoti(studyid, userId, notiTitle, notiAbout, 106);
+        await createStudyNoti({
+          id: studyid,
+          userId: userId,
+          title: '참가 취소',
+          about: '스터디의 참가신청이 취소되었어요:(',
+          type: NotiTypeEnum.REJECT,
+        });
       }
-      */
     } catch (e) {
       const err = e as Error;
       if (err.message === BAD_REQUEST) {

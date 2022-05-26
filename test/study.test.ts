@@ -16,6 +16,7 @@ import {
 } from '../src/entity/StudyEntity';
 import User, { UserRoleEnum } from '../src/entity/UserEntity';
 import UserProfile from '../src/entity/UserProfileEntity';
+import StudyUser from '../src/entity/StudyUserEntity';
 
 let conn: Connection;
 let userid: string;
@@ -187,18 +188,58 @@ describe('GET /api/study', () => {
 });
 
 describe('GET /api/study/:studyid', () => {
-  it('각 studyid에 따라 모든 스터디 상세 정보 반환', async () => {
+  let cookies = '';
+  beforeEach(async () => {
+    // login
+    const res = await request(app).post('/api/user/login').send({
+      email: 'test@gmail.com',
+      password: 'test',
+    });
+    cookies = res.headers['set-cookie'];
+
+    // bookmark
+    await request(app)
+      .post(`/api/study/${studyid}/bookmark`)
+      .set('Cookie', cookies)
+      .send();
+
+    // apply
+    await request(app)
+      .post(`/api/study/${studyid}/user`)
+      .set('Cookie', cookies)
+      .send({ tempBio: 'hello' });
+  });
+
+  it('각 studyid에 따라 모든 스터디 상세 정보 반환 (로그인O)', async () => {
+    const res = await request(app)
+      .get(`/api/study/${studyid}`)
+      .set('Cookie', cookies);
+
+    expect(res.status).toBe(200);
+    expect(res.body).not.toBeNull();
+    expect(res.body).toHaveProperty('id', studyid);
+    expect(res.body.bookmarked).toBeTruthy();
+    expect(res.body.applied).toBeTruthy();
+  });
+
+  it('각 studyid에 따라 모든 스터디 상세 정보 반환 (로그인X)', async () => {
     const res = await request(app).get(`/api/study/${studyid}`);
 
     expect(res.status).toBe(200);
     expect(res.body).not.toBeNull();
     expect(res.body).toHaveProperty('id', studyid);
+    expect(res.body.bookmarked).toBeFalsy();
+    expect(res.body.applied).toBeFalsy();
   });
 
   it('요청된 studyid가 데이터베이스에 존재하지 않으면 404 응답', async () => {
     const res = await request(app).get('/api/study/wrong');
 
     expect(res.status).toBe(404);
+  });
+
+  afterEach(async () => {
+    await getRepository(StudyUser).createQueryBuilder().delete().execute();
   });
 });
 

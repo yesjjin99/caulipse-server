@@ -1,6 +1,5 @@
 import { Brackets, getRepository } from 'typeorm';
 import { randomUUID } from 'crypto';
-import * as schedule from 'node-schedule';
 import Study from '../../entity/StudyEntity';
 import {
   orderByEnum,
@@ -8,14 +7,8 @@ import {
   searchStudyDTO,
   studyDTO,
 } from '../../types/study.dto';
-import {
-  findAcceptedByStudyId,
-  findNotAcceptedApplicantsByStudyId,
-} from '../studyUser';
-import { createStudyNoti } from '../notification';
 import UserProfile from '../../entity/UserProfileEntity';
-
-export const schedules: { [key: string]: schedule.Job } = {};
+import { schedules } from '../../routes/study/study.controller';
 
 const countAllStudy = async (paginationDto: paginationDTO) => {
   const { categoryCode, weekdayFilter, frequencyFilter, locationFilter } =
@@ -172,48 +165,7 @@ const createStudy = async (studyDTO: studyDTO, user: UserProfile) => {
   study.bookmarkCount = 0;
   study.dueDate = due;
 
-  if (process.env.NODE_ENV !== 'test') {
-    if (due.getFullYear() == today.getFullYear()) {
-      schedules[`${studyId}`] = schedule.scheduleJob(
-        `0 0 ${due.getDate()} ${due.getMonth()} *`,
-        async function () {
-          study.isOpen = false;
-          const members = await findAcceptedByStudyId(studyId);
-          if (members.length !== 0) {
-            const notiTitle = '모집 종료';
-            for (const member of members) {
-              const notiAbout = `모집이 종료되었어요. 스터디를 응원합니다!`;
-              await createStudyNoti(
-                studyId,
-                member?.user.id,
-                notiTitle,
-                notiAbout,
-                107
-              );
-            }
-          }
-          const applicants = await findNotAcceptedApplicantsByStudyId(studyId);
-          if (applicants.length !== 0) {
-            const notiTitle = '모집 종료';
-            for (const user of applicants) {
-              const notiAbout = '스터디의 모집이 마감되었어요.';
-              await createStudyNoti(
-                studyId,
-                user?.user.id,
-                notiTitle,
-                notiAbout,
-                107
-              );
-            }
-          }
-          schedules[`${studyId}`].cancel();
-          delete schedules[`${studyId}`];
-        }
-      );
-    }
-  }
-  await getRepository(Study).save(study);
-  return studyId;
+  return await getRepository(Study).save(study);
 };
 
 const updateStudy = async (studyDTO: studyDTO, study: Study) => {
@@ -238,26 +190,12 @@ const updateStudy = async (studyDTO: studyDTO, study: Study) => {
   if (dueDate) {
     const due = new Date(dueDate);
     study.dueDate = due;
-    if (process.env.NODE_ENV !== 'test') {
-      schedules[`${study.id}`].cancel();
-      schedules[`${study.id}`].reschedule(
-        `0 0 ${due.getDate()} ${due.getMonth()} *`
-      );
-    }
   }
   return await getRepository(Study).save(study);
 };
 
 const deleteStudy = async (study: Study) => {
   return await getRepository(Study).remove(study);
-};
-
-const checkStudyById = async (id: string) => {
-  // only for check
-  return await getRepository(Study)
-    .createQueryBuilder('study')
-    .where('study.id = :id', { id })
-    .getCount();
 };
 
 const searchStudy = async (searchStudyDTO: searchStudyDTO) => {
@@ -357,7 +295,6 @@ export default {
   createStudy,
   updateStudy,
   deleteStudy,
-  checkStudyById,
   searchStudy,
   decreaseMemberCount,
   increaseMemberCount,

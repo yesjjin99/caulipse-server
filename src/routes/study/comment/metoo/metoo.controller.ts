@@ -10,10 +10,10 @@ const registerMetoo = async (req: Request, res: Response) => {
   try {
     const { studyid, commentid } = req.params;
     const userId = (req.user as { id: string }).id;
-    const study = await studyService.checkStudyById(studyid);
+    const study = await studyService.findStudyById(studyid);
     const user = await temp_findUserProfileById(userId);
 
-    if (study === 0 || !user) {
+    if (!study || !user) {
       throw new Error(NOT_FOUND);
     }
     const metoo = await metooService.findMetooByCommentId(commentid);
@@ -42,11 +42,11 @@ const deleteMetoo = async (req: Request, res: Response) => {
   try {
     const { studyid, commentid } = req.params;
     const userId = (req.user as { id: string }).id;
-    const study = await studyService.checkStudyById(studyid);
+    const study = await studyService.findStudyById(studyid);
     const comment = await commentService.findCommentById(commentid);
     const user = await temp_findUserProfileById(userId);
 
-    if (study === 0 || !comment || !user) {
+    if (!study || !comment || !user) {
       throw new Error(NOT_FOUND);
     }
     await metooService.deleteMetoo(comment, user);

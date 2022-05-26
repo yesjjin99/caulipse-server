@@ -1,17 +1,25 @@
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import * as schedule from 'node-schedule';
 import {
   FrequencyEnum,
   LocationEnum,
   WeekDayEnum,
 } from '../../entity/StudyEntity';
-import { createStudyNoti } from '../../services/notification';
+import { createStudyNoti, NotiTypeEnum } from '../../services/notification';
 import studyService from '../../services/study';
-import { findAllByStudyId } from '../../services/studyUser';
 import {
-  findUserProfileById,
-  temp_findUserProfileById,
-} from '../../services/user/profile';
+  checkApplied,
+  findAcceptedByStudyId,
+  findAllByStudyId,
+  findNotAcceptedApplicantsByStudyId,
+} from '../../services/studyUser';
+import { temp_findUserProfileById } from '../../services/user/profile';
 import { orderByEnum } from '../../types/study.dto';
+import bookmarkService from '../../services/study/bookmark';
+import { refresh } from '../../middlewares/auth';
+
+export const schedules: { [key: string]: schedule.Job } = {};
 
 const getAllStudy = async (req: Request, res: Response) => {
   const BAD_REQUEST = '요청값이 유효하지 않음';
@@ -136,9 +144,55 @@ const createStudy = async (req: Request, res: Response) => {
     if (!user) {
       throw new Error(NOT_FOUND);
     }
-    const id = await studyService.createStudy(req.body, user);
+    const study = await studyService.createStudy(req.body, user);
 
-    return res.status(201).json({ id });
+    if (process.env.NODE_ENV !== 'test') {
+      const due = new Date(req.body.dueDate);
+      const today = new Date();
+
+      if (due.getFullYear() == today.getFullYear()) {
+        schedules[`${study.id}`] = schedule.scheduleJob(
+          `0 0 ${due.getDate() + 1} ${due.getMonth() + 1} *`,
+          async function () {
+            await studyService.closeStudy(study);
+            const members = await findAcceptedByStudyId(study.id);
+            members.map((record: Record<string, string | boolean>) => ({
+              userId: record.StudyUser_USER_ID,
+            }));
+            if (members.length !== 0) {
+              for (const member of members) {
+                await createStudyNoti({
+                  id: study.id,
+                  userId: member.userId,
+                  title: '모집 종료',
+                  about: `모집이 종료되었어요. 스터디를 응원합니다!`,
+                  type: NotiTypeEnum.CLOSED,
+                });
+              }
+            }
+
+            const applicants = await findNotAcceptedApplicantsByStudyId(
+              study.id
+            );
+            applicants.map((record: Record<string, string | boolean>) => ({
+              userId: record.StudyUser_USER_ID,
+            }));
+            if (applicants.length !== 0) {
+              for (const user of applicants) {
+                await createStudyNoti({
+                  id: study.id,
+                  userId: user.userId,
+                  title: '모집 종료',
+                  about: '스터디의 모집이 마감되었어요.',
+                  type: NotiTypeEnum.CLOSED,
+                });
+              }
+            }
+          }
+        );
+      }
+    }
+    return res.status(201).json({ id: study.id });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
       return res.status(400).json({ message: BAD_REQUEST });
@@ -161,7 +215,46 @@ const getStudybyId = async (req: Request, res: Response) => {
       throw new Error(NOT_FOUND);
     }
     await studyService.updateStudyViews(study);
-    return res.status(200).json(study);
+
+    let { accessToken, refreshToken } = req.cookies;
+
+    if (!accessToken && !refreshToken) {
+      return res
+        .status(200)
+        .json({ ...study, bookmarked: false, applied: false });
+    }
+
+    if (!accessToken && refreshToken) {
+      await refresh(req, res);
+
+      if (!req.cookies.accessToken) return;
+      else {
+        accessToken = req.cookies.accessToken;
+        refreshToken = req.cookies.refreshToken;
+      }
+    }
+
+    try {
+      const decoded = jwt.verify(
+        accessToken,
+        process.env.SIGNUP_TOKEN_SECRET as string
+      ) as { id: string };
+      req.user = { id: decoded.id };
+
+      const bookmarkFlag = await bookmarkService.checkBookmarked(
+        decoded.id,
+        studyid
+      );
+      const appliedFlag = await checkApplied(studyid, decoded.id);
+
+      return res.status(200).json({
+        ...study,
+        bookmarked: bookmarkFlag ? true : false,
+        applied: appliedFlag ? true : false,
+      });
+    } catch (e) {
+      res.status(200).json({ ...study, bookmarked: false, applied: false });
+    }
   } catch (e) {
     if ((e as Error).message === NOT_FOUND) {
       return res.status(404).json({ message: NOT_FOUND });
@@ -213,22 +306,27 @@ const updateStudy = async (req: Request, res: Response) => {
     await studyService.updateStudy(req.body, study);
 
     if (process.env.NODE_ENV !== 'test') {
+      if (req.body.dueDate) {
+        const due = new Date(req.body.dueDate);
+        schedules[`${study.id}`].cancel();
+        schedules[`${study.id}`].reschedule(
+          `0 0 ${due.getDate() + 1} ${due.getMonth() + 1} *`
+        );
+      }
+
       const users = await findAllByStudyId(studyid);
       if (users.length !== 0) {
-        const notiTitle = '모집정보 수정';
-        const notiAbout = '신청한 스터디의 모집 정보가 수정되었어요.';
         for (const user of users) {
-          await createStudyNoti(
-            studyid,
-            user?.USER_ID,
-            notiTitle,
-            notiAbout,
-            103
-          );
+          await createStudyNoti({
+            id: studyid,
+            userId: user.USER_ID,
+            title: '모집정보 수정',
+            about: '신청한 스터디의 모집 정보가 수정되었어요.',
+            type: NotiTypeEnum.UPDATE_STUDY,
+          });
         }
       }
     }
-
     return res.status(200).json({ message: '스터디 정보 업데이트 성공' });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
@@ -334,6 +432,40 @@ const closeStudy = async (req: Request, res: Response) => {
     if (!study) throw new Error(NOT_FOUND);
     if (study.isOpen) {
       await studyService.closeStudy(study);
+
+      if (process.env.NODE_ENV !== 'test') {
+        const members = await findAcceptedByStudyId(study.id);
+        members.map((record: Record<string, string | boolean>) => ({
+          userId: record.StudyUser_USER_ID,
+        }));
+        if (members.length !== 0) {
+          for (const member of members) {
+            await createStudyNoti({
+              id: study.id,
+              userId: member.userId,
+              title: '모집 종료',
+              about: `모집이 종료되었어요. 스터디를 응원합니다!`,
+              type: NotiTypeEnum.CLOSED,
+            });
+          }
+        }
+
+        const applicants = await findNotAcceptedApplicantsByStudyId(study.id);
+        applicants.map((record: Record<string, string | boolean>) => ({
+          userId: record.StudyUser_USER_ID,
+        }));
+        if (applicants.length !== 0) {
+          for (const user of applicants) {
+            await createStudyNoti({
+              id: study.id,
+              userId: user.userId,
+              title: '모집 종료',
+              about: '스터디의 모집이 마감되었어요.',
+              type: NotiTypeEnum.CLOSED,
+            });
+          }
+        }
+      }
     } else {
       throw new Error(BAD_REQUEST);
     }
@@ -407,7 +539,7 @@ export default {
  *        type: integer
  *      responses:
  *        200:
- *          description: "올바른 요청. 스터디 객체 배열, 현재 페이지, 전체 페이지 수, 전체 스터디 개수를 반환합니다."
+ *          description: "올바른 요청"
  *          schema:
  *            type: object
  *            properties:
@@ -417,10 +549,13 @@ export default {
  *                  $ref: "#/definitions/Study"
  *              pageNo:
  *                type: integer
+ *                description: "현재 페이지"
  *              pages:
  *                type: integer
+ *                description: "전체 페이지 수"
  *              total:
  *                type: integer
+ *                description: "전체 스터디 개수"
  *
  *    post:
  *      summary: "새로운 스터디 생성"
@@ -522,7 +657,16 @@ export default {
  *        200:
  *          description: "올바른 요청, 스터디 정보를 반환합니다"
  *          schema:
- *            $ref: "#/definitions/Study"
+ *            allOf:
+ *            - $ref: "#/definitions/Study"
+ *            - type: object
+ *              properties:
+ *                bookmarked:
+ *                  type: boolean
+ *                  description: "유저가 해당 스터디에 대하여 북마크를 추가한 상태인지 아닌지에 대한 여부"
+ *                applied:
+ *                  type: boolean
+ *                  description: "유저가 해당 스터디에 대하여 참가 신청을 한 상태인지 아닌지에 대한 여부"
  *        404:
  *          description: "전달한 studyid가 데이터베이스에 없는 경우입니다"
  *          schema:
