@@ -24,15 +24,15 @@ const checkBookmarked = async (userId: string, studyId: string) => {
     .createQueryBuilder('study')
     .leftJoin('study.bookmarks', 'UserProfile')
     .where('study.id = :studyId', { studyId })
-    .where('UserProfile.id = :userId', { userId })
-    .getCount();
+    .where('UserProfile.USER_ID = :userId', { userId })
+    .getOne();
 };
 
 const getBookmarksByUser = async (userId: string) => {
   return await getRepository(Study)
     .createQueryBuilder('study')
     .leftJoin('study.bookmarks', 'UserProfile')
-    .where('UserProfile.id = :userId', { userId })
+    .where('UserProfile.USER_ID = :userId', { userId })
     .orderBy('study.createdAt', 'DESC')
     .getMany();
 };

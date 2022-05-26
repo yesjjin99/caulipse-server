@@ -2,6 +2,25 @@ import { randomUUID } from 'crypto';
 import { getRepository } from 'typeorm';
 import Notification from '../../entity/NotificationEntity';
 
+export enum NotiTypeEnum {
+  NEW_APPLY = 101,
+  NEW_COMMENT,
+  UPDATE_STUDY,
+  NEW_REPLY,
+  ACCEPT,
+  REJECT,
+  CLOSED,
+  NEW_NOTICE = 201,
+}
+
+export interface CreateNotiDto {
+  id: string;
+  userId: string;
+  title: string;
+  about: string;
+  type: number;
+}
+
 export const findAllByUserId = async (userId: string) => {
   return await getRepository(Notification)
     .createQueryBuilder()
@@ -10,17 +29,17 @@ export const findAllByUserId = async (userId: string) => {
     .execute();
 };
 
-export const createStudyNoti = async (
-  studyId: string,
-  userId: string,
-  title: string,
-  about: string,
-  type: number
-) => {
+export const createStudyNoti = async ({
+  id,
+  userId,
+  title,
+  about,
+  type,
+}: CreateNotiDto) => {
   const noti = new Notification();
   noti.id = randomUUID();
   noti.USER_ID = userId;
-  noti.STUDY_ID = studyId;
+  noti.STUDY_ID = id;
   noti.type = type;
   noti.title = title;
   noti.notiAbout = about;
@@ -30,17 +49,17 @@ export const createStudyNoti = async (
   return await getRepository(Notification).save(noti);
 };
 
-export const createNoticeNoti = async (
-  noticeId: string,
-  userId: string,
-  title: string,
-  about: string,
-  type: number
-) => {
+export const createNoticeNoti = async ({
+  id,
+  userId,
+  title,
+  about,
+  type,
+}: CreateNotiDto) => {
   const noti = new Notification();
   noti.id = randomUUID();
   noti.USER_ID = userId;
-  noti.NOTICE_ID = noticeId;
+  noti.NOTICE_ID = id;
   noti.type = type;
   noti.title = title;
   noti.notiAbout = about;

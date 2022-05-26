@@ -113,3 +113,12 @@ export const deleteByStudyAndUserId = async (
     .andWhere('USER_ID = :userid', { userid: userId })
     .execute();
 };
+
+export const checkApplied = async (studyId: string, userId: string) => {
+  return await getRepository(StudyUser)
+    .createQueryBuilder('studyUser')
+    .select(['studyUser.USER_ID', 'studyUser.STUDY_ID'])
+    .where('studyUser.STUDY_ID = :studyId', { studyId })
+    .andWhere('studyUser.USER_ID = :userId', { userId })
+    .getOne();
+};

@@ -10,7 +10,7 @@ import {
   updateNoticeViews,
 } from '../../services/notice';
 import { UserRoleEnum } from '../../entity/UserEntity';
-import { createNoticeNoti } from '../../services/notification';
+import { createNoticeNoti, NotiTypeEnum } from '../../services/notification';
 import { temp_findUserProfileById } from '../../services/user/profile';
 import { findOnlyUserRoleById } from '../../services/user';
 
@@ -90,10 +90,14 @@ export default {
       if (process.env.NODE_ENV !== 'test') {
         const users = await findAllUser();
         if (users.length !== 0) {
-          const notiTitle = '새로운 공지';
-          const notiAbout = '중대본으로부터 새로운 공지글이 등록되었어요.';
           for (const u of users) {
-            await createNoticeNoti(id, u?.id, notiTitle, notiAbout, 201);
+            await createNoticeNoti({
+              id,
+              userId: u.id,
+              title: '새로운 공지',
+              about: '중대본으로부터 새로운 공지글이 등록되었어요.',
+              type: NotiTypeEnum.NEW_NOTICE,
+            });
           }
         }
       }
