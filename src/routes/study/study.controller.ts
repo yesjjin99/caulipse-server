@@ -205,6 +205,14 @@ const updateStudy = async (req: Request, res: Response) => {
       if (!(Object.values(LocationEnum) as string[]).includes(value))
         throw new Error(BAD_REQUEST);
     });
+    if (req.body.dueDate) {
+      const due = new Date(req.body.dueDate);
+      const now = new Date();
+
+      if (due.toISOString().split('T')[0] < now.toISOString().split('T')[0]) {
+        throw new Error(BAD_REQUEST);
+      }
+    }
 
     const study = await studyService.findStudyById(studyid);
     if (!study) {

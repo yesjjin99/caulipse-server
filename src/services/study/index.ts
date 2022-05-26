@@ -175,7 +175,7 @@ const createStudy = async (studyDTO: studyDTO, user: UserProfile) => {
   if (process.env.NODE_ENV !== 'test') {
     if (due.getFullYear() == today.getFullYear()) {
       schedules[`${studyId}`] = schedule.scheduleJob(
-        `0 0 ${due.getDate()} ${due.getMonth()} *`,
+        `0 0 ${due.getDate()} ${due.getMonth() + 1} *`,
         async function () {
           study.isOpen = false;
           const members = await findAcceptedByStudyId(studyId);
