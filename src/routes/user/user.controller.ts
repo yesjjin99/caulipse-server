@@ -16,6 +16,7 @@ import { makeSignUpToken } from '../../utils/auth';
 import { validateCAU } from '../../utils/mail';
 import { findAllIfParticipatedByUserId } from '../../services/studyUser';
 import { passwordResetContent, signupMailContent } from '../../utils/mail/html';
+import studyService from '../../services/study';
 
 export default {
   async saveUser(req: Request, res: Response) {
@@ -213,6 +214,16 @@ export default {
       }
     }
   },
+  async getMyStudy(req: Request, res: Response) {
+    try {
+      const userId = (req.user as { id: string }).id;
+
+      const studies = await studyService.getMyStudy(userId);
+      return res.status(200).json(studies);
+    } catch (e) {
+      return res.status(500).json({ message: (e as Error).message });
+    }
+  },
 };
 
 /**
@@ -288,6 +299,30 @@ export default {
  *            message:
  *              type: string
  *              example: "일치하는 userid값이 없음"
+ *
+ *  /api/user/study:
+ *    get:
+ *      summary: "모집 스터디 목록 조회"
+ *      tags:
+ *      - "user"
+ *      - "study"
+ *      description: "사용자가 모집한 스터디의 목록을 조회하는 엔드포인트입니다."
+ *      responses:
+ *        200:
+ *          description: "올바른 요청."
+ *          schema:
+ *            allOf:
+ *            - type: array
+ *              items:
+ *                $ref: "#/definitions/Study"
+ *        401:
+ *          description: "로그인이 되어있지 않은 경우"
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "로그인 필요"
  *
  * /api/user/study/applied:
  *  get:

@@ -9,10 +9,11 @@ export enum orderByEnum {
   SMALL_VACANCY = 'small_vacancy',
   LARGE_VACANCY = 'large_vacancy',
   LAST = 'oldest',
+  FASTEST_DUEDATE = 'fastest_duedate',
 }
 
 export interface paginationDTO {
-  categoryCode: number;
+  categoryCodes: number[] | null;
   weekdayFilter: string[] | null;
   frequencyFilter: string;
   locationFilter: string[] | null;
@@ -21,6 +22,7 @@ export interface paginationDTO {
   pageNo: number;
   limit: number;
 }
+
 export interface studyDTO {
   title: string;
   studyAbout: string;

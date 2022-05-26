@@ -9,9 +9,8 @@ const router = Router({ mergeParams: true });
 
 router.get('/', controller.getAllStudy);
 router.post('/', checkToken, controller.createStudy);
+
 router.get('/search', controller.searchStudy);
-// 모집 스터디 조회
-router.get('/my-study', checkToken, controller.getMyStudy);
 router.get('/:studyid', controller.getStudybyId);
 router.patch('/:studyid', checkToken, controller.updateStudy);
 router.delete('/:studyid', checkToken, controller.deleteStudy);
