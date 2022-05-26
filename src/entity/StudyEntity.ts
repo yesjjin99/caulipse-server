@@ -89,7 +89,7 @@ export default class Study {
   @Column('int', { name: 'BOOKMARK_COUNT' })
   bookmarkCount!: number;
 
-  @ManyToMany(() => UserProfile, { cascade: true })
+  @ManyToMany(() => UserProfile, { cascade: true, nullable: true })
   @JoinTable({
     name: 'BOOKMARK',
     joinColumn: {

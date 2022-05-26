@@ -24,7 +24,9 @@ export const schedules: { [key: string]: schedule.Job } = {};
 const getAllStudy = async (req: Request, res: Response) => {
   const BAD_REQUEST = '요청값이 유효하지 않음';
 
-  const categoryCode = parseInt(req.query.categoryCode as string);
+  const categoryCodes = req.query.categoryCode
+    ? (req.query.categoryCode as string).split(',').map((e) => parseInt(e))
+    : null;
   const weekdayFilter = req.query.weekday
     ? (req.query.weekday as string).split(',')
     : null;
@@ -39,26 +41,32 @@ const getAllStudy = async (req: Request, res: Response) => {
   const limit = Number(req.query.limit) || 12;
 
   try {
-    if (weekdayFilter && !weekdayFilter.length) {
-      weekdayFilter.forEach((weekday) => {
-        if (!(Object.values(WeekDayEnum) as string[]).includes(weekday))
-          throw new Error(BAD_REQUEST);
-      });
+    if (weekdayFilter && weekdayFilter.length) {
+      if (
+        weekdayFilter.some(
+          (weekday) =>
+            !(Object.values(WeekDayEnum) as string[]).includes(weekday)
+        )
+      )
+        throw new Error(BAD_REQUEST);
     }
     if (frequencyFilter) {
       if (!(Object.values(FrequencyEnum) as string[]).includes(frequencyFilter))
         throw new Error(BAD_REQUEST);
     }
-    if (locationFilter && !locationFilter.length) {
-      locationFilter.forEach((location) => {
-        if (!(Object.values(LocationEnum) as string[]).includes(location))
-          throw new Error(BAD_REQUEST);
-      });
+    if (locationFilter && locationFilter.length) {
+      if (
+        locationFilter.some(
+          (location) =>
+            !(Object.values(LocationEnum) as string[]).includes(location)
+        )
+      )
+        throw new Error(BAD_REQUEST);
     }
     if (!(Object.values(orderByEnum) as string[]).includes(orderBy))
       throw new Error(BAD_REQUEST);
     const studies = await studyService.getAllStudy({
-      categoryCode,
+      categoryCodes,
       weekdayFilter,
       frequencyFilter,
       locationFilter,
@@ -68,7 +76,7 @@ const getAllStudy = async (req: Request, res: Response) => {
       limit,
     });
     const total = await studyService.countAllStudy({
-      categoryCode,
+      categoryCodes,
       weekdayFilter,
       frequencyFilter,
       locationFilter,
@@ -374,21 +382,27 @@ const searchStudy = async (req: Request, res: Response) => {
   const orderBy: string = (req.query.order_by as string) || orderByEnum.LATEST;
 
   try {
-    if (weekdayFilter && !weekdayFilter.length) {
-      weekdayFilter.forEach((weekday) => {
-        if (!(Object.values(WeekDayEnum) as string[]).includes(weekday))
-          throw new Error(BAD_REQUEST);
-      });
+    if (weekdayFilter && weekdayFilter.length) {
+      if (
+        weekdayFilter.some(
+          (weekday) =>
+            !(Object.values(WeekDayEnum) as string[]).includes(weekday)
+        )
+      )
+        throw new Error(BAD_REQUEST);
     }
     if (frequencyFilter) {
       if (!(Object.values(FrequencyEnum) as string[]).includes(frequencyFilter))
         throw new Error(BAD_REQUEST);
     }
-    if (locationFilter && !locationFilter.length) {
-      locationFilter.forEach((location) => {
-        if (!(Object.values(LocationEnum) as string[]).includes(location))
-          throw new Error(BAD_REQUEST);
-      });
+    if (locationFilter && locationFilter.length) {
+      if (
+        locationFilter.some(
+          (location) =>
+            !(Object.values(LocationEnum) as string[]).includes(location)
+        )
+      )
+        throw new Error(BAD_REQUEST);
     }
     if (!(Object.values(orderByEnum) as string[]).includes(orderBy))
       throw new Error(BAD_REQUEST);
@@ -407,17 +421,6 @@ const searchStudy = async (req: Request, res: Response) => {
     } else {
       return res.status(500).json({ message: (e as Error).message });
     }
-  }
-};
-
-const getMyStudy = async (req: Request, res: Response) => {
-  try {
-    const userId = (req.user as { id: string }).id;
-
-    const studies = await studyService.getMyStudy(userId);
-    return res.status(200).json(studies);
-  } catch (e) {
-    return res.status(500).json({ message: (e as Error).message });
   }
 };
 
@@ -488,7 +491,6 @@ export default {
   updateStudy,
   deleteStudy,
   searchStudy,
-  getMyStudy,
   closeStudy,
 };
 
@@ -504,9 +506,9 @@ export default {
  *      parameters:
  *      - name: "categoryCode"
  *        in: "query"
- *        description: "조회할 카테고리 코드"
+ *        description: "조회할 카테고리 코드 ex.) '100,201,202' 와 같이 요청"
  *        required: false
- *        type: integer
+ *        type: string
  *      - name: "frequency"
  *        in: "query"
  *        description: "필터 조건 - 스터디 빈도 / FrequencyEnum"
@@ -514,12 +516,12 @@ export default {
  *        type: string
  *      - name: "weekday"
  *        in: "query"
- *        description: "필터 조건 - 요일 / WeekDayEnum"
+ *        description: "필터 조건 - 요일 / WeekDayEnum ex.) 'mon,tue,wed' 와 같이 요청"
  *        required: false
  *        type: string
  *      - name: "location"
  *        in: "query"
- *        description: "필터 조건 - 장소 / LocationEnum"
+ *        description: "필터 조건 - 장소 / LocationEnum ex.) 'room,cafe' 와 같이 요청"
  *        required: false
  *        type: string
  *      - name: "order_by"
@@ -810,71 +812,6 @@ export default {
  *                type: string
  *                example: "데이터베이스에 일치하는 요청값이 없습니다"
  *
- *  /api/study/search:
- *    get:
- *      summary: "스터디 검색 목록 조회"
- *      tags:
- *      - "study"
- *      description: "사용자가 검색한 스터디의 목록을 조회할 수 있습니다"
- *      parameters:
- *      - name: "keyword"
- *        in: "query"
- *        description: "검색어로 입력한 키워드"
- *        required: true
- *        type: string
- *      - name: "frequency"
- *        in: "query"
- *        description: "필터 조건 - 스터디 빈도 / FrequencyEnum"
- *        required: false
- *        type: string
- *      - name: "weekday"
- *        in: "query"
- *        description: "필터 조건 - 요일 / WeekDayEnum"
- *        required: false
- *        type: string
- *      - name: "location"
- *        in: "query"
- *        description: "필터 조건 - 장소 / LocationEnum"
- *        required: false
- *        type: string
- *      - name: "order_by"
- *        in: "query"
- *        description: "정렬 조건 기본값: 최근 등록순 (enum: latest, small_vacancy, large_vacancy)"
- *        required: false
- *        type: string
- *      responses:
- *        200:
- *          description: "올바른 요청."
- *          schema:
- *            allOf:
- *            - type: array
- *              items:
- *                $ref: "#/definitions/Study"
- *
- *  /api/study/my-study:
- *    get:
- *      summary: "모집 스터디 목록 조회"
- *      tags:
- *      - "study"
- *      - "my-page"
- *      description: "사용자가 모집한 스터디의 목록을 조회하는 엔드포인트입니다."
- *      responses:
- *        200:
- *          description: "올바른 요청."
- *          schema:
- *            allOf:
- *            - type: array
- *              items:
- *                $ref: "#/definitions/Study"
- *        401:
- *          description: "로그인이 되어있지 않은 경우"
- *          schema:
- *            type: object
- *            properties:
- *              message:
- *                type: string
- *                example: "로그인 필요"
- *
  *  /api/study/{studyid}/close:
  *    patch:
  *      summary: "스터디 마감"
@@ -921,4 +858,45 @@ export default {
  *              message:
  *                type: string
  *                example: "데이터베이스에 일치하는 요청값이 없습니다"
+ *
+ *  /api/study/search:
+ *    get:
+ *      summary: "스터디 검색 목록 조회"
+ *      tags:
+ *      - "study"
+ *      description: "사용자가 검색한 스터디의 목록을 조회할 수 있습니다"
+ *      parameters:
+ *      - name: "keyword"
+ *        in: "query"
+ *        description: "검색어로 입력한 키워드"
+ *        required: true
+ *        type: string
+ *      - name: "frequency"
+ *        in: "query"
+ *        description: "필터 조건 - 스터디 빈도 / FrequencyEnum"
+ *        required: false
+ *        type: string
+ *      - name: "weekday"
+ *        in: "query"
+ *        description: "필터 조건 - 요일 / WeekDayEnum ex.) 'mon,tue,wed' 와 같이 요청"
+ *        required: false
+ *        type: string
+ *      - name: "location"
+ *        in: "query"
+ *        description: "필터 조건 - 장소 / LocationEnum ex.) 'room,cafe' 와 같이 요청"
+ *        required: false
+ *        type: string
+ *      - name: "order_by"
+ *        in: "query"
+ *        description: "정렬 조건 기본값: 최근 등록순 (enum: latest, small_vacancy, large_vacancy)"
+ *        required: false
+ *        type: string
+ *      responses:
+ *        200:
+ *          description: "올바른 요청."
+ *          schema:
+ *            allOf:
+ *            - type: array
+ *              items:
+ *                $ref: "#/definitions/Study"
  */
