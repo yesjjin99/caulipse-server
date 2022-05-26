@@ -180,6 +180,7 @@ export default {
         isAccepted: !!item.IS_ACCEPTED,
         membersCount: item.MEMBERS_COUNT,
         capacity: item.CAPACITY,
+        dueDate: item.DUE_DATE,
       }));
       res.json(response);
     } catch (e) {
@@ -351,6 +352,8 @@ export default {
  *              bookmarkCount:
  *                type: number
  *                example: 0
+ *              dueDate:
+ *                type: date-time
  *      401:
  *        description: "로그인이 되어있지 않은 경우"
  *        schema:
