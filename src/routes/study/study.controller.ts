@@ -1,22 +1,32 @@
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import * as schedule from 'node-schedule';
 import {
   FrequencyEnum,
   LocationEnum,
   WeekDayEnum,
 } from '../../entity/StudyEntity';
-import { createStudyNoti } from '../../services/notification';
+import { createStudyNoti, NotiTypeEnum } from '../../services/notification';
 import studyService from '../../services/study';
-import { findAllByStudyId } from '../../services/studyUser';
 import {
-  findUserProfileById,
-  temp_findUserProfileById,
-} from '../../services/user/profile';
+  checkApplied,
+  findAcceptedByStudyId,
+  findAllByStudyId,
+  findNotAcceptedApplicantsByStudyId,
+} from '../../services/studyUser';
+import { temp_findUserProfileById } from '../../services/user/profile';
 import { orderByEnum } from '../../types/study.dto';
+import bookmarkService from '../../services/study/bookmark';
+import { refresh } from '../../middlewares/auth';
+
+export const schedules: { [key: string]: schedule.Job } = {};
 
 const getAllStudy = async (req: Request, res: Response) => {
   const BAD_REQUEST = '요청값이 유효하지 않음';
 
-  const categoryCode = parseInt(req.query.categoryCode as string);
+  const categoryCodes = req.query.categoryCode
+    ? (req.query.categoryCode as string).split(',').map((e) => parseInt(e))
+    : null;
   const weekdayFilter = req.query.weekday
     ? (req.query.weekday as string).split(',')
     : null;
@@ -31,26 +41,32 @@ const getAllStudy = async (req: Request, res: Response) => {
   const limit = Number(req.query.limit) || 12;
 
   try {
-    if (weekdayFilter && !weekdayFilter.length) {
-      weekdayFilter.forEach((weekday) => {
-        if (!(Object.values(WeekDayEnum) as string[]).includes(weekday))
-          throw new Error(BAD_REQUEST);
-      });
+    if (weekdayFilter && weekdayFilter.length) {
+      if (
+        weekdayFilter.some(
+          (weekday) =>
+            !(Object.values(WeekDayEnum) as string[]).includes(weekday)
+        )
+      )
+        throw new Error(BAD_REQUEST);
     }
     if (frequencyFilter) {
       if (!(Object.values(FrequencyEnum) as string[]).includes(frequencyFilter))
         throw new Error(BAD_REQUEST);
     }
-    if (locationFilter && !locationFilter.length) {
-      locationFilter.forEach((location) => {
-        if (!(Object.values(LocationEnum) as string[]).includes(location))
-          throw new Error(BAD_REQUEST);
-      });
+    if (locationFilter && locationFilter.length) {
+      if (
+        locationFilter.some(
+          (location) =>
+            !(Object.values(LocationEnum) as string[]).includes(location)
+        )
+      )
+        throw new Error(BAD_REQUEST);
     }
     if (!(Object.values(orderByEnum) as string[]).includes(orderBy))
       throw new Error(BAD_REQUEST);
     const studies = await studyService.getAllStudy({
-      categoryCode,
+      categoryCodes,
       weekdayFilter,
       frequencyFilter,
       locationFilter,
@@ -60,7 +76,7 @@ const getAllStudy = async (req: Request, res: Response) => {
       limit,
     });
     const total = await studyService.countAllStudy({
-      categoryCode,
+      categoryCodes,
       weekdayFilter,
       frequencyFilter,
       locationFilter,
@@ -136,9 +152,55 @@ const createStudy = async (req: Request, res: Response) => {
     if (!user) {
       throw new Error(NOT_FOUND);
     }
-    const id = await studyService.createStudy(req.body, user);
+    const study = await studyService.createStudy(req.body, user);
 
-    return res.status(201).json({ id });
+    if (process.env.NODE_ENV !== 'test') {
+      const due = new Date(req.body.dueDate);
+      const today = new Date();
+
+      if (due.getFullYear() == today.getFullYear()) {
+        schedules[`${study.id}`] = schedule.scheduleJob(
+          `0 0 ${due.getDate() + 1} ${due.getMonth() + 1} *`,
+          async function () {
+            await studyService.closeStudy(study);
+            const members = await findAcceptedByStudyId(study.id);
+            members.map((record: Record<string, string | boolean>) => ({
+              userId: record.StudyUser_USER_ID,
+            }));
+            if (members.length !== 0) {
+              for (const member of members) {
+                await createStudyNoti({
+                  id: study.id,
+                  userId: member.userId,
+                  title: '모집 종료',
+                  about: `모집이 종료되었어요. 스터디를 응원합니다!`,
+                  type: NotiTypeEnum.CLOSED,
+                });
+              }
+            }
+
+            const applicants = await findNotAcceptedApplicantsByStudyId(
+              study.id
+            );
+            applicants.map((record: Record<string, string | boolean>) => ({
+              userId: record.StudyUser_USER_ID,
+            }));
+            if (applicants.length !== 0) {
+              for (const user of applicants) {
+                await createStudyNoti({
+                  id: study.id,
+                  userId: user.userId,
+                  title: '모집 종료',
+                  about: '스터디의 모집이 마감되었어요.',
+                  type: NotiTypeEnum.CLOSED,
+                });
+              }
+            }
+          }
+        );
+      }
+    }
+    return res.status(201).json({ id: study.id });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
       return res.status(400).json({ message: BAD_REQUEST });
@@ -161,7 +223,46 @@ const getStudybyId = async (req: Request, res: Response) => {
       throw new Error(NOT_FOUND);
     }
     await studyService.updateStudyViews(study);
-    return res.status(200).json(study);
+
+    let { accessToken, refreshToken } = req.cookies;
+
+    if (!accessToken && !refreshToken) {
+      return res
+        .status(200)
+        .json({ ...study, bookmarked: false, applied: false });
+    }
+
+    if (!accessToken && refreshToken) {
+      await refresh(req, res);
+
+      if (!req.cookies.accessToken) return;
+      else {
+        accessToken = req.cookies.accessToken;
+        refreshToken = req.cookies.refreshToken;
+      }
+    }
+
+    try {
+      const decoded = jwt.verify(
+        accessToken,
+        process.env.SIGNUP_TOKEN_SECRET as string
+      ) as { id: string };
+      req.user = { id: decoded.id };
+
+      const bookmarkFlag = await bookmarkService.checkBookmarked(
+        decoded.id,
+        studyid
+      );
+      const appliedFlag = await checkApplied(studyid, decoded.id);
+
+      return res.status(200).json({
+        ...study,
+        bookmarked: bookmarkFlag ? true : false,
+        applied: appliedFlag ? true : false,
+      });
+    } catch (e) {
+      res.status(200).json({ ...study, bookmarked: false, applied: false });
+    }
   } catch (e) {
     if ((e as Error).message === NOT_FOUND) {
       return res.status(404).json({ message: NOT_FOUND });
@@ -221,22 +322,27 @@ const updateStudy = async (req: Request, res: Response) => {
     await studyService.updateStudy(req.body, study);
 
     if (process.env.NODE_ENV !== 'test') {
+      if (req.body.dueDate) {
+        const due = new Date(req.body.dueDate);
+        schedules[`${study.id}`].cancel();
+        schedules[`${study.id}`].reschedule(
+          `0 0 ${due.getDate() + 1} ${due.getMonth() + 1} *`
+        );
+      }
+
       const users = await findAllByStudyId(studyid);
       if (users.length !== 0) {
-        const notiTitle = '모집정보 수정';
-        const notiAbout = '신청한 스터디의 모집 정보가 수정되었어요.';
         for (const user of users) {
-          await createStudyNoti(
-            studyid,
-            user?.USER_ID,
-            notiTitle,
-            notiAbout,
-            103
-          );
+          await createStudyNoti({
+            id: studyid,
+            userId: user.USER_ID,
+            title: '모집정보 수정',
+            about: '신청한 스터디의 모집 정보가 수정되었어요.',
+            type: NotiTypeEnum.UPDATE_STUDY,
+          });
         }
       }
     }
-
     return res.status(200).json({ message: '스터디 정보 업데이트 성공' });
   } catch (e) {
     if ((e as Error).message === BAD_REQUEST) {
@@ -284,21 +390,27 @@ const searchStudy = async (req: Request, res: Response) => {
   const orderBy: string = (req.query.order_by as string) || orderByEnum.LATEST;
 
   try {
-    if (weekdayFilter && !weekdayFilter.length) {
-      weekdayFilter.forEach((weekday) => {
-        if (!(Object.values(WeekDayEnum) as string[]).includes(weekday))
-          throw new Error(BAD_REQUEST);
-      });
+    if (weekdayFilter && weekdayFilter.length) {
+      if (
+        weekdayFilter.some(
+          (weekday) =>
+            !(Object.values(WeekDayEnum) as string[]).includes(weekday)
+        )
+      )
+        throw new Error(BAD_REQUEST);
     }
     if (frequencyFilter) {
       if (!(Object.values(FrequencyEnum) as string[]).includes(frequencyFilter))
         throw new Error(BAD_REQUEST);
     }
-    if (locationFilter && !locationFilter.length) {
-      locationFilter.forEach((location) => {
-        if (!(Object.values(LocationEnum) as string[]).includes(location))
-          throw new Error(BAD_REQUEST);
-      });
+    if (locationFilter && locationFilter.length) {
+      if (
+        locationFilter.some(
+          (location) =>
+            !(Object.values(LocationEnum) as string[]).includes(location)
+        )
+      )
+        throw new Error(BAD_REQUEST);
     }
     if (!(Object.values(orderByEnum) as string[]).includes(orderBy))
       throw new Error(BAD_REQUEST);
@@ -320,17 +432,6 @@ const searchStudy = async (req: Request, res: Response) => {
   }
 };
 
-const getMyStudy = async (req: Request, res: Response) => {
-  try {
-    const userId = (req.user as { id: string }).id;
-
-    const studies = await studyService.getMyStudy(userId);
-    return res.status(200).json(studies);
-  } catch (e) {
-    return res.status(500).json({ message: (e as Error).message });
-  }
-};
-
 const closeStudy = async (req: Request, res: Response) => {
   const BAD_REQUEST = '잘못된 요청입니다';
   const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
@@ -342,6 +443,40 @@ const closeStudy = async (req: Request, res: Response) => {
     if (!study) throw new Error(NOT_FOUND);
     if (study.isOpen) {
       await studyService.closeStudy(study);
+
+      if (process.env.NODE_ENV !== 'test') {
+        const members = await findAcceptedByStudyId(study.id);
+        members.map((record: Record<string, string | boolean>) => ({
+          userId: record.StudyUser_USER_ID,
+        }));
+        if (members.length !== 0) {
+          for (const member of members) {
+            await createStudyNoti({
+              id: study.id,
+              userId: member.userId,
+              title: '모집 종료',
+              about: `모집이 종료되었어요. 스터디를 응원합니다!`,
+              type: NotiTypeEnum.CLOSED,
+            });
+          }
+        }
+
+        const applicants = await findNotAcceptedApplicantsByStudyId(study.id);
+        applicants.map((record: Record<string, string | boolean>) => ({
+          userId: record.StudyUser_USER_ID,
+        }));
+        if (applicants.length !== 0) {
+          for (const user of applicants) {
+            await createStudyNoti({
+              id: study.id,
+              userId: user.userId,
+              title: '모집 종료',
+              about: '스터디의 모집이 마감되었어요.',
+              type: NotiTypeEnum.CLOSED,
+            });
+          }
+        }
+      }
     } else {
       throw new Error(BAD_REQUEST);
     }
@@ -364,7 +499,6 @@ export default {
   updateStudy,
   deleteStudy,
   searchStudy,
-  getMyStudy,
   closeStudy,
 };
 
@@ -380,9 +514,9 @@ export default {
  *      parameters:
  *      - name: "categoryCode"
  *        in: "query"
- *        description: "조회할 카테고리 코드"
+ *        description: "조회할 카테고리 코드 ex.) '100,201,202' 와 같이 요청"
  *        required: false
- *        type: integer
+ *        type: string
  *      - name: "frequency"
  *        in: "query"
  *        description: "필터 조건 - 스터디 빈도 / FrequencyEnum"
@@ -390,12 +524,12 @@ export default {
  *        type: string
  *      - name: "weekday"
  *        in: "query"
- *        description: "필터 조건 - 요일 / WeekDayEnum"
+ *        description: "필터 조건 - 요일 / WeekDayEnum ex.) 'mon,tue,wed' 와 같이 요청"
  *        required: false
  *        type: string
  *      - name: "location"
  *        in: "query"
- *        description: "필터 조건 - 장소 / LocationEnum"
+ *        description: "필터 조건 - 장소 / LocationEnum ex.) 'room,cafe' 와 같이 요청"
  *        required: false
  *        type: string
  *      - name: "order_by"
@@ -415,7 +549,7 @@ export default {
  *        type: integer
  *      responses:
  *        200:
- *          description: "올바른 요청. 스터디 객체 배열, 현재 페이지, 전체 페이지 수, 전체 스터디 개수를 반환합니다."
+ *          description: "올바른 요청"
  *          schema:
  *            type: object
  *            properties:
@@ -425,10 +559,13 @@ export default {
  *                  $ref: "#/definitions/Study"
  *              pageNo:
  *                type: integer
+ *                description: "현재 페이지"
  *              pages:
  *                type: integer
+ *                description: "전체 페이지 수"
  *              total:
  *                type: integer
+ *                description: "전체 스터디 개수"
  *
  *    post:
  *      summary: "새로운 스터디 생성"
@@ -530,7 +667,16 @@ export default {
  *        200:
  *          description: "올바른 요청, 스터디 정보를 반환합니다"
  *          schema:
- *            $ref: "#/definitions/Study"
+ *            allOf:
+ *            - $ref: "#/definitions/Study"
+ *            - type: object
+ *              properties:
+ *                bookmarked:
+ *                  type: boolean
+ *                  description: "유저가 해당 스터디에 대하여 북마크를 추가한 상태인지 아닌지에 대한 여부"
+ *                applied:
+ *                  type: boolean
+ *                  description: "유저가 해당 스터디에 대하여 참가 신청을 한 상태인지 아닌지에 대한 여부"
  *        404:
  *          description: "전달한 studyid가 데이터베이스에 없는 경우입니다"
  *          schema:
@@ -674,71 +820,6 @@ export default {
  *                type: string
  *                example: "데이터베이스에 일치하는 요청값이 없습니다"
  *
- *  /api/study/search:
- *    get:
- *      summary: "스터디 검색 목록 조회"
- *      tags:
- *      - "study"
- *      description: "사용자가 검색한 스터디의 목록을 조회할 수 있습니다"
- *      parameters:
- *      - name: "keyword"
- *        in: "query"
- *        description: "검색어로 입력한 키워드"
- *        required: true
- *        type: string
- *      - name: "frequency"
- *        in: "query"
- *        description: "필터 조건 - 스터디 빈도 / FrequencyEnum"
- *        required: false
- *        type: string
- *      - name: "weekday"
- *        in: "query"
- *        description: "필터 조건 - 요일 / WeekDayEnum"
- *        required: false
- *        type: string
- *      - name: "location"
- *        in: "query"
- *        description: "필터 조건 - 장소 / LocationEnum"
- *        required: false
- *        type: string
- *      - name: "order_by"
- *        in: "query"
- *        description: "정렬 조건 기본값: 최근 등록순 (enum: latest, small_vacancy, large_vacancy)"
- *        required: false
- *        type: string
- *      responses:
- *        200:
- *          description: "올바른 요청."
- *          schema:
- *            allOf:
- *            - type: array
- *              items:
- *                $ref: "#/definitions/Study"
- *
- *  /api/study/my-study:
- *    get:
- *      summary: "모집 스터디 목록 조회"
- *      tags:
- *      - "study"
- *      - "my-page"
- *      description: "사용자가 모집한 스터디의 목록을 조회하는 엔드포인트입니다."
- *      responses:
- *        200:
- *          description: "올바른 요청."
- *          schema:
- *            allOf:
- *            - type: array
- *              items:
- *                $ref: "#/definitions/Study"
- *        401:
- *          description: "로그인이 되어있지 않은 경우"
- *          schema:
- *            type: object
- *            properties:
- *              message:
- *                type: string
- *                example: "로그인 필요"
- *
  *  /api/study/{studyid}/close:
  *    patch:
  *      summary: "스터디 마감"
@@ -785,4 +866,45 @@ export default {
  *              message:
  *                type: string
  *                example: "데이터베이스에 일치하는 요청값이 없습니다"
+ *
+ *  /api/study/search:
+ *    get:
+ *      summary: "스터디 검색 목록 조회"
+ *      tags:
+ *      - "study"
+ *      description: "사용자가 검색한 스터디의 목록을 조회할 수 있습니다"
+ *      parameters:
+ *      - name: "keyword"
+ *        in: "query"
+ *        description: "검색어로 입력한 키워드"
+ *        required: true
+ *        type: string
+ *      - name: "frequency"
+ *        in: "query"
+ *        description: "필터 조건 - 스터디 빈도 / FrequencyEnum"
+ *        required: false
+ *        type: string
+ *      - name: "weekday"
+ *        in: "query"
+ *        description: "필터 조건 - 요일 / WeekDayEnum ex.) 'mon,tue,wed' 와 같이 요청"
+ *        required: false
+ *        type: string
+ *      - name: "location"
+ *        in: "query"
+ *        description: "필터 조건 - 장소 / LocationEnum ex.) 'room,cafe' 와 같이 요청"
+ *        required: false
+ *        type: string
+ *      - name: "order_by"
+ *        in: "query"
+ *        description: "정렬 조건 기본값: 최근 등록순 (enum: latest, small_vacancy, large_vacancy)"
+ *        required: false
+ *        type: string
+ *      responses:
+ *        200:
+ *          description: "올바른 요청."
+ *          schema:
+ *            allOf:
+ *            - type: array
+ *              items:
+ *                $ref: "#/definitions/Study"
  */

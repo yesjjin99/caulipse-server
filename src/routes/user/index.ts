@@ -14,6 +14,8 @@ router.use('/profile', profileRouter);
 router.use('/login', loginRouter);
 router.use('/logout', checkToken, logoutRouter);
 router.use('/bookmark', checkToken, bookmarkRouter);
+// 모집 스터디 조회
+router.get('/study', checkToken, controller.getMyStudy);
 router.use('/study/applied', checkToken, controller.getAppliedStudies);
 
 router.post('/', controller.saveUser);

@@ -1,21 +1,70 @@
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import commentService from '../../../services/comment';
-import { createStudyNoti } from '../../../services/notification';
+import { createStudyNoti, NotiTypeEnum } from '../../../services/notification';
 import studyService from '../../../services/study';
 import { temp_findUserProfileById } from '../../../services/user/profile';
+import metooService from '../../../services/comment/metoo';
+import { refresh } from '../../../middlewares/auth';
+import Comment from '../../../entity/CommentEntity';
 
 const getAllComment = async (req: Request, res: Response) => {
   const NOT_FOUND = '데이터베이스에 일치하는 요청값이 없습니다';
 
   try {
     const { studyid } = req.params;
-    const study = await studyService.checkStudyById(studyid);
+    const study = await studyService.findStudyById(studyid);
     const comments = await commentService.getAllByStudy(studyid);
 
-    if (study === 0 || !comments) {
+    if (!study || !comments) {
       throw new Error(NOT_FOUND);
     }
-    return res.status(200).json(comments);
+
+    /* checkToken */
+    let { accessToken, refreshToken } = req.cookies;
+
+    const logoutResult: Array<Comment & { metoo: boolean }> = [];
+    comments.forEach((value) => {
+      logoutResult.push({
+        ...value,
+        metoo: false,
+      });
+    });
+
+    if (!accessToken && !refreshToken) {
+      return res.status(200).json(logoutResult);
+    }
+
+    if (!accessToken && refreshToken) {
+      await refresh(req, res);
+
+      if (!req.cookies.accessToken) return;
+      else {
+        accessToken = req.cookies.accessToken;
+        refreshToken = req.cookies.refreshToken;
+      }
+    }
+
+    try {
+      const decoded = jwt.verify(
+        accessToken,
+        process.env.SIGNUP_TOKEN_SECRET as string
+      ) as { id: string };
+      req.user = { id: decoded.id };
+
+      const result: Array<Comment & { metoo: boolean }> = [...logoutResult];
+      for (let i = 0; i < result.length; i++) {
+        if (await metooService.checkMetoo(decoded.id, result[i].id)) {
+          result[i] = {
+            ...result[i],
+            metoo: true,
+          };
+        }
+      }
+      return res.status(200).json(result);
+    } catch {
+      return res.status(200).json(logoutResult);
+    }
   } catch (e) {
     if ((e as Error).message === NOT_FOUND) {
       return res.status(404).json({
@@ -57,25 +106,21 @@ const createComment = async (req: Request, res: Response) => {
 
     if (process.env.NODE_ENV !== 'test') {
       if (reply && reply.USER_ID) {
-        const notiTitle = '답글';
-        const notiAbout = '작성하신 문의글에 답글이 달렸어요.';
-        await createStudyNoti(
-          studyid,
-          reply.USER_ID,
-          notiTitle,
-          notiAbout,
-          104
-        );
+        await createStudyNoti({
+          id: studyid,
+          userId: reply.USER_ID,
+          title: '답글',
+          about: '작성하신 문의글에 답글이 달렸어요.',
+          type: NotiTypeEnum.NEW_REPLY,
+        });
       } else {
-        const notiTitle = '새로운 문의글';
-        const notiAbout = '새 문의글이 달렸어요.';
-        await createStudyNoti(
-          studyid,
-          study.HOST_ID,
-          notiTitle,
-          notiAbout,
-          102
-        );
+        await createStudyNoti({
+          id: studyid,
+          userId: study.HOST_ID,
+          title: '새로운 문의글',
+          about: '새 문의글이 달렸어요.',
+          type: NotiTypeEnum.NEW_COMMENT,
+        });
       }
     }
 
@@ -182,8 +227,11 @@ export default { getAllComment, createComment, updateComment, deleteComment };
  *            items:
  *              allOf:
  *                - $ref: "#/definitions/Comment"
- *                - $ref: "#/definitions/Study"
- *                - $ref: "#/definitions/User"
+ *                - type: object
+ *                  properties:
+ *                    metoo:
+ *                      type: boolean
+ *                      description: "유저가 각 문의글에 대하여 나도 궁금해요를 등록한 상태인지 아닌지에 대한 여부"
  *        404:
  *          description: "전달한 studyid가 데이터베이스에 없는 경우입니다"
  *          schema:

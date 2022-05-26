@@ -30,10 +30,11 @@ const deleteMetoo = async (comment: Comment, user: UserProfile) => {
 const checkMetoo = async (userId: string, commentId: string) => {
   return await getRepository(Comment)
     .createQueryBuilder('comment')
+    .select(['comment.id', 'comment.USER_ID'])
     .leftJoin('comment.metooComment', 'UserProfile')
     .where('comment.id = :commentId', { commentId })
-    .where('UserProfile.id = :userId', { userId })
-    .getCount();
+    .where('UserProfile.USER_ID = :userId', { userId })
+    .getOne();
 };
 
 export default {
